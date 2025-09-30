@@ -30,7 +30,7 @@ export default function Header() {
     { name: 'Services', href: '/services' },
     { name: 'Séminaires', href: '/seminaires-evenements' },
     { name: 'Portfolio', href: '/portfolio' },
-    { name: 'Portage Salarial', href: '/portage-salarial' },
+   
     { name: 'Contact', href: '/contact' }
   ];
 
