@@ -168,6 +168,10 @@ A comprehensive multi-site web application for chalet management business, featu
 ### Contact
 - `POST /api/contact` - Send contact form email
 
+### System Status & Demo Data
+- `GET /api/system-status` - Verify site availability and database health
+- `POST /api/system-status` - Generate fake content blocks for a given page (development only)
+
 ## Database Models
 
 ### Chalet
