@@ -1,0 +1,356 @@
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import ClientIcon from '../../../components/ClientIcon';
+import ChaletBooking from '../../../components/chalet/ChaletBooking';
+import ChaletMap from '../../../components/chalet/ChaletMap';
+import ChaletGallery from '../../../components/chalet/ChaletGallery';
+
+async function getChalet(slug) {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/chalets/${slug}`, {
+      cache: 'no-store'
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.success ? data.data : null;
+  } catch (error) {
+    console.error('Error fetching chalet:', error);
+    return null;
+  }
+}
+
+export async function generateMetadata({ params }) {
+  const chalet = await getChalet(params.slug);
+  
+  if (!chalet) {
+    return {
+      title: 'Chalet non trouvé',
+    };
+  }
+
+  return {
+    title: `${chalet.title} | Chalet Manager`,
+    description: chalet.shortDescription || chalet.description,
+    openGraph: {
+      title: chalet.title,
+      description: chalet.shortDescription || chalet.description,
+      images: chalet.images?.filter(img => img.isHero).map(img => ({
+        url: img.url,
+        alt: img.alt
+      })) || [],
+    },
+  };
+}
+
+export default async function ChaletPage({ params }) {
+  const chalet = await getChalet(params.slug);
+
+  if (!chalet) {
+    notFound();
+  }
+
+  const heroImage = chalet.images?.find(img => img.isHero) || chalet.images?.[0];
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="flex items-center space-x-2 text-primary-800 hover:text-primary-900">
+              <ClientIcon name="Mountain" className="h-6 w-6" />
+              <span className="font-bold">Chalet Manager</span>
+            </Link>
+            
+            <div className="flex items-center space-x-6">
+              <a href="#overview" className="text-neutral-600 hover:text-primary-700 transition-colors">
+                Aperçu
+              </a>
+              <a href="#gallery" className="text-neutral-600 hover:text-primary-700 transition-colors">
+                Galerie
+              </a>
+              <a href="#amenities" className="text-neutral-600 hover:text-primary-700 transition-colors">
+                Équipements
+              </a>
+              <a href="#booking" className="text-neutral-600 hover:text-primary-700 transition-colors">
+                Réserver
+              </a>
+              <a href="#location" className="text-neutral-600 hover:text-primary-700 transition-colors">
+                Localisation
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section id="overview" className="relative h-screen flex items-center justify-center text-white overflow-hidden mt-16">
+        {heroImage && (
+          <>
+            <div className="absolute inset-0 z-0">
+              <Image
+                src={heroImage.url}
+                alt={heroImage.alt || chalet.title}
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-black/30"></div>
+            </div>
+          </>
+        )}
+
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            {chalet.title}
+          </h1>
+          
+          <div className="flex items-center justify-center text-white/90 mb-6">
+            <ClientIcon name="MapPin" className="h-5 w-5 mr-2" />
+            <span className="text-lg">
+              {chalet.location.city}, {chalet.location.country}
+            </span>
+          </div>
+          
+          <p className="text-xl text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
+            {chalet.shortDescription}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="#booking"
+              className="px-8 py-4 bg-primary-700 text-white rounded-full font-semibold hover:bg-primary-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center justify-center"
+            >
+              <ClientIcon name="Calendar" className="mr-2 h-5 w-5" />
+              Réserver Maintenant
+            </a>
+            
+            <a
+              href="#gallery"
+              className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-full font-semibold hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/40"
+            >
+              Voir la Galerie
+            </a>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-white/50 rounded-full mt-2 animate-pulse"></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Info */}
+      <section className="py-12 bg-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ClientIcon name="Bed" className="h-6 w-6 text-primary-700" />
+              </div>
+              <div className="text-2xl font-bold text-neutral-900">
+                {chalet.specifications?.bedrooms || 0}
+              </div>
+              <div className="text-sm text-neutral-600">Chambres</div>
+            </div>
+            
+            <div>
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ClientIcon name="Bath" className="h-6 w-6 text-primary-700" />
+              </div>
+              <div className="text-2xl font-bold text-neutral-900">
+                {chalet.specifications?.bathrooms || 0}
+              </div>
+              <div className="text-sm text-neutral-600">Salles de bain</div>
+            </div>
+            
+            <div>
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ClientIcon name="Users" className="h-6 w-6 text-primary-700" />
+              </div>
+              <div className="text-2xl font-bold text-neutral-900">
+                {chalet.specifications?.maxGuests || 0}
+              </div>
+              <div className="text-sm text-neutral-600">Personnes</div>
+            </div>
+            
+            <div>
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ClientIcon name="Euro" className="h-6 w-6 text-primary-700" />
+              </div>
+              <div className="text-2xl font-bold text-neutral-900">
+                {chalet.pricing?.basePrice || 0}€
+              </div>
+              <div className="text-sm text-neutral-600">Par nuit</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Description */}
+      <section className="py-20 bg-neutral-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-neutral-900 mb-8 text-center">
+            À Propos de ce Chalet
+          </h2>
+          
+          <div className="prose prose-lg max-w-none text-neutral-700 leading-relaxed">
+            {chalet.description.split('\n').map((paragraph, index) => (
+              <p key={index} className="mb-4">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery */}
+      <section id="gallery" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-neutral-900 mb-12 text-center">
+            Galerie Photos
+          </h2>
+          
+          <ChaletGallery images={chalet.images || []} />
+        </div>
+      </section>
+
+      {/* Amenities */}
+      <section id="amenities" className="py-20 bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-neutral-900 mb-12 text-center">
+            Équipements & Services
+          </h2>
+          
+          {chalet.amenities && chalet.amenities.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {chalet.amenities.map((amenity, index) => (
+                <div key={index} className="flex items-center p-4 bg-white rounded-lg border border-neutral-200">
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                    <ClientIcon name={amenity.icon || 'Check'} className="h-5 w-5 text-primary-700" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-neutral-900">
+                      {amenity.name}
+                    </h3>
+                    {amenity.description && (
+                      <p className="text-sm text-neutral-600">
+                        {amenity.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <ClientIcon name="Home" className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
+              <p className="text-neutral-600">
+                Les équipements seront bientôt disponibles
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Booking Section */}
+      <section id="booking" className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-neutral-900 mb-12 text-center">
+            Réservation
+          </h2>
+          
+          <ChaletBooking chalet={chalet} />
+        </div>
+      </section>
+
+      {/* Location */}
+      <section id="location" className="py-20 bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-neutral-900 mb-12 text-center">
+            Localisation
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="text-xl font-bold text-neutral-900 mb-4">
+                {chalet.location.address}
+              </h3>
+              <p className="text-neutral-600 mb-6">
+                {chalet.location.city}, {chalet.location.country}
+                {chalet.location.postalCode && ` ${chalet.location.postalCode}`}
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <ClientIcon name="MapPin" className="h-5 w-5 text-primary-600 mr-3" />
+                  <span className="text-neutral-700">
+                    Coordonnées: {chalet.location.coordinates.latitude.toFixed(4)}, {chalet.location.coordinates.longitude.toFixed(4)}
+                  </span>
+                </div>
+                
+                <div className="flex items-center">
+                  <ClientIcon name="Navigation" className="h-5 w-5 text-primary-600 mr-3" />
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${chalet.location.coordinates.latitude},${chalet.location.coordinates.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-700 hover:text-primary-800 font-medium"
+                  >
+                    Obtenir l'itinéraire
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div className="h-96 rounded-2xl overflow-hidden shadow-lg">
+              <ChaletMap 
+                coordinates={chalet.location.coordinates}
+                title={chalet.title}
+                address={chalet.location.address}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section className="py-20 bg-primary-800 text-white">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold mb-6">
+            Des Questions ?
+          </h2>
+          
+          <p className="text-xl text-primary-100 mb-8">
+            Notre équipe est là pour vous aider à planifier votre séjour parfait
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/contact"
+              className="px-8 py-4 bg-white text-primary-800 rounded-full font-semibold hover:bg-neutral-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
+            >
+              <ClientIcon name="Mail" className="mr-2 h-5 w-5" />
+              Nous Contacter
+            </Link>
+            
+            <a
+              href="tel:+33123456789"
+              className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-primary-800 transition-all duration-300 flex items-center justify-center"
+            >
+              <ClientIcon name="Phone" className="mr-2 h-5 w-5" />
+              Appeler Maintenant
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
