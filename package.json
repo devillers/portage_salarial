@@ -2,13 +2,13 @@
   "name": "chalet-management",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "seed": "node seed.js",
     "dev": "next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "next lint"
-    
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
