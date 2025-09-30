@@ -1,7 +1,7 @@
 // lib/seed/fakeContent.js
 
-import Content from '../../models/Content';
-import User from '../../models/User';
+import Content from './models/Content';
+import User from './models/User';
 
 const ALLOWED_PAGES = ['home', 'services', 'portfolio', 'portage-salarial', 'seminaires-evenements', 'contact'];
 
