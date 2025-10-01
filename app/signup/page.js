@@ -1,88 +1,88 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
-import ClientIcon from '../../components/ClientIcon';
-import FileDropzone from '../../components/forms/FileDropzone';
+import { useMemo, useState } from "react";
+import Header from "../../components/layout/Header";
+import Footer from "../../components/layout/Footer";
+import ClientIcon from "../../components/ClientIcon";
+import FileDropzone from "../../components/forms/FileDropzone";
 
 const createOwnerInitial = () => ({
-  title: '',
-  slug: '',
-  shortDescription: '',
-  longDescription: '',
+  title: "",
+  slug: "",
+  shortDescription: "",
+  longDescription: "",
   heroPhoto: [],
   gallery: [],
   rooms: [
     {
-      name: '',
-      description: '',
-      photos: []
-    }
+      name: "",
+      description: "",
+      photos: [],
+    },
   ],
   propertyAddress: {
-    streetNumber: '',
-    streetName: '',
-    line2: '',
-    city: '',
-    postalCode: '',
-    country: ''
+    streetNumber: "",
+    streetName: "",
+    line2: "",
+    city: "",
+    postalCode: "",
+    country: "",
   },
   mainAddress: {
-    streetNumber: '',
-    streetName: '',
-    line2: '',
-    city: '',
-    postalCode: '',
-    country: ''
+    streetNumber: "",
+    streetName: "",
+    line2: "",
+    city: "",
+    postalCode: "",
+    country: "",
   },
   owner: {
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    email: '',
-    phone: ''
+    firstName: "",
+    lastName: "",
+    birthDate: "",
+    email: "",
+    phone: "",
   },
   identityDocument: [],
-  ownershipProof: []
+  ownershipProof: [],
 });
 
 const createTenantInitial = () => ({
-  firstName: '',
-  lastName: '',
-  email: '',
-  phone: '',
-  preferredRegion: '',
-  desiredDates: '',
-  guests: '',
-  budget: '',
-  requirements: ''
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  preferredRegion: "",
+  desiredDates: "",
+  guests: "",
+  budget: "",
+  requirements: "",
 });
 
 const OPTIONS = [
   {
-    id: 'renting',
+    id: "renting",
     title: "J'ai un chalet à louer à la saison",
     description:
-      'Partagez les informations essentielles de votre bien pour rejoindre notre réseau et bénéficier de notre accompagnement complet.',
-    icon: 'Home'
+      "Partagez les informations essentielles de votre bien pour rejoindre notre réseau et bénéficier de notre accompagnement complet.",
+    icon: "Home",
   },
   {
-    id: 'looking',
-    title: 'Je recherche une location à la saison',
+    id: "looking",
+    title: "Je recherche une location à la saison",
     description:
-      'Indiquez vos critères afin que notre équipe vous propose les chalets correspondant parfaitement à vos attentes.',
-    icon: 'Search'
-  }
+      "Indiquez vos critères afin que notre équipe vous propose les chalets correspondant parfaitement à vos attentes.",
+    icon: "Search",
+  },
 ];
 
 const serializeFiles = (files) =>
   Array.isArray(files)
     ? files.map((file) => ({
-        name: file?.name ?? '',
+        name: file?.name ?? "",
         size: file?.size ?? 0,
-        type: file?.type ?? '',
-        lastModified: file?.lastModified ?? null
+        type: file?.type ?? "",
+        lastModified: file?.lastModified ?? null,
       }))
     : [];
 
@@ -96,13 +96,13 @@ const serializeOwnerForm = (form) => ({
   rooms: form.rooms.map((room) => ({
     name: room.name,
     description: room.description,
-    photos: serializeFiles(room.photos)
+    photos: serializeFiles(room.photos),
   })),
   propertyAddress: form.propertyAddress,
   mainAddress: form.mainAddress,
   owner: form.owner,
   identityDocument: serializeFiles(form.identityDocument),
-  ownershipProof: serializeFiles(form.ownershipProof)
+  ownershipProof: serializeFiles(form.ownershipProof),
 });
 
 const serializeTenantForm = (form) => ({
@@ -114,26 +114,31 @@ const serializeTenantForm = (form) => ({
   desiredDates: form.desiredDates,
   guests: form.guests,
   budget: form.budget,
-  requirements: form.requirements
+  requirements: form.requirements,
 });
 
 export default function SignUpPage() {
-  const [selectedOption, setSelectedOption] = useState('owner');
+  const [selectedOption, setSelectedOption] = useState("owner");
   const [ownerForm, setOwnerForm] = useState(createOwnerInitial);
   const [tenantForm, setTenantForm] = useState(createTenantInitial);
-  const [feedback, setFeedback] = useState({ type: '', message: '' });
-  const [ownerActiveModule, setOwnerActiveModule] = useState('owner-chalet');
-  const [tenantActiveModule, setTenantActiveModule] = useState('tenant-profile');
+  const [feedback, setFeedback] = useState({ type: "", message: "" });
+  const [ownerActiveModule, setOwnerActiveModule] = useState("owner-chalet");
+  const [tenantActiveModule, setTenantActiveModule] =
+    useState("tenant-profile");
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [tenantSubmitting, setTenantSubmitting] = useState(false);
   const [ownerExpandedRooms, setOwnerExpandedRooms] = useState([true]);
 
   const ownerModuleStatus = useMemo(() => {
     const hasBaseInfo =
-      ownerForm.title.trim() && ownerForm.shortDescription.trim() && ownerForm.longDescription.trim();
+      ownerForm.title.trim() &&
+      ownerForm.shortDescription.trim() &&
+      ownerForm.longDescription.trim();
     const hasRooms =
       ownerForm.rooms.length > 0 &&
-      ownerForm.rooms.every((room) => room.name.trim() && room.description.trim());
+      ownerForm.rooms.every(
+        (room) => room.name.trim() && room.description.trim()
+      );
     const hasPropertyAddress =
       ownerForm.propertyAddress.streetNumber.trim() &&
       ownerForm.propertyAddress.streetName.trim() &&
@@ -144,7 +149,9 @@ export default function SignUpPage() {
       ownerForm.owner.lastName.trim() &&
       ownerForm.owner.birthDate &&
       ownerForm.owner.email.trim();
-    const hasDocuments = ownerForm.identityDocument.length > 0 && ownerForm.ownershipProof.length > 0;
+    const hasDocuments =
+      ownerForm.identityDocument.length > 0 &&
+      ownerForm.ownershipProof.length > 0;
     const hasMainAddress =
       ownerForm.mainAddress.streetNumber.trim() &&
       ownerForm.mainAddress.streetName.trim() &&
@@ -157,18 +164,20 @@ export default function SignUpPage() {
       location: Boolean(hasPropertyAddress),
       owner: Boolean(hasOwnerInfo),
       documents: Boolean(hasDocuments),
-      mainAddress: Boolean(hasMainAddress)
+      mainAddress: Boolean(hasMainAddress),
     };
   }, [ownerForm]);
 
   const tenantModuleStatus = useMemo(() => {
     const hasProfile =
-      tenantForm.firstName.trim() && tenantForm.lastName.trim() && tenantForm.email.trim();
+      tenantForm.firstName.trim() &&
+      tenantForm.lastName.trim() &&
+      tenantForm.email.trim();
     const hasProject = tenantForm.preferredRegion.trim();
 
     return {
       profile: Boolean(hasProfile),
-      project: Boolean(hasProject)
+      project: Boolean(hasProject),
     };
   }, [tenantForm]);
 
@@ -182,7 +191,7 @@ export default function SignUpPage() {
     [tenantModuleStatus]
   );
 
-  const resetFeedback = () => setFeedback({ type: '', message: '' });
+  const resetFeedback = () => setFeedback({ type: "", message: "" });
 
   const handleOwnerChange = (path, value) => {
     resetFeedback();
@@ -190,11 +199,11 @@ export default function SignUpPage() {
     setOwnerForm((prev) => {
       const updated = structuredClone(prev);
 
-      const segments = Array.isArray(path) ? path : path.split('.');
+      const segments = Array.isArray(path) ? path : path.split(".");
       let pointer = updated;
 
       segments.slice(0, -1).forEach((segment) => {
-        if (typeof pointer[segment] === 'undefined') {
+        if (typeof pointer[segment] === "undefined") {
           pointer[segment] = {};
         }
         pointer = pointer[segment];
@@ -202,12 +211,12 @@ export default function SignUpPage() {
 
       pointer[segments.at(-1)] = value;
 
-      if (segments[0] === 'title') {
+      if (segments[0] === "title") {
         updated.slug = value
           .toLowerCase()
-          .replace(/[^\w\s-]+/g, '')
+          .replace(/[^\w\s-]+/g, "")
           .trim()
-          .replace(/\s+/g, '-');
+          .replace(/\s+/g, "-");
       }
 
       return updated;
@@ -239,11 +248,11 @@ export default function SignUpPage() {
       rooms: [
         ...prev.rooms,
         {
-          name: '',
-          description: '',
-          photos: []
-        }
-      ]
+          name: "",
+          description: "",
+          photos: [],
+        },
+      ],
     }));
     setOwnerExpandedRooms((prev) => [...prev, true]);
   };
@@ -252,14 +261,16 @@ export default function SignUpPage() {
     resetFeedback();
     setOwnerForm((prev) => ({
       ...prev,
-      rooms: prev.rooms.filter((_, i) => i !== index)
+      rooms: prev.rooms.filter((_, i) => i !== index),
     }));
     setOwnerExpandedRooms((prev) => prev.filter((_, i) => i !== index));
   };
 
   const toggleRoomVisibility = (index) => {
     setOwnerExpandedRooms((prev) =>
-      prev.map((isOpen, currentIndex) => (currentIndex === index ? !isOpen : isOpen))
+      prev.map((isOpen, currentIndex) =>
+        currentIndex === index ? !isOpen : isOpen
+      )
     );
   };
 
@@ -267,42 +278,51 @@ export default function SignUpPage() {
     event.preventDefault();
 
     if (!isOwnerFormValid) {
-      setFeedback({ type: 'error', message: 'Merci de compléter les informations obligatoires avant de valider.' });
+      setFeedback({
+        type: "error",
+        message:
+          "Merci de compléter les informations obligatoires avant de valider.",
+      });
       return;
     }
 
     try {
       setOwnerSubmitting(true);
-      const response = await fetch('/api/signup', {
-        method: 'POST',
+      const response = await fetch("/api/signup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          type: 'owner',
-          data: serializeOwnerForm(ownerForm)
-        })
+          type: "owner",
+          data: serializeOwnerForm(ownerForm),
+        }),
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Une erreur est survenue lors de l'enregistrement de votre candidature.");
+        throw new Error(
+          result.message ||
+            "Une erreur est survenue lors de l'enregistrement de votre candidature."
+        );
       }
 
       setFeedback({
-        type: 'success',
+        type: "success",
         message:
-          'Votre demande a bien été enregistrée. Notre équipe vous contactera sous 48h pour finaliser la mise en location de votre chalet.'
+          "Votre demande a bien été enregistrée. Notre équipe vous contactera sous 48h pour finaliser la mise en location de votre chalet.",
       });
       setOwnerForm(createOwnerInitial());
-      setOwnerActiveModule('owner-chalet');
+      setOwnerActiveModule("owner-chalet");
       setOwnerExpandedRooms([true]);
     } catch (error) {
-      console.error('Owner signup error:', error);
+      console.error("Owner signup error:", error);
       setFeedback({
-        type: 'error',
-        message: error.message || "Impossible d'enregistrer votre candidature pour le moment. Merci de réessayer ultérieurement."
+        type: "error",
+        message:
+          error.message ||
+          "Impossible d'enregistrer votre candidature pour le moment. Merci de réessayer ultérieurement.",
       });
     } finally {
       setOwnerSubmitting(false);
@@ -314,7 +334,7 @@ export default function SignUpPage() {
     resetFeedback();
     setTenantForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -322,40 +342,50 @@ export default function SignUpPage() {
     event.preventDefault();
 
     if (!isTenantFormValid) {
-      setFeedback({ type: 'error', message: 'Merci de renseigner les informations principales pour que nous puissions vous répondre.' });
+      setFeedback({
+        type: "error",
+        message:
+          "Merci de renseigner les informations principales pour que nous puissions vous répondre.",
+      });
       return;
     }
 
     try {
       setTenantSubmitting(true);
-      const response = await fetch('/api/signup', {
-        method: 'POST',
+      const response = await fetch("/api/signup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          type: 'tenant',
-          data: serializeTenantForm(tenantForm)
-        })
+          type: "tenant",
+          data: serializeTenantForm(tenantForm),
+        }),
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Une erreur est survenue lors de l'enregistrement de votre demande.");
+        throw new Error(
+          result.message ||
+            "Une erreur est survenue lors de l'enregistrement de votre demande."
+        );
       }
 
       setFeedback({
-        type: 'success',
-        message: 'Merci pour votre demande. Nous reviendrons vers vous avec une sélection personnalisée de chalets saisonniers.'
+        type: "success",
+        message:
+          "Merci pour votre demande. Nous reviendrons vers vous avec une sélection personnalisée de chalets saisonniers.",
       });
       setTenantForm(createTenantInitial());
-      setTenantActiveModule('tenant-profile');
+      setTenantActiveModule("tenant-profile");
     } catch (error) {
-      console.error('Tenant signup error:', error);
+      console.error("Tenant signup error:", error);
       setFeedback({
-        type: 'error',
-        message: error.message || "Impossible d'enregistrer votre demande pour le moment. Merci de réessayer ultérieurement."
+        type: "error",
+        message:
+          error.message ||
+          "Impossible d'enregistrer votre demande pour le moment. Merci de réessayer ultérieurement.",
       });
     } finally {
       setTenantSubmitting(false);
@@ -365,14 +395,14 @@ export default function SignUpPage() {
   const renderFeedback = () => {
     if (!feedback.message) return null;
 
-    const isSuccess = feedback.type === 'success';
+    const isSuccess = feedback.type === "success";
 
     return (
       <div
         className={`rounded-xl border p-4 text-sm ${
           isSuccess
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-            : 'border-red-200 bg-red-50 text-red-700'
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border-red-200 bg-red-50 text-red-700"
         }`}
       >
         {feedback.message}
@@ -382,61 +412,77 @@ export default function SignUpPage() {
 
   const ownerModules = [
     {
-      id: 'owner-chalet',
-      title: 'Informations sur le chalet',
+      id: "owner-chalet",
+      title: "Informations sur le chalet",
       description:
-        'Présentez votre bien en détail pour que nous puissions créer une fiche attrayante et complète.',
-      icon: 'Home',
+        "Présentez votre bien en détail pour que nous puissions créer une fiche attrayante et complète.",
+      icon: "Home",
       isComplete: ownerModuleStatus.chalet,
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Titre du chalet</label>
+            <label className="text-[30px] uppercase font-thin text-neutral-600">
+              Titre du chalet
+            </label>
             <input
               type="text"
               value={ownerForm.title}
-              onChange={(event) => handleOwnerChange('title', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("title", event.target.value)
+              }
               placeholder="Ex. Chalet Horizon Mont-Blanc"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Slug généré</label>
+          <label className="text-[11px] uppercase font-bold text-neutral-600">
+              Slug généré
+            </label>
             <input
               type="text"
               value={ownerForm.slug}
               readOnly
-              className="w-full cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-500"
+                className="w-full rounded-2xl border-b border-b-neutral-200 bg-white px-4 py-3 text-[11px] italic font-loose text-neutral-800 hover:shadow-sm "
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">Description courte</label>
-            <textarea
-              value={ownerForm.shortDescription}
-              onChange={(event) => handleOwnerChange('shortDescription', event.target.value)}
-              rows={3}
-              placeholder="Quelques phrases pour résumer l'expérience offerte par votre chalet."
-              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
-            />
-          </div>
+            <>
+              <label className="text-[11px] uppercase font-bold text-neutral-600">
+                Description courte
+              </label>
+              <textarea
+                value={ownerForm.shortDescription}
+                onChange={(event) =>
+                  handleOwnerChange("shortDescription", event.target.value)
+                }
+                rows={3}
+                placeholder="Quelques phrases pour résumer l'expérience offerte par votre chalet."
+                className="w-full rounded-2xl border-b border-b-neutral-200 bg-white px-4 py-3 text-[11px] italic font-loose text-neutral-800 hover:shadow-sm "
+              />
+            </>
 
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">Description détaillée</label>
-            <textarea
-              value={ownerForm.longDescription}
-              onChange={(event) => handleOwnerChange('longDescription', event.target.value)}
-              rows={6}
-              placeholder="Détaillez les atouts du chalet, ses prestations, les services inclus..."
-              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
-            />
+            <>
+              <label className="text-[11px] uppercase font-bold text-neutral-600">
+                Description détaillée
+              </label>
+              <textarea
+                value={ownerForm.longDescription}
+                onChange={(event) =>
+                  handleOwnerChange("longDescription", event.target.value)
+                }
+                rows={6}
+                placeholder="Détaillez les atouts du chalet, ses prestations, les services inclus..."
+                className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+              />
+            </>
           </div>
 
           <FileDropzone
             label="Photo principale"
             description="Sélectionnez la photo phare qui met le mieux en valeur votre chalet."
-            onFilesChange={(files) => handleOwnerChange('heroPhoto', files)}
+            onFilesChange={(files) => handleOwnerChange("heroPhoto", files)}
             accept="image/jpeg,image/png"
             helperText="1 fichier"
           />
@@ -445,18 +491,19 @@ export default function SignUpPage() {
             label="Galerie photos"
             description="Ajoutez plusieurs visuels pour présenter chaque pièce et ambiance."
             multiple
-            onFilesChange={(files) => handleOwnerChange('gallery', files)}
+            onFilesChange={(files) => handleOwnerChange("gallery", files)}
             accept="image/jpeg,image/png"
             helperText="Jusqu'à 12 fichiers"
           />
         </div>
-      )
+      ),
     },
     {
-      id: 'owner-rooms',
-      title: 'Pièces et ambiances',
-      description: 'Décrivez chaque pièce clé avec des visuels dédiés pour aider nos visiteurs à se projeter.',
-      icon: 'Layout',
+      id: "owner-rooms",
+      title: "Pièces et ambiances",
+      description:
+        "Décrivez chaque pièce clé avec des visuels dédiés pour aider nos visiteurs à se projeter.",
+      icon: "Layout",
       isComplete: ownerModuleStatus.rooms,
       content: (
         <div className="mt-8 space-y-8">
@@ -467,73 +514,92 @@ export default function SignUpPage() {
               <div
                 key={index}
                 className={`rounded-2xl border bg-white/60 p-6 transition ${
-                isRoomOpen ? 'border-neutral-200' : 'border-neutral-200/80'
-              }`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => toggleRoomVisibility(index)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 transition hover:border-primary-200 hover:text-primary-600"
-                    aria-expanded={isRoomOpen}
-                  >
-                    <ClientIcon name={isRoomOpen ? 'ChevronUp' : 'ChevronDown'} className="h-4 w-4" />
-                  </button>
-                  <h3 className="text-lg font-semibold text-neutral-800">Pièce {index + 1}</h3>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-medium text-neutral-400">
-                    {isRoomOpen ? 'Ouverte' : 'Fermée'}
-                  </span>
-                  {ownerForm.rooms.length > 1 && (
+                  isRoomOpen ? "border-neutral-200" : "border-neutral-200/80"
+                }`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => removeRoom(index)}
-                      className="flex items-center gap-2 rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                      onClick={() => toggleRoomVisibility(index)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 transition hover:border-primary-200 hover:text-primary-600"
+                      aria-expanded={isRoomOpen}
                     >
-                      <ClientIcon name="Trash2" className="h-4 w-4" />
-                      Retirer
+                      <ClientIcon
+                        name={isRoomOpen ? "ChevronUp" : "ChevronDown"}
+                        className="h-4 w-4"
+                      />
                     </button>
-                  )}
+                    <h3 className="text-lg font-semibold text-neutral-800">
+                      Pièce {index + 1}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium text-neutral-400">
+                      {isRoomOpen ? "Ouverte" : "Fermée"}
+                    </span>
+                    {ownerForm.rooms.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeRoom(index)}
+                        className="flex items-center gap-2 rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                      >
+                        <ClientIcon name="Trash2" className="h-4 w-4" />
+                        Retirer
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {isRoomOpen && (
+                  <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-800">
+                        Nom de la pièce
+                      </label>
+                      <input
+                        type="text"
+                        value={room.name}
+                        onChange={(event) =>
+                          handleRoomChange(index, "name", event.target.value)
+                        }
+                        placeholder="Ex. Suite parentale, Salon cathédrale..."
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-sm font-medium text-neutral-800">
+                        Description
+                      </label>
+                      <textarea
+                        value={room.description}
+                        onChange={(event) =>
+                          handleRoomChange(
+                            index,
+                            "description",
+                            event.target.value
+                          )
+                        }
+                        rows={3}
+                        placeholder="Détaillez les prestations, la vue, les équipements disponibles..."
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                      />
+                    </div>
+
+                    <FileDropzone
+                      label="Photos de la pièce"
+                      description="Ajoutez plusieurs photos mettant en valeur cette pièce."
+                      multiple
+                      onFilesChange={(files) =>
+                        handleRoomPhotosChange(index, files)
+                      }
+                      accept="image/jpeg,image/png"
+                    />
+                  </div>
+                )}
               </div>
-
-              {isRoomOpen && (
-                <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-neutral-800">Nom de la pièce</label>
-                    <input
-                      type="text"
-                      value={room.name}
-                      onChange={(event) => handleRoomChange(index, 'name', event.target.value)}
-                      placeholder="Ex. Suite parentale, Salon cathédrale..."
-                      className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-neutral-800">Description</label>
-                    <textarea
-                      value={room.description}
-                      onChange={(event) => handleRoomChange(index, 'description', event.target.value)}
-                      rows={3}
-                      placeholder="Détaillez les prestations, la vue, les équipements disponibles..."
-                      className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
-                    />
-                  </div>
-
-                  <FileDropzone
-                    label="Photos de la pièce"
-                    description="Ajoutez plusieurs photos mettant en valeur cette pièce."
-                    multiple
-                    onFilesChange={(files) => handleRoomPhotosChange(index, files)}
-                    accept="image/jpeg,image/png"
-                  />
-                </div>
-              )}
-            </div>
             );
           })}
 
@@ -546,22 +612,30 @@ export default function SignUpPage() {
             Ajouter une pièce
           </button>
         </div>
-      )
+      ),
     },
     {
-      id: 'owner-location',
-      title: 'Localisation du bien',
-      description: "Précisez l'adresse du chalet afin que nous puissions vérifier sa zone de chalandise.",
-      icon: 'MapPin',
+      id: "owner-location",
+      title: "Localisation du bien",
+      description:
+        "Précisez l'adresse du chalet afin que nous puissions vérifier sa zone de chalandise.",
+      icon: "MapPin",
       isComplete: ownerModuleStatus.location,
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Numéro de rue</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Numéro de rue
+            </label>
             <input
               type="text"
               value={ownerForm.propertyAddress.streetNumber}
-              onChange={(event) => handleOwnerChange('propertyAddress.streetNumber', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(
+                  "propertyAddress.streetNumber",
+                  event.target.value
+                )
+              }
               placeholder="Ex. 12"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -572,7 +646,12 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.propertyAddress.streetName}
-              onChange={(event) => handleOwnerChange('propertyAddress.streetName', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(
+                  "propertyAddress.streetName",
+                  event.target.value
+                )
+              }
               placeholder="Nom de la rue"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -582,7 +661,9 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.propertyAddress.line2}
-              onChange={(event) => handleOwnerChange('propertyAddress.line2', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("propertyAddress.line2", event.target.value)
+              }
               placeholder="Complément d'adresse (facultatif)"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -592,7 +673,9 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.propertyAddress.city}
-              onChange={(event) => handleOwnerChange('propertyAddress.city', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("propertyAddress.city", event.target.value)
+              }
               placeholder="Ville"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -602,7 +685,12 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.propertyAddress.postalCode}
-              onChange={(event) => handleOwnerChange('propertyAddress.postalCode', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(
+                  "propertyAddress.postalCode",
+                  event.target.value
+                )
+              }
               placeholder="Code postal"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -612,20 +700,22 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.propertyAddress.country}
-              onChange={(event) => handleOwnerChange('propertyAddress.country', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("propertyAddress.country", event.target.value)
+              }
               placeholder="Pays"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
         </div>
-      )
+      ),
     },
     {
-      id: 'owner-personal',
-      title: 'Informations du propriétaire',
+      id: "owner-personal",
+      title: "Informations du propriétaire",
       description:
-        'Nous collectons ces informations pour sécuriser la mise en location et préparer le contrat de mandat.',
-      icon: 'User',
+        "Nous collectons ces informations pour sécuriser la mise en location et préparer le contrat de mandat.",
+      icon: "User",
       isComplete: ownerModuleStatus.owner,
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -634,70 +724,90 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.owner.lastName}
-              onChange={(event) => handleOwnerChange(['owner', 'lastName'], event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(["owner", "lastName"], event.target.value)
+              }
               placeholder="Nom de famille"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Prénom</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Prénom
+            </label>
             <input
               type="text"
               value={ownerForm.owner.firstName}
-              onChange={(event) => handleOwnerChange(['owner', 'firstName'], event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(["owner", "firstName"], event.target.value)
+              }
               placeholder="Prénom"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Date de naissance</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Date de naissance
+            </label>
             <input
               type="date"
               value={ownerForm.owner.birthDate}
-              onChange={(event) => handleOwnerChange(['owner', 'birthDate'], event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(["owner", "birthDate"], event.target.value)
+              }
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Email</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Email
+            </label>
             <input
               type="email"
               value={ownerForm.owner.email}
-              onChange={(event) => handleOwnerChange(['owner', 'email'], event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(["owner", "email"], event.target.value)
+              }
               placeholder="vous@exemple.com"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Téléphone</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Téléphone
+            </label>
             <input
               type="tel"
               value={ownerForm.owner.phone}
-              onChange={(event) => handleOwnerChange(['owner', 'phone'], event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(["owner", "phone"], event.target.value)
+              }
               placeholder="+33 6 00 00 00 00"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
         </div>
-      )
+      ),
     },
     {
-      id: 'owner-documents',
-      title: 'Documents justificatifs',
+      id: "owner-documents",
+      title: "Documents justificatifs",
       description:
-        'Transmettez les pièces nécessaires pour vérifier votre identité et la propriété du chalet.',
-      icon: 'Folder',
+        "Transmettez les pièces nécessaires pour vérifier votre identité et la propriété du chalet.",
+      icon: "Folder",
       isComplete: ownerModuleStatus.documents,
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <FileDropzone
             label="Pièce d'identité"
             description="Téléchargez un document officiel (CNI, passeport...)."
-            onFilesChange={(files) => handleOwnerChange('identityDocument', files)}
+            onFilesChange={(files) =>
+              handleOwnerChange("identityDocument", files)
+            }
             accept="image/jpeg,image/png,application/pdf"
             helperText="2 fichiers max"
           />
@@ -705,26 +815,36 @@ export default function SignUpPage() {
           <FileDropzone
             label="Acte de propriété"
             description="Téléchargez un justificatif attestant votre statut de propriétaire."
-            onFilesChange={(files) => handleOwnerChange('ownershipProof', files)}
+            onFilesChange={(files) =>
+              handleOwnerChange("ownershipProof", files)
+            }
             accept="image/jpeg,image/png,application/pdf"
           />
         </div>
-      )
+      ),
     },
     {
-      id: 'owner-address',
-      title: 'Adresse principale du propriétaire',
-      description: 'Ces informations nous permettent de préparer vos documents fiscaux et administratifs.',
-      icon: 'Map',
+      id: "owner-address",
+      title: "Adresse principale du propriétaire",
+      description:
+        "Ces informations nous permettent de préparer vos documents fiscaux et administratifs.",
+      icon: "Map",
       isComplete: ownerModuleStatus.mainAddress,
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Numéro de rue</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Numéro de rue
+            </label>
             <input
               type="text"
               value={ownerForm.mainAddress.streetNumber}
-              onChange={(event) => handleOwnerChange('mainAddress.streetNumber', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange(
+                  "mainAddress.streetNumber",
+                  event.target.value
+                )
+              }
               placeholder="Ex. 18"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -735,7 +855,9 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.mainAddress.streetName}
-              onChange={(event) => handleOwnerChange('mainAddress.streetName', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("mainAddress.streetName", event.target.value)
+              }
               placeholder="Nom de la rue"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -745,7 +867,9 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.mainAddress.line2}
-              onChange={(event) => handleOwnerChange('mainAddress.line2', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("mainAddress.line2", event.target.value)
+              }
               placeholder="Complément d'adresse (facultatif)"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -755,7 +879,9 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.mainAddress.city}
-              onChange={(event) => handleOwnerChange('mainAddress.city', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("mainAddress.city", event.target.value)
+              }
               placeholder="Ville"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -765,7 +891,9 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.mainAddress.postalCode}
-              onChange={(event) => handleOwnerChange('mainAddress.postalCode', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("mainAddress.postalCode", event.target.value)
+              }
               placeholder="Code postal"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
@@ -775,22 +903,25 @@ export default function SignUpPage() {
             <input
               type="text"
               value={ownerForm.mainAddress.country}
-              onChange={(event) => handleOwnerChange('mainAddress.country', event.target.value)}
+              onChange={(event) =>
+                handleOwnerChange("mainAddress.country", event.target.value)
+              }
               placeholder="Pays"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const tenantModules = [
     {
-      id: 'tenant-profile',
-      title: 'Vos informations',
-      description: 'Dites-nous qui vous êtes et comment vous contacter pour recevoir des propositions personnalisées.',
-      icon: 'User',
+      id: "tenant-profile",
+      title: "Vos informations",
+      description:
+        "Dites-nous qui vous êtes et comment vous contacter pour recevoir des propositions personnalisées.",
+      icon: "User",
       isComplete: tenantModuleStatus.profile,
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -806,7 +937,9 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Prénom</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Prénom
+            </label>
             <input
               type="text"
               name="firstName"
@@ -817,7 +950,9 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Email</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Email
+            </label>
             <input
               type="email"
               name="email"
@@ -828,7 +963,9 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Téléphone</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Téléphone
+            </label>
             <input
               type="tel"
               name="phone"
@@ -839,18 +976,21 @@ export default function SignUpPage() {
             />
           </div>
         </div>
-      )
+      ),
     },
     {
-      id: 'tenant-project',
-      title: 'Votre projet saisonnier',
-      description: 'Partagez vos critères pour recevoir des propositions parfaitement adaptées.',
-      icon: 'Calendar',
+      id: "tenant-project",
+      title: "Votre projet saisonnier",
+      description:
+        "Partagez vos critères pour recevoir des propositions parfaitement adaptées.",
+      icon: "Calendar",
       isComplete: tenantModuleStatus.project,
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">Destination recherchée</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Destination recherchée
+            </label>
             <input
               type="text"
               name="preferredRegion"
@@ -862,7 +1002,9 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Période souhaitée</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Période souhaitée
+            </label>
             <input
               type="text"
               name="desiredDates"
@@ -874,7 +1016,9 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Nombre de voyageurs</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Nombre de voyageurs
+            </label>
             <input
               type="number"
               min="1"
@@ -887,7 +1031,9 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Budget estimé</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Budget estimé
+            </label>
             <input
               type="text"
               name="budget"
@@ -899,7 +1045,9 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">Précisions complémentaires</label>
+            <label className="text-sm font-medium text-neutral-800">
+              Précisions complémentaires
+            </label>
             <textarea
               name="requirements"
               value={tenantForm.requirements}
@@ -910,8 +1058,8 @@ export default function SignUpPage() {
             />
           </div>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const renderAccordion = (modules, activeModule, setActiveModule) => (
@@ -923,21 +1071,33 @@ export default function SignUpPage() {
           <div
             key={module.id}
             className={`rounded-3xl border transition ${
-              isOpen ? 'border-primary-200 bg-white/90 shadow-lg' : 'border-neutral-200 bg-white/70 hover:border-primary-100'
+              isOpen
+                ? "border-primary-200 bg-white/90 shadow-lg"
+                : "border-neutral-200 bg-white/70 hover:border-primary-100"
             }`}
           >
             <button
               type="button"
-              onClick={() => setActiveModule(isOpen ? '' : module.id)}
+              onClick={() => setActiveModule(isOpen ? "" : module.id)}
               className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
             >
               <div className="flex items-start gap-4">
-                <div className={`rounded-2xl p-3 ${isOpen ? 'bg-primary-500/10 text-primary-500' : 'bg-primary-50 text-primary-600'}`}>
+                <div
+                  className={`rounded-2xl p-3 ${
+                    isOpen
+                      ? "bg-primary-500/10 text-primary-500"
+                      : "bg-primary-50 text-primary-600"
+                  }`}
+                >
                   <ClientIcon name={module.icon} className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-neutral-900">{module.title}</h2>
-                  <p className="mt-1 text-sm text-neutral-500">{module.description}</p>
+                  <h2 className="text-[30px] uppercase font-thin text-neutral-900">
+                    {module.title}
+                  </h2>
+                  <p className="mt-1 text-[10px] uppercase text-neutral-500">
+                    {module.description}
+                  </p>
                 </div>
               </div>
 
@@ -948,24 +1108,29 @@ export default function SignUpPage() {
                     Complété
                   </span>
                 )}
-                <ClientIcon name={isOpen ? 'ChevronUp' : 'ChevronDown'} className="h-5 w-5 text-neutral-400" />
+                <ClientIcon
+                  name={isOpen ? "ChevronUp" : "ChevronDown"}
+                  className="h-5 w-5 text-neutral-400"
+                />
               </div>
             </button>
 
             {isOpen && (
               <div className="border-t border-neutral-100 px-6 pb-8 pt-6">
-                <div className="mb-6 flex justify-end">
+             
+                {module.content}
+                   <div className="mb-6 flex justify-end">
                   <button
                     type="button"
-                    onClick={() => setActiveModule('')}
+                    onClick={() => setActiveModule("")}
                     className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-primary-200 hover:text-primary-600"
                   >
                     <ClientIcon name="Minus" className="h-4 w-4" />
                     Masquer la section
                   </button>
                 </div>
-                {module.content}
               </div>
+
             )}
           </div>
         );
@@ -979,9 +1144,12 @@ export default function SignUpPage() {
 
       <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
         <div>
-          <h3 className="text-lg font-semibold text-primary-700">Validation de votre candidature</h3>
+          <h3 className="text-lg font-semibold text-primary-700">
+            Validation de votre candidature
+          </h3>
           <p className="mt-1 text-sm text-primary-600">
-            Notre équipe analysera les informations fournies et vous recontactera rapidement pour finaliser l'onboarding de votre chalet.
+            Notre équipe analysera les informations fournies et vous
+            recontactera rapidement pour finaliser l'onboarding de votre chalet.
           </p>
         </div>
 
@@ -989,11 +1157,13 @@ export default function SignUpPage() {
           type="submit"
           disabled={ownerSubmitting}
           className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
-            ownerSubmitting ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+            ownerSubmitting
+              ? "bg-primary-400 cursor-not-allowed"
+              : "bg-primary-600 hover:bg-primary-700"
           }`}
         >
           <ClientIcon name="Send" className="h-4 w-4" />
-          {ownerSubmitting ? 'Envoi en cours...' : 'Envoyer ma candidature'}
+          {ownerSubmitting ? "Envoi en cours..." : "Envoyer ma candidature"}
         </button>
       </div>
     </form>
@@ -1001,13 +1171,20 @@ export default function SignUpPage() {
 
   const renderTenantForm = () => (
     <form onSubmit={handleTenantSubmit} className="space-y-10">
-      {renderAccordion(tenantModules, tenantActiveModule, setTenantActiveModule)}
+      {renderAccordion(
+        tenantModules,
+        tenantActiveModule,
+        setTenantActiveModule
+      )}
 
       <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
         <div>
-          <h3 className="text-lg font-semibold text-primary-700">Recevoir ma sélection personnalisée</h3>
+          <h3 className="text-lg font-semibold text-primary-700">
+            Recevoir ma sélection personnalisée
+          </h3>
           <p className="mt-1 text-sm text-primary-600">
-            Nous vous enverrons une première sélection de chalets correspondant à vos critères dans les plus brefs délais.
+            Nous vous enverrons une première sélection de chalets correspondant
+            à vos critères dans les plus brefs délais.
           </p>
         </div>
 
@@ -1015,11 +1192,13 @@ export default function SignUpPage() {
           type="submit"
           disabled={tenantSubmitting}
           className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
-            tenantSubmitting ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+            tenantSubmitting
+              ? "bg-primary-400 cursor-not-allowed"
+              : "bg-primary-600 hover:bg-primary-700"
           }`}
         >
           <ClientIcon name="Send" className="h-4 w-4" />
-          {tenantSubmitting ? 'Envoi en cours...' : 'Envoyer ma demande'}
+          {tenantSubmitting ? "Envoi en cours..." : "Envoyer ma demande"}
         </button>
       </div>
     </form>
@@ -1039,24 +1218,36 @@ export default function SignUpPage() {
                   Rejoindre notre réseau
                 </span>
                 <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
-                  Inscription saisonnière : propriétaire ou locataire, choisissez votre parcours.
+                  Inscription saisonnière : propriétaire ou locataire,
+                  choisissez votre parcours.
                 </h1>
                 <p className="text-white/80">
-                  Nous accompagnons aussi bien les propriétaires qui souhaitent confier leur chalet que les voyageurs en quête d'un séjour saisonnier d'exception.
+                  Nous accompagnons aussi bien les propriétaires qui souhaitent
+                  confier leur chalet que les voyageurs en quête d'un séjour
+                  saisonnier d'exception.
                 </p>
               </div>
 
               <div className="grid gap-4 text-sm text-white/85">
                 <div className="flex items-center gap-3">
-                  <ClientIcon name="ShieldCheck" className="h-5 w-5 text-emerald-300" />
+                  <ClientIcon
+                    name="ShieldCheck"
+                    className="h-5 w-5 text-emerald-300"
+                  />
                   Process sécurisé et conforme KYC
                 </div>
                 <div className="flex items-center gap-3">
-                  <ClientIcon name="Users" className="h-5 w-5 text-emerald-300" />
+                  <ClientIcon
+                    name="Users"
+                    className="h-5 w-5 text-emerald-300"
+                  />
                   Accompagnement humain dédié
                 </div>
                 <div className="flex items-center gap-3">
-                  <ClientIcon name="Stars" className="h-5 w-5 text-emerald-300" />
+                  <ClientIcon
+                    name="Stars"
+                    className="h-5 w-5 text-emerald-300"
+                  />
                   Sélection premium de chalets
                 </div>
               </div>
@@ -1075,25 +1266,35 @@ export default function SignUpPage() {
                   onClick={() => {
                     setSelectedOption(option.id);
                     resetFeedback();
-                    if (option.id === 'owner') {
-                      setOwnerActiveModule('owner-chalet');
+                    if (option.id === "owner") {
+                      setOwnerActiveModule("owner-chalet");
                     } else {
-                      setTenantActiveModule('tenant-profile');
+                      setTenantActiveModule("tenant-profile");
                     }
                   }}
                   className={`text-left transition ${
                     isActive
-                      ? 'rounded-3xl border-2 border-primary-500 bg-white shadow-xl shadow-primary-500/10'
-                      : 'rounded-3xl border border-neutral-200 bg-white/70 hover:border-primary-200 hover:shadow-lg'
+                      ? "rounded-3xl border-2 border-primary-500 bg-white shadow-xl shadow-primary-500/10"
+                      : "rounded-3xl border border-neutral-200 bg-white/70 hover:border-primary-200 hover:shadow-lg"
                   }`}
                 >
                   <div className="flex items-start gap-4 p-6">
-                    <div className={`rounded-2xl p-4 ${isActive ? 'bg-primary-500/10 text-primary-50' : 'bg-primary-50 text-primary-600'}`}>
+                    <div
+                      className={`rounded-2xl p-4 ${
+                        isActive
+                          ? "bg-primary-500/10 text-primary-50"
+                          : "bg-primary-50 text-primary-600"
+                      }`}
+                    >
                       <ClientIcon name={option.icon} className="h-6 w-6" />
                     </div>
                     <div className="space-y-3">
-                      <h2 className="text-xl font-semibold text-neutral-900">{option.title}</h2>
-                      <p className="text-sm text-neutral-600">{option.description}</p>
+                      <h2 className="text-xl uppercase font-semibold text-neutral-900">
+                        {option.title}
+                      </h2>
+                      <p className="text-[10px] uppercase text-neutral-600">
+                        {option.description}
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -1103,7 +1304,9 @@ export default function SignUpPage() {
 
           <div className="mt-10 space-y-6">
             {renderFeedback()}
-            {selectedOption === 'owner' ? renderOwnerForm() : renderTenantForm()}
+            {selectedOption === "owner"
+              ? renderOwnerForm()
+              : renderTenantForm()}
           </div>
         </section>
       </main>
