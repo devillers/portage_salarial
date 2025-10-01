@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, useSession } from '../../components/providers/SessionProvider';
 import ClientIcon from '../../components/ClientIcon';
 
 const INITIAL_CREDENTIALS = {

@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, useSession } from '../../components/providers/SessionProvider';
 import ClientIcon from '../../components/ClientIcon';
 
 const INITIAL_FORM = {
@@ -119,7 +119,7 @@ export default function AuthPage() {
 
           <ul className="space-y-4">
             {[
-              'Connexion sécurisée avec NextAuth',
+              'Connexion sécurisée avec notre système interne',
               'Gestion centralisée du portfolio',
               'Support dédié 7j/7'
             ].map((feature) => (
