@@ -1158,24 +1158,22 @@ export default function SignUpPage() {
     <form onSubmit={handleOwnerSubmit} className="space-y-10">
       {renderAccordion(ownerModules, ownerActiveModule, setOwnerActiveModule)}
 
-      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-primary-700">
-            Validation de votre candidature
-          </h3>
-          <p className="mt-1 text-sm text-primary-600">
-            Notre équipe analysera les informations fournies et vous
-            recontactera rapidement pour finaliser l'onboarding de votre chalet.
-          </p>
-          {isOwnerFormValid && (
+      {isOwnerFormValid && (
+        <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-primary-700">
+              Validation de votre candidature
+            </h3>
+            <p className="mt-1 text-sm text-primary-600">
+              Notre équipe analysera les informations fournies et vous
+              recontactera rapidement pour finaliser l'onboarding de votre chalet.
+            </p>
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
               <ClientIcon name="CheckCircle2" className="h-4 w-4" />
               Complété
             </span>
-          )}
-        </div>
+          </div>
 
-        {isOwnerFormValid && (
           <button
             type="submit"
             disabled={ownerSubmitting}
@@ -1188,8 +1186,8 @@ export default function SignUpPage() {
             <ClientIcon name="Send" className="h-4 w-4" />
             {ownerSubmitting ? "Envoi en cours..." : "Envoyer ma candidature"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </form>
   );
 
@@ -1201,24 +1199,22 @@ export default function SignUpPage() {
         setTenantActiveModule
       )}
 
-      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-primary-700">
-            Recevoir ma sélection personnalisée
-          </h3>
-          <p className="mt-1 text-sm text-primary-600">
-            Nous vous enverrons une première sélection de chalets correspondant
-            à vos critères dans les plus brefs délais.
-          </p>
-          {isTenantFormValid && (
+      {isTenantFormValid && (
+        <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-primary-700">
+              Recevoir ma sélection personnalisée
+            </h3>
+            <p className="mt-1 text-sm text-primary-600">
+              Nous vous enverrons une première sélection de chalets correspondant
+              à vos critères dans les plus brefs délais.
+            </p>
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
               <ClientIcon name="CheckCircle2" className="h-4 w-4" />
               Complété
             </span>
-          )}
-        </div>
+          </div>
 
-        {isTenantFormValid && (
           <button
             type="submit"
             disabled={tenantSubmitting}
@@ -1231,8 +1227,8 @@ export default function SignUpPage() {
             <ClientIcon name="Send" className="h-4 w-4" />
             {tenantSubmitting ? "Envoi en cours..." : "Envoyer ma demande"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </form>
   );
 
