@@ -60,7 +60,7 @@ const OwnerApplicationSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const SeekerApplicationSchema = new mongoose.Schema(
+const TenantApplicationSchema = new mongoose.Schema(
   {
     firstName: { type: String, default: '' },
     lastName: { type: String, default: '' },
@@ -79,7 +79,7 @@ const SignupApplicationSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ['owner', 'seeker'],
+      enum: ['owner', 'tenant'],
       required: true
     },
     status: {
@@ -93,10 +93,10 @@ const SignupApplicationSchema = new mongoose.Schema(
         return this.type === 'owner';
       }
     },
-    seekerData: {
-      type: SeekerApplicationSchema,
+    tenantData: {
+      type: TenantApplicationSchema,
       required: function () {
-        return this.type === 'seeker';
+        return this.type === 'tenant';
       }
     }
   },

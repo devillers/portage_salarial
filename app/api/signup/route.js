@@ -39,7 +39,7 @@ const validateOwnerPayload = (data) => {
   return null;
 };
 
-const validateSeekerPayload = (data) => {
+const validateTenantPayload = (data) => {
   if (!data) return 'Les informations du locataire sont manquantes.';
 
   if (!isNonEmptyString(data.firstName) || !isNonEmptyString(data.lastName) || !isNonEmptyString(data.email)) {
@@ -53,11 +53,26 @@ const validateSeekerPayload = (data) => {
   return null;
 };
 
+const normalizeType = (type) => {
+  const normalized = (type || '').toString().trim().toLowerCase();
+
+  switch (normalized) {
+    case 'owner':
+      return 'owner';
+    case 'tenant':
+    case 'seeker':
+      return 'tenant';
+    default:
+      return '';
+  }
+};
+
 export async function POST(request) {
   try {
     const { type, data } = await request.json();
+    const normalizedType = normalizeType(type);
 
-    if (!['owner', 'seeker'].includes(type)) {
+    if (!normalizedType) {
       return NextResponse.json(
         {
           success: false,
@@ -67,7 +82,8 @@ export async function POST(request) {
       );
     }
 
-    const validationError = type === 'owner' ? validateOwnerPayload(data) : validateSeekerPayload(data);
+    const validationError =
+      normalizedType === 'owner' ? validateOwnerPayload(data) : validateTenantPayload(data);
     if (validationError) {
       return NextResponse.json(
         {
@@ -81,9 +97,9 @@ export async function POST(request) {
     await dbConnect();
 
     const application = await SignupApplication.create({
-      type,
-      ownerData: type === 'owner' ? data : undefined,
-      seekerData: type === 'seeker' ? data : undefined
+      type: normalizedType,
+      ownerData: normalizedType === 'owner' ? data : undefined,
+      tenantData: normalizedType === 'tenant' ? data : undefined
     });
 
     return NextResponse.json({
