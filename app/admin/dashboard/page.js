@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 import ClientIcon from '../../../components/ClientIcon';
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState(null);
+  const { data: session, status } = useSession();
   const [stats, setStats] = useState({
     chalets: 0,
     bookings: 0,
@@ -14,65 +15,39 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const apiToken = session?.user?.apiToken;
 
   useEffect(() => {
-    checkAuth();
-    fetchStats();
-  }, []);
-
-  const checkAuth = async () => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      router.push('/admin');
-      return;
+    if (status === 'unauthenticated') {
+      router.replace('/admin');
     }
+  }, [status, router]);
 
-    try {
-      const response = await fetch('/api/auth/verify', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setUser(data.user);
-      } else {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminUser');
-        router.push('/admin');
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      router.push('/admin');
+  useEffect(() => {
+    if (status === 'authenticated' && apiToken) {
+      fetchStats(apiToken);
     }
-  };
+  }, [status, apiToken]);
 
-  const fetchStats = async () => {
+  const fetchStats = async (token) => {
     try {
-      const token = localStorage.getItem('adminToken');
-      
-      // Fetch chalets count
-      const chaletsResponse = await fetch('/api/chalets', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const [chaletsResponse, bookingsResponse] = await Promise.all([
+        fetch('/api/chalets', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        }),
+        fetch('/api/bookings', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        })
+      ]);
+
       const chaletsData = await chaletsResponse.json();
-      
-      // Fetch bookings count
-      const bookingsResponse = await fetch('/api/bookings', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
       const bookingsData = await bookingsResponse.json();
 
       setStats({
         chalets: chaletsData.success ? chaletsData.data.length : 0,
         bookings: bookingsData.success ? bookingsData.data.length : 0,
-        revenue: 125000, // Mock data
-        occupancy: 78 // Mock data
+        revenue: 125000,
+        occupancy: 78
       });
     } catch (error) {
       console.error('Failed to fetch stats:', error);
@@ -82,10 +57,16 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
-    router.push('/admin');
+    signOut({ callbackUrl: '/admin' });
   };
+
+  const userName = useMemo(() => {
+    if (!session?.user) {
+      return '';
+    }
+
+    return session.user.name || session.user.email;
+  }, [session?.user]);
 
   const menuItems = [
     {
@@ -149,7 +130,7 @@ export default function AdminDashboard() {
     }
   ];
 
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-700"></div>
@@ -174,7 +155,7 @@ export default function AdminDashboard() {
 
             <div className="flex items-center space-x-4">
               <div className="text-sm text-neutral-600">
-                Bonjour, <span className="font-semibold">{user?.username}</span>
+                Bonjour, <span className="font-semibold">{userName}</span>
               </div>
               <button
                 onClick={handleLogout}
