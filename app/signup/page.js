@@ -1139,7 +1139,7 @@ export default function SignUpPage() {
                   <button
                     type="button"
                     onClick={() => setActiveModule("")}
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-primary-200 hover:text-primary-600"
+                    className="inline-flex mt-6 items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 transition hover:text-orange-200 "
                   >
                     <ClientIcon name="Minus" className="h-4 w-4" />
                     Masquer la section
