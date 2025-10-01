@@ -37,20 +37,12 @@ const createOwnerInitial = () => ({
     country: "",
   },
   owner: {
-
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    email: '',
-    phone: '',
-    password: ''
-
     firstName: "",
     lastName: "",
     birthDate: "",
     email: "",
     phone: "",
-
+    password: "",
   },
   identityDocument: [],
   ownershipProof: [],
@@ -70,14 +62,14 @@ const createTenantInitial = () => ({
 
 const OPTIONS = [
   {
-    id: "renting",
+    id: "owner",
     title: "J'ai un chalet à louer à la saison",
     description:
       "Partagez les informations essentielles de votre bien pour rejoindre notre réseau et bénéficier de notre accompagnement complet.",
     icon: "Home",
   },
   {
-    id: "looking",
+    id: "tenant",
     title: "Je recherche une location à la saison",
     description:
       "Indiquez vos critères afin que notre équipe vous propose les chalets correspondant parfaitement à vos attentes.",
@@ -127,7 +119,7 @@ const serializeTenantForm = (form) => ({
 });
 
 export default function SignUpPage() {
-  const [selectedOption, setSelectedOption] = useState("owner");
+  const [selectedOption, setSelectedOption] = useState(null);
   const [ownerForm, setOwnerForm] = useState(createOwnerInitial);
   const [tenantForm, setTenantForm] = useState(createTenantInitial);
   const [feedback, setFeedback] = useState({ type: "", message: "" });
@@ -157,12 +149,9 @@ export default function SignUpPage() {
       ownerForm.owner.firstName.trim() &&
       ownerForm.owner.lastName.trim() &&
       ownerForm.owner.birthDate &&
-
       ownerForm.owner.email.trim() &&
+      ownerForm.owner.phone.trim() &&
       ownerForm.owner.password.trim();
-    const hasDocuments = ownerForm.identityDocument.length > 0 && ownerForm.ownershipProof.length > 0;
-
-      ownerForm.owner.email.trim();
     const hasDocuments =
       ownerForm.identityDocument.length > 0 &&
       ownerForm.ownershipProof.length > 0;
@@ -1331,9 +1320,13 @@ export default function SignUpPage() {
 
           <div className="mt-10 space-y-6">
             {renderFeedback()}
-            {selectedOption === "owner"
-              ? renderOwnerForm()
-              : renderTenantForm()}
+            {!selectedOption && (
+              <div className="rounded-3xl border border-dashed border-neutral-200 bg-white/60 p-8 text-center text-sm text-neutral-600">
+                Sélectionnez le parcours qui correspond à votre situation pour commencer votre inscription.
+              </div>
+            )}
+            {selectedOption === "owner" && renderOwnerForm()}
+            {selectedOption === "tenant" && renderTenantForm()}
           </div>
         </section>
       </main>
