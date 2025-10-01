@@ -9,153 +9,79 @@ const ChaletSchema = new mongoose.Schema({
   },
   slug: {
     type: String,
-    required: true,
     unique: true,
     lowercase: true,
     trim: true
+    // ✅ slug n’est plus "required"
   },
   description: {
     type: String,
-    required: [true, 'Description is required'],
-    maxlength: [2000, 'Description cannot exceed 2000 characters']
+    required: true,
+    maxlength: 2000
   },
   shortDescription: {
     type: String,
-    required: [true, 'Short description is required'],
-    maxlength: [200, 'Short description cannot exceed 200 characters']
+    required: true,
+    maxlength: 200
   },
-  images: [{
-    url: {
-      type: String,
-      required: true
+  images: {
+    hero: {
+      url: { type: String, required: true },
+      alt: { type: String, required: true },
+      caption: String
     },
-    alt: {
-      type: String,
-      required: true
-    },
-    caption: String,
-    isHero: {
-      type: Boolean,
-      default: false
+    gallery: [
+      {
+        url: { type: String, required: true },
+        alt: { type: String, required: true },
+        caption: String
+      }
+    ]
+  },
+  amenities: [
+    {
+      name: { type: String, required: true },
+      icon: String,
+      description: String
     }
-  }],
-  amenities: [{
-    name: {
-      type: String,
-      required: true
-    },
-    icon: String,
-    description: String
-  }],
+  ],
   specifications: {
-    bedrooms: {
-      type: Number,
-      required: true,
-      min: [1, 'Must have at least 1 bedroom']
-    },
-    bathrooms: {
-      type: Number,
-      required: true,
-      min: [1, 'Must have at least 1 bathroom']
-    },
-    maxGuests: {
-      type: Number,
-      required: true,
-      min: [1, 'Must accommodate at least 1 guest']
-    },
-    area: {
-      type: Number, // in square meters
-      min: [10, 'Area must be at least 10 square meters']
-    },
-    floors: {
-      type: Number,
-      default: 1
-    }
+    bedrooms: { type: Number, required: true, min: 1 },
+    bathrooms: { type: Number, required: true, min: 1 },
+    maxGuests: { type: Number, required: true, min: 1 },
+    area: { type: Number, min: 10 },
+    floors: { type: Number, default: 1 }
   },
   location: {
-    address: {
-      type: String,
-      required: [true, 'Address is required']
-    },
-    city: {
-      type: String,
-      required: [true, 'City is required']
-    },
-    country: {
-      type: String,
-      required: [true, 'Country is required']
-    },
+    address: { type: String, required: true },
+    city: { type: String, required: true },
+    country: { type: String, required: true },
     postalCode: String,
     coordinates: {
-      latitude: {
-        type: Number,
-        required: [true, 'Latitude is required'],
-        min: [-90, 'Latitude must be between -90 and 90'],
-        max: [90, 'Latitude must be between -90 and 90']
-      },
-      longitude: {
-        type: Number,
-        required: [true, 'Longitude is required'],
-        min: [-180, 'Longitude must be between -180 and 180'],
-        max: [180, 'Longitude must be between -180 and 180']
-      }
+      latitude: { type: Number, required: true, min: -90, max: 90 },
+      longitude: { type: Number, required: true, min: -180, max: 180 }
     }
   },
   pricing: {
-    basePrice: {
-      type: Number,
-      required: [true, 'Base price is required'],
-      min: [0, 'Price cannot be negative']
-    },
-    currency: {
-      type: String,
-      default: 'EUR',
-      enum: ['EUR', 'USD', 'GBP']
-    },
-    cleaningFee: {
-      type: Number,
-      default: 0,
-      min: [0, 'Cleaning fee cannot be negative']
-    },
-    securityDeposit: {
-      type: Number,
-      default: 0,
-      min: [0, 'Security deposit cannot be negative']
-    },
-    taxRate: {
-      type: Number,
-      default: 0,
-      min: [0, 'Tax rate cannot be negative'],
-      max: [100, 'Tax rate cannot exceed 100%']
-    }
+    basePrice: { type: Number, required: true, min: 0 },
+    currency: { type: String, default: 'EUR', enum: ['EUR', 'USD', 'GBP'] },
+    cleaningFee: { type: Number, default: 0, min: 0 },
+    securityDeposit: { type: Number, default: 0, min: 0 },
+    taxRate: { type: Number, default: 0, min: 0, max: 100 }
   },
   availability: {
-    isActive: {
-      type: Boolean,
-      default: true
-    },
-    minimumStay: {
-      type: Number,
-      default: 1,
-      min: [1, 'Minimum stay must be at least 1 night']
-    },
-    maximumStay: {
-      type: Number,
-      default: 365
-    },
-    checkInTime: {
-      type: String,
-      default: '15:00'
-    },
-    checkOutTime: {
-      type: String,
-      default: '11:00'
-    },
-    blockedDates: [{
-      start: Date,
-      end: Date,
-      reason: String
-    }]
+    isActive: { type: Boolean, default: true },
+    minimumStay: { type: Number, default: 1, min: 1 },
+    maximumStay: { type: Number, default: 365 },
+    checkInTime: { type: String, default: '15:00' },
+    checkOutTime: { type: String, default: '11:00' },
+    blockedDates: [
+      {
+        start: Date,
+        end: Date,
+        reason: String
+      }
+    ]
   },
   contact: {
     phone: String,
@@ -167,20 +93,14 @@ const ChaletSchema = new mongoose.Schema({
     metaDescription: String,
     keywords: [String]
   },
-  featured: {
-    type: Boolean,
-    default: false
-  },
-  views: {
-    type: Number,
-    default: 0
-  }
+  featured: { type: Boolean, default: false },
+  views: { type: Number, default: 0 }
 }, {
   timestamps: true
 });
 
-// Create URL-friendly slug from title
-ChaletSchema.pre('save', function(next) {
+// ✅ Génération automatique du slug
+ChaletSchema.pre('save', function (next) {
   if (this.isModified('title') || this.isNew) {
     this.slug = this.title
       .toLowerCase()
@@ -191,26 +111,21 @@ ChaletSchema.pre('save', function(next) {
   next();
 });
 
-// Increment view count
-ChaletSchema.methods.incrementViews = function() {
+ChaletSchema.methods.incrementViews = function () {
   this.views += 1;
   return this.save();
 };
 
-// Get hero image
-ChaletSchema.methods.getHeroImage = function() {
-  const heroImage = this.images.find(img => img.isHero);
-  return heroImage || this.images[0];
+ChaletSchema.methods.getHeroImage = function () {
+  return this.images.hero;
 };
 
-// Check availability for date range
-ChaletSchema.methods.isAvailable = function(startDate, endDate) {
+ChaletSchema.methods.isAvailable = function (startDate, endDate) {
   if (!this.availability.isActive) return false;
-  
+
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
-  // Check against blocked dates
+
   return !this.availability.blockedDates.some(blocked => {
     const blockedStart = new Date(blocked.start);
     const blockedEnd = new Date(blocked.end);
