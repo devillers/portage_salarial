@@ -209,9 +209,52 @@ export default function PortfolioClient() {
   );
 }
 
+function getThumbnailImage(chalet) {
+  const images = chalet?.images;
+
+  if (!images) {
+    return null;
+  }
+
+  // Array of images coming directly from the API
+  if (Array.isArray(images)) {
+    return images.find((img) => img?.isHero) || images[0] || null;
+  }
+
+  // Mongoose schema stores images as { hero: {}, gallery: [] }
+  if (images.hero?.url) {
+    return images.hero;
+  }
+
+  if (Array.isArray(images.gallery) && images.gallery.length > 0) {
+    return images.gallery[0];
+  }
+
+  // Fallback in case another keyed object structure is received
+  const firstImageWithUrl = Object.values(images).find((value) => {
+    if (!value) return false;
+
+    if (Array.isArray(value)) {
+      return value.some((item) => item?.url);
+    }
+
+    return typeof value === 'object' && value.url;
+  });
+
+  if (!firstImageWithUrl) {
+    return null;
+  }
+
+  if (Array.isArray(firstImageWithUrl)) {
+    return firstImageWithUrl.find((item) => item?.url) || null;
+  }
+
+  return firstImageWithUrl;
+}
+
 function ChaletCard({ chalet }) {
-  const heroImage =
-    chalet?.images?.find((img) => img?.isHero) || chalet?.images?.[0];
+  const heroImage = getThumbnailImage(chalet);
+  const heroAlt = heroImage?.alt || chalet?.title || 'Chalet';
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group">
@@ -220,8 +263,9 @@ function ChaletCard({ chalet }) {
         {heroImage?.url ? (
           <Image
             src={heroImage.url}
-            alt={heroImage?.alt || chalet?.title || 'Chalet'}
+            alt={heroAlt}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
