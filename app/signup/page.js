@@ -6,7 +6,7 @@ import Footer from '../../components/layout/Footer';
 import ClientIcon from '../../components/ClientIcon';
 import FileDropzone from '../../components/forms/FileDropzone';
 
-const OWNER_INITIAL = {
+const createOwnerInitial = () => ({
   title: '',
   slug: '',
   shortDescription: '',
@@ -21,14 +21,16 @@ const OWNER_INITIAL = {
     }
   ],
   propertyAddress: {
-    line1: '',
+    streetNumber: '',
+    streetName: '',
     line2: '',
     city: '',
     postalCode: '',
     country: ''
   },
   mainAddress: {
-    line1: '',
+    streetNumber: '',
+    streetName: '',
     line2: '',
     city: '',
     postalCode: '',
@@ -43,9 +45,9 @@ const OWNER_INITIAL = {
   },
   identityDocument: [],
   ownershipProof: []
-};
+});
 
-const SEEKER_INITIAL = {
+const createSeekerInitial = () => ({
   firstName: '',
   lastName: '',
   email: '',
@@ -55,7 +57,7 @@ const SEEKER_INITIAL = {
   guests: '',
   budget: '',
   requirements: ''
-};
+});
 
 const OPTIONS = [
   {
@@ -74,34 +76,110 @@ const OPTIONS = [
   }
 ];
 
+const serializeFiles = (files) =>
+  Array.isArray(files)
+    ? files.map((file) => ({
+        name: file?.name ?? '',
+        size: file?.size ?? 0,
+        type: file?.type ?? '',
+        lastModified: file?.lastModified ?? null
+      }))
+    : [];
+
+const serializeOwnerForm = (form) => ({
+  title: form.title,
+  slug: form.slug,
+  shortDescription: form.shortDescription,
+  longDescription: form.longDescription,
+  heroPhoto: serializeFiles(form.heroPhoto),
+  gallery: serializeFiles(form.gallery),
+  rooms: form.rooms.map((room) => ({
+    name: room.name,
+    description: room.description,
+    photos: serializeFiles(room.photos)
+  })),
+  propertyAddress: form.propertyAddress,
+  mainAddress: form.mainAddress,
+  owner: form.owner,
+  identityDocument: serializeFiles(form.identityDocument),
+  ownershipProof: serializeFiles(form.ownershipProof)
+});
+
+const serializeSeekerForm = (form) => ({
+  firstName: form.firstName,
+  lastName: form.lastName,
+  email: form.email,
+  phone: form.phone,
+  preferredRegion: form.preferredRegion,
+  desiredDates: form.desiredDates,
+  guests: form.guests,
+  budget: form.budget,
+  requirements: form.requirements
+});
+
 export default function SignUpPage() {
   const [selectedOption, setSelectedOption] = useState('owner');
-  const [ownerForm, setOwnerForm] = useState(OWNER_INITIAL);
-  const [seekerForm, setSeekerForm] = useState(SEEKER_INITIAL);
+  const [ownerForm, setOwnerForm] = useState(createOwnerInitial);
+  const [seekerForm, setSeekerForm] = useState(createSeekerInitial);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const [ownerActiveModule, setOwnerActiveModule] = useState('owner-chalet');
+  const [seekerActiveModule, setSeekerActiveModule] = useState('seeker-profile');
+  const [ownerSubmitting, setOwnerSubmitting] = useState(false);
+  const [seekerSubmitting, setSeekerSubmitting] = useState(false);
 
-  const isOwnerFormValid = useMemo(() => {
-    const hasBaseInfo = ownerForm.title.trim() && ownerForm.shortDescription.trim() && ownerForm.longDescription.trim();
-    const hasAddresses =
-      ownerForm.propertyAddress.line1.trim() &&
+  const ownerModuleStatus = useMemo(() => {
+    const hasBaseInfo =
+      ownerForm.title.trim() && ownerForm.shortDescription.trim() && ownerForm.longDescription.trim();
+    const hasRooms =
+      ownerForm.rooms.length > 0 &&
+      ownerForm.rooms.every((room) => room.name.trim() && room.description.trim());
+    const hasPropertyAddress =
+      ownerForm.propertyAddress.streetNumber.trim() &&
+      ownerForm.propertyAddress.streetName.trim() &&
       ownerForm.propertyAddress.city.trim() &&
-      ownerForm.propertyAddress.country.trim() &&
-      ownerForm.mainAddress.line1.trim() &&
+      ownerForm.propertyAddress.country.trim();
+    const hasOwnerInfo =
+      ownerForm.owner.firstName.trim() &&
+      ownerForm.owner.lastName.trim() &&
+      ownerForm.owner.birthDate &&
+      ownerForm.owner.email.trim();
+    const hasDocuments = ownerForm.identityDocument.length > 0 && ownerForm.ownershipProof.length > 0;
+    const hasMainAddress =
+      ownerForm.mainAddress.streetNumber.trim() &&
+      ownerForm.mainAddress.streetName.trim() &&
       ownerForm.mainAddress.city.trim() &&
       ownerForm.mainAddress.country.trim();
-    const hasOwnerInfo = ownerForm.owner.firstName.trim() && ownerForm.owner.lastName.trim() && ownerForm.owner.birthDate;
 
-    return hasBaseInfo && hasAddresses && hasOwnerInfo;
+    return {
+      chalet: Boolean(hasBaseInfo),
+      rooms: Boolean(hasRooms),
+      location: Boolean(hasPropertyAddress),
+      owner: Boolean(hasOwnerInfo),
+      documents: Boolean(hasDocuments),
+      mainAddress: Boolean(hasMainAddress)
+    };
   }, [ownerForm]);
 
-  const isSeekerFormValid = useMemo(() => {
-    return (
-      seekerForm.firstName.trim() &&
-      seekerForm.lastName.trim() &&
-      seekerForm.email.trim() &&
-      seekerForm.preferredRegion.trim()
-    );
+  const seekerModuleStatus = useMemo(() => {
+    const hasProfile =
+      seekerForm.firstName.trim() && seekerForm.lastName.trim() && seekerForm.email.trim();
+    const hasProject = seekerForm.preferredRegion.trim();
+
+    return {
+      profile: Boolean(hasProfile),
+      project: Boolean(hasProject)
+    };
   }, [seekerForm]);
+
+  const isOwnerFormValid = useMemo(
+    () => Object.values(ownerModuleStatus).every(Boolean),
+    [ownerModuleStatus]
+  );
+
+  const isSeekerFormValid = useMemo(
+    () => seekerModuleStatus.profile && seekerModuleStatus.project,
+    [seekerModuleStatus]
+  );
 
   const resetFeedback = () => setFeedback({ type: '', message: '' });
 
@@ -136,6 +214,7 @@ export default function SignUpPage() {
   };
 
   const handleRoomChange = (index, key, value) => {
+    resetFeedback();
     setOwnerForm((prev) => {
       const updated = structuredClone(prev);
       updated.rooms[index][key] = value;
@@ -144,6 +223,7 @@ export default function SignUpPage() {
   };
 
   const handleRoomPhotosChange = (index, files) => {
+    resetFeedback();
     setOwnerForm((prev) => {
       const updated = structuredClone(prev);
       updated.rooms[index].photos = files;
@@ -152,6 +232,7 @@ export default function SignUpPage() {
   };
 
   const addRoom = () => {
+    resetFeedback();
     setOwnerForm((prev) => ({
       ...prev,
       rooms: [
@@ -166,13 +247,14 @@ export default function SignUpPage() {
   };
 
   const removeRoom = (index) => {
+    resetFeedback();
     setOwnerForm((prev) => ({
       ...prev,
       rooms: prev.rooms.filter((_, i) => i !== index)
     }));
   };
 
-  const handleOwnerSubmit = (event) => {
+  const handleOwnerSubmit = async (event) => {
     event.preventDefault();
 
     if (!isOwnerFormValid) {
@@ -180,12 +262,41 @@ export default function SignUpPage() {
       return;
     }
 
-    setFeedback({
-      type: 'success',
-      message:
-        'Votre demande a bien été enregistrée. Notre équipe vous contactera sous 48h pour finaliser la mise en location de votre chalet.'
-    });
-    setOwnerForm(OWNER_INITIAL);
+    try {
+      setOwnerSubmitting(true);
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'owner',
+          data: serializeOwnerForm(ownerForm)
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Une erreur est survenue lors de l'enregistrement de votre candidature.");
+      }
+
+      setFeedback({
+        type: 'success',
+        message:
+          'Votre demande a bien été enregistrée. Notre équipe vous contactera sous 48h pour finaliser la mise en location de votre chalet.'
+      });
+      setOwnerForm(createOwnerInitial());
+      setOwnerActiveModule('owner-chalet');
+    } catch (error) {
+      console.error('Owner signup error:', error);
+      setFeedback({
+        type: 'error',
+        message: error.message || "Impossible d'enregistrer votre candidature pour le moment. Merci de réessayer ultérieurement."
+      });
+    } finally {
+      setOwnerSubmitting(false);
+    }
   };
 
   const handleSeekerChange = (event) => {
@@ -197,7 +308,7 @@ export default function SignUpPage() {
     }));
   };
 
-  const handleSeekerSubmit = (event) => {
+  const handleSeekerSubmit = async (event) => {
     event.preventDefault();
 
     if (!isSeekerFormValid) {
@@ -205,11 +316,40 @@ export default function SignUpPage() {
       return;
     }
 
-    setFeedback({
-      type: 'success',
-      message: 'Merci pour votre demande. Nous reviendrons vers vous avec une sélection personnalisée de chalets saisonniers.'
-    });
-    setSeekerForm(SEEKER_INITIAL);
+    try {
+      setSeekerSubmitting(true);
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'seeker',
+          data: serializeSeekerForm(seekerForm)
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Une erreur est survenue lors de l'enregistrement de votre demande.");
+      }
+
+      setFeedback({
+        type: 'success',
+        message: 'Merci pour votre demande. Nous reviendrons vers vous avec une sélection personnalisée de chalets saisonniers.'
+      });
+      setSeekerForm(createSeekerInitial());
+      setSeekerActiveModule('seeker-profile');
+    } catch (error) {
+      console.error('Seeker signup error:', error);
+      setFeedback({
+        type: 'error',
+        message: error.message || "Impossible d'enregistrer votre demande pour le moment. Merci de réessayer ultérieurement."
+      });
+    } finally {
+      setSeekerSubmitting(false);
+    }
   };
 
   const renderFeedback = () => {
@@ -230,19 +370,15 @@ export default function SignUpPage() {
     );
   };
 
-  const renderOwnerForm = () => (
-    <form onSubmit={handleOwnerSubmit} className="space-y-10">
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-neutral-900">Informations sur le chalet</h2>
-            <p className="mt-2 text-sm text-neutral-500">
-              Présentez votre bien en détail pour que nous puissions créer une fiche attrayante et complète.
-            </p>
-          </div>
-          <ClientIcon name="Home" className="h-8 w-8 text-primary-500" />
-        </div>
-
+  const ownerModules = [
+    {
+      id: 'owner-chalet',
+      title: 'Informations sur le chalet',
+      description:
+        'Présentez votre bien en détail pour que nous puissions créer une fiche attrayante et complète.',
+      icon: 'Home',
+      isComplete: ownerModuleStatus.chalet,
+      content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm font-medium text-neutral-800">Titre du chalet</label>
@@ -286,9 +422,7 @@ export default function SignUpPage() {
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
-        </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <FileDropzone
             label="Photo principale"
             description="Sélectionnez la photo phare qui met le mieux en valeur votre chalet."
@@ -306,19 +440,15 @@ export default function SignUpPage() {
             helperText="Jusqu'à 12 fichiers"
           />
         </div>
-      </section>
-
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-neutral-900">Pièces et ambiances</h2>
-            <p className="mt-2 text-sm text-neutral-500">
-              Décrivez chaque pièce clé avec des visuels dédiés pour aider nos visiteurs à se projeter.
-            </p>
-          </div>
-          <ClientIcon name="Layout" className="h-8 w-8 text-primary-500" />
-        </div>
-
+      )
+    },
+    {
+      id: 'owner-rooms',
+      title: 'Pièces et ambiances',
+      description: 'Décrivez chaque pièce clé avec des visuels dédiés pour aider nos visiteurs à se projeter.',
+      icon: 'Layout',
+      isComplete: ownerModuleStatus.rooms,
+      content: (
         <div className="mt-8 space-y-8">
           {ownerForm.rooms.map((room, index) => (
             <div key={index} className="rounded-2xl border border-neutral-200 bg-white/60 p-6">
@@ -379,27 +509,34 @@ export default function SignUpPage() {
             Ajouter une pièce
           </button>
         </div>
-      </section>
-
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-neutral-900">Localisation du bien</h2>
-            <p className="mt-2 text-sm text-neutral-500">
-              Précisez l'adresse du chalet afin que nous puissions vérifier sa zone de chalandise.
-            </p>
-          </div>
-          <ClientIcon name="MapPin" className="h-8 w-8 text-primary-500" />
-        </div>
-
+      )
+    },
+    {
+      id: 'owner-location',
+      title: 'Localisation du bien',
+      description: "Précisez l'adresse du chalet afin que nous puissions vérifier sa zone de chalandise.",
+      icon: 'MapPin',
+      isComplete: ownerModuleStatus.location,
+      content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">Adresse du bien</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-neutral-800">Numéro de rue</label>
             <input
               type="text"
-              value={ownerForm.propertyAddress.line1}
-              onChange={(event) => handleOwnerChange('propertyAddress.line1', event.target.value)}
-              placeholder="Numéro et rue"
+              value={ownerForm.propertyAddress.streetNumber}
+              onChange={(event) => handleOwnerChange('propertyAddress.streetNumber', event.target.value)}
+              placeholder="Ex. 12"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-neutral-800">Rue</label>
+            <input
+              type="text"
+              value={ownerForm.propertyAddress.streetName}
+              onChange={(event) => handleOwnerChange('propertyAddress.streetName', event.target.value)}
+              placeholder="Nom de la rue"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
@@ -409,7 +546,7 @@ export default function SignUpPage() {
               type="text"
               value={ownerForm.propertyAddress.line2}
               onChange={(event) => handleOwnerChange('propertyAddress.line2', event.target.value)}
-              placeholder="Complément (facultatif)"
+              placeholder="Complément d'adresse (facultatif)"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
@@ -444,19 +581,16 @@ export default function SignUpPage() {
             />
           </div>
         </div>
-      </section>
-
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-neutral-900">Informations du propriétaire</h2>
-            <p className="mt-2 text-sm text-neutral-500">
-              Nous collectons ces informations pour sécuriser la mise en location et préparer le contrat de mandat.
-            </p>
-          </div>
-          <ClientIcon name="User" className="h-8 w-8 text-primary-500" />
-        </div>
-
+      )
+    },
+    {
+      id: 'owner-personal',
+      title: 'Informations du propriétaire',
+      description:
+        'Nous collectons ces informations pour sécuriser la mise en location et préparer le contrat de mandat.',
+      icon: 'User',
+      isComplete: ownerModuleStatus.owner,
+      content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm font-medium text-neutral-800">Nom</label>
@@ -512,11 +646,20 @@ export default function SignUpPage() {
             />
           </div>
         </div>
-
+      )
+    },
+    {
+      id: 'owner-documents',
+      title: 'Documents justificatifs',
+      description:
+        'Transmettez les pièces nécessaires pour vérifier votre identité et la propriété du chalet.',
+      icon: 'Folder',
+      isComplete: ownerModuleStatus.documents,
+      content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <FileDropzone
             label="Pièce d'identité"
-            description="Joignez une photo de votre CNI ou passeport (recto/verso)."
+            description="Téléchargez un document officiel (CNI, passeport...)."
             onFilesChange={(files) => handleOwnerChange('identityDocument', files)}
             accept="image/jpeg,image/png,application/pdf"
             helperText="2 fichiers max"
@@ -529,27 +672,34 @@ export default function SignUpPage() {
             accept="image/jpeg,image/png,application/pdf"
           />
         </div>
-      </section>
-
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-neutral-900">Adresse principale du propriétaire</h2>
-            <p className="mt-2 text-sm text-neutral-500">
-              Ces informations nous permettent de préparer vos documents fiscaux et administratifs.
-            </p>
-          </div>
-          <ClientIcon name="Map" className="h-8 w-8 text-primary-500" />
-        </div>
-
+      )
+    },
+    {
+      id: 'owner-address',
+      title: 'Adresse principale du propriétaire',
+      description: 'Ces informations nous permettent de préparer vos documents fiscaux et administratifs.',
+      icon: 'Map',
+      isComplete: ownerModuleStatus.mainAddress,
+      content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">Adresse principale</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-neutral-800">Numéro de rue</label>
             <input
               type="text"
-              value={ownerForm.mainAddress.line1}
-              onChange={(event) => handleOwnerChange('mainAddress.line1', event.target.value)}
-              placeholder="Numéro et rue"
+              value={ownerForm.mainAddress.streetNumber}
+              onChange={(event) => handleOwnerChange('mainAddress.streetNumber', event.target.value)}
+              placeholder="Ex. 18"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-neutral-800">Rue</label>
+            <input
+              type="text"
+              value={ownerForm.mainAddress.streetName}
+              onChange={(event) => handleOwnerChange('mainAddress.streetName', event.target.value)}
+              placeholder="Nom de la rue"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
@@ -559,7 +709,7 @@ export default function SignUpPage() {
               type="text"
               value={ownerForm.mainAddress.line2}
               onChange={(event) => handleOwnerChange('mainAddress.line2', event.target.value)}
-              placeholder="Complément (facultatif)"
+              placeholder="Complément d'adresse (facultatif)"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
@@ -594,40 +744,18 @@ export default function SignUpPage() {
             />
           </div>
         </div>
-      </section>
+      )
+    }
+  ];
 
-      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
-        <div>
-          <h3 className="text-lg font-semibold text-primary-700">Validation de votre candidature</h3>
-          <p className="mt-1 text-sm text-primary-600">
-            Notre équipe analysera les informations fournies et vous recontactera rapidement pour finaliser l'onboarding de votre chalet.
-          </p>
-        </div>
-
-        <button
-          type="submit"
-          className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-primary-700"
-        >
-          <ClientIcon name="Send" className="h-4 w-4" />
-          Envoyer ma candidature
-        </button>
-      </div>
-    </form>
-  );
-
-  const renderSeekerForm = () => (
-    <form onSubmit={handleSeekerSubmit} className="space-y-10">
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-neutral-900">Vos informations</h2>
-            <p className="mt-2 text-sm text-neutral-500">
-              Dites-nous qui vous êtes et comment vous contacter pour recevoir des propositions personnalisées.
-            </p>
-          </div>
-          <ClientIcon name="User" className="h-8 w-8 text-primary-500" />
-        </div>
-
+  const seekerModules = [
+    {
+      id: 'seeker-profile',
+      title: 'Vos informations',
+      description: 'Dites-nous qui vous êtes et comment vous contacter pour recevoir des propositions personnalisées.',
+      icon: 'User',
+      isComplete: seekerModuleStatus.profile,
+      content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm font-medium text-neutral-800">Nom</label>
@@ -674,19 +802,15 @@ export default function SignUpPage() {
             />
           </div>
         </div>
-      </section>
-
-      <section className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-semibold text-neutral-900">Votre projet de séjour</h2>
-            <p className="mt-2 text-sm text-neutral-500">
-              Partagez vos critères pour que nous sélectionnions les chalets les plus adaptés à vos attentes.
-            </p>
-          </div>
-          <ClientIcon name="Calendar" className="h-8 w-8 text-primary-500" />
-        </div>
-
+      )
+    },
+    {
+      id: 'seeker-project',
+      title: 'Votre projet saisonnier',
+      description: 'Partagez vos critères pour recevoir des propositions parfaitement adaptées.',
+      icon: 'Calendar',
+      isComplete: seekerModuleStatus.project,
+      content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium text-neutral-800">Destination recherchée</label>
@@ -749,7 +873,84 @@ export default function SignUpPage() {
             />
           </div>
         </div>
-      </section>
+      )
+    }
+  ];
+
+  const renderAccordion = (modules, activeModule, setActiveModule) => (
+    <div className="space-y-4">
+      {modules.map((module) => {
+        const isOpen = activeModule === module.id;
+
+        return (
+          <div
+            key={module.id}
+            className={`rounded-3xl border transition ${
+              isOpen ? 'border-primary-200 bg-white/90 shadow-lg' : 'border-neutral-200 bg-white/70 hover:border-primary-100'
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveModule(isOpen ? '' : module.id)}
+              className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+            >
+              <div className="flex items-start gap-4">
+                <div className={`rounded-2xl p-3 ${isOpen ? 'bg-primary-500/10 text-primary-500' : 'bg-primary-50 text-primary-600'}`}>
+                  <ClientIcon name={module.icon} className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-neutral-900">{module.title}</h2>
+                  <p className="mt-1 text-sm text-neutral-500">{module.description}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {module.isComplete && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
+                    <ClientIcon name="CheckCircle2" className="h-4 w-4" />
+                    Complété
+                  </span>
+                )}
+                <ClientIcon name={isOpen ? 'ChevronUp' : 'ChevronDown'} className="h-5 w-5 text-neutral-400" />
+              </div>
+            </button>
+
+            {isOpen && <div className="border-t border-neutral-100 px-6 pb-8 pt-6">{module.content}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const renderOwnerForm = () => (
+    <form onSubmit={handleOwnerSubmit} className="space-y-10">
+      {renderAccordion(ownerModules, ownerActiveModule, setOwnerActiveModule)}
+
+      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
+        <div>
+          <h3 className="text-lg font-semibold text-primary-700">Validation de votre candidature</h3>
+          <p className="mt-1 text-sm text-primary-600">
+            Notre équipe analysera les informations fournies et vous recontactera rapidement pour finaliser l'onboarding de votre chalet.
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={ownerSubmitting}
+          className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
+            ownerSubmitting ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+          }`}
+        >
+          <ClientIcon name="Send" className="h-4 w-4" />
+          {ownerSubmitting ? 'Envoi en cours...' : 'Envoyer ma candidature'}
+        </button>
+      </div>
+    </form>
+  );
+
+  const renderSeekerForm = () => (
+    <form onSubmit={handleSeekerSubmit} className="space-y-10">
+      {renderAccordion(seekerModules, seekerActiveModule, setSeekerActiveModule)}
 
       <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
         <div>
@@ -761,10 +962,13 @@ export default function SignUpPage() {
 
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-primary-700"
+          disabled={seekerSubmitting}
+          className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
+            seekerSubmitting ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+          }`}
         >
           <ClientIcon name="Send" className="h-4 w-4" />
-          Envoyer ma demande
+          {seekerSubmitting ? 'Envoi en cours...' : 'Envoyer ma demande'}
         </button>
       </div>
     </form>
@@ -820,6 +1024,11 @@ export default function SignUpPage() {
                   onClick={() => {
                     setSelectedOption(option.id);
                     resetFeedback();
+                    if (option.id === 'owner') {
+                      setOwnerActiveModule('owner-chalet');
+                    } else {
+                      setSeekerActiveModule('seeker-profile');
+                    }
                   }}
                   className={`text-left transition ${
                     isActive
