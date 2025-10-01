@@ -41,7 +41,8 @@ const createOwnerInitial = () => ({
     lastName: '',
     birthDate: '',
     email: '',
-    phone: ''
+    phone: '',
+    password: ''
   },
   identityDocument: [],
   ownershipProof: []
@@ -143,7 +144,8 @@ export default function SignUpPage() {
       ownerForm.owner.firstName.trim() &&
       ownerForm.owner.lastName.trim() &&
       ownerForm.owner.birthDate &&
-      ownerForm.owner.email.trim();
+      ownerForm.owner.email.trim() &&
+      ownerForm.owner.password.trim();
     const hasDocuments = ownerForm.identityDocument.length > 0 && ownerForm.ownershipProof.length > 0;
     const hasMainAddress =
       ownerForm.mainAddress.streetNumber.trim() &&
@@ -681,6 +683,18 @@ export default function SignUpPage() {
               placeholder="+33 6 00 00 00 00"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-sm font-medium text-neutral-800">Mot de passe</label>
+            <input
+              type="password"
+              value={ownerForm.owner.password}
+              onChange={(event) => handleOwnerChange(['owner', 'password'], event.target.value)}
+              placeholder="Choisissez un mot de passe sécurisé"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+            <p className="text-xs text-neutral-500">Il vous permettra d'accéder à votre espace personnel.</p>
           </div>
         </div>
       )

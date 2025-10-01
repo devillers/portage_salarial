@@ -37,7 +37,8 @@ const OwnerDetailsSchema = new mongoose.Schema(
     lastName: { type: String, default: '' },
     birthDate: { type: String, default: '' },
     email: { type: String, default: '' },
-    phone: { type: String, default: '' }
+    phone: { type: String, default: '' },
+    password: { type: String, default: '' }
   },
   { _id: false }
 );
