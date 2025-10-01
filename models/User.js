@@ -29,6 +29,12 @@ const UserSchema = new mongoose.Schema({
     enum: ['admin', 'super-admin', 'manager'],
     default: 'admin'
   },
+  chalets: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Chalet'
+    }
+  ],
   isActive: {
     type: Boolean,
     default: true

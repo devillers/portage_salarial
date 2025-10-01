@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const ChaletSchema = new mongoose.Schema({
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    index: true,
+    required: false
+  },
   title: {
     type: String,
     required: [true, 'Chalet title is required'],
