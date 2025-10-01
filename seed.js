@@ -67,15 +67,44 @@ function buildMarkdown(sectionName, index) {
 }
 
 async function ensureSeedUser() {
-  const email = 'demo.admin@chalet.local';
-  let user = await User.findOne({ email });
+  const email = 'admin@admin.com';
+  let user = await User.findOne({ email }).select('+password');
 
   if (!user) {
     user = await User.create({
-      username: 'demo-admin',
+      username: 'admin',
       email,
-      password: 'DemoAdmin123!'
+      password: 'admin123',
+      role: 'admin'
     });
+  } else {
+    let shouldPersist = false;
+
+    if (user.username !== 'admin') {
+      user.username = 'admin';
+      shouldPersist = true;
+    }
+
+    if (user.role !== 'admin') {
+      user.role = 'admin';
+      shouldPersist = true;
+    }
+
+    const hasValidPassword = await user.comparePassword('admin123');
+
+    if (!hasValidPassword) {
+      user.password = 'admin123';
+      shouldPersist = true;
+    }
+
+    if (!user.isActive) {
+      user.isActive = true;
+      shouldPersist = true;
+    }
+
+    if (shouldPersist) {
+      await user.save();
+    }
   }
 
   return user;
