@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut, useSession } from '../../../components/providers/SessionProvider';
 import ClientIcon from '../../../components/ClientIcon';
 
 export default function AdminDashboard() {
