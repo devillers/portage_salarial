@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useAuth from '../../../hooks/useAuth';
+import Link from 'next/link';
+import { signOut, useSession } from 'next-auth/react';
 import ClientIcon from '../../../components/ClientIcon';
 
 export default function AdminDashboard() {
-  const { status, user, token, logout } = useAuth();
+  const { data: session, status } = useSession();
   const [stats, setStats] = useState({
     chalets: 0,
     bookings: 0,
@@ -15,57 +16,50 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const apiToken = token;
+  const apiToken = session?.user?.apiToken;
 
+  // Redirige si non authentifié
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.replace('/admin');
     }
   }, [status, router]);
 
+  // Charge les stats quand la session est prête
   useEffect(() => {
-    let isMounted = true;
+    if (status !== 'authenticated') return;
+
+    const controller = new AbortController();
 
     const loadStats = async () => {
-      if (status !== 'authenticated' || !apiToken) {
-        if (status !== 'loading' && isMounted) {
-          setLoading(false);
-        }
+      if (!apiToken) {
+        setLoading(false);
         return;
       }
-
       setLoading(true);
-
       try {
-        await fetchStats(apiToken);
+        await fetchStats(apiToken, controller.signal);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
     loadStats();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => controller.abort();
   }, [status, apiToken]);
 
-  const fetchStats = async (token) => {
+  const fetchStats = async (token, signal) => {
     try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
       const [chaletsResponse, bookingsResponse] = await Promise.all([
-        fetch('/api/chalets', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined
-        }),
-        fetch('/api/bookings', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined
-        })
+        fetch('/api/chalets', { headers, signal }),
+        fetch('/api/bookings', { headers, signal })
       ]);
 
+      // Gestion 401 -> déconnexion propre
       if (chaletsResponse.status === 401 || bookingsResponse.status === 401) {
-        logout();
-        router.replace('/admin');
+        signOut({ callbackUrl: '/admin' });
         return;
       }
 
@@ -73,28 +67,27 @@ export default function AdminDashboard() {
       const bookingsData = await bookingsResponse.json();
 
       setStats({
-        chalets: chaletsData.success ? chaletsData.data.length : 0,
-        bookings: bookingsData.success ? bookingsData.data.length : 0,
+        chalets: chaletsData?.success ? chaletsData.data.length : 0,
+        bookings: bookingsData?.success ? bookingsData.data.length : 0,
+        // TODO: remplacez par des valeurs réelles depuis votre API
         revenue: 125000,
         occupancy: 78
       });
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
+      if (error?.name !== 'AbortError') {
+        console.error('Failed to fetch stats:', error);
+      }
     }
   };
 
   const handleLogout = () => {
-    logout();
-    router.replace('/admin');
+    signOut({ callbackUrl: '/admin' });
   };
 
   const userName = useMemo(() => {
-    if (!user) {
-      return '';
-    }
-
-    return user.username || user.email;
-  }, [user]);
+    if (!session?.user) return '';
+    return session.user.name || session.user.email || '';
+  }, [session?.user]);
 
   const menuItems = [
     {
@@ -143,15 +136,15 @@ export default function AdminDashboard() {
       bgColor: 'bg-green-50'
     },
     {
-      title: 'Chiffre d\'Affaires',
-      value: `€${stats.revenue.toLocaleString()}`,
+      title: "Chiffre d'Affaires",
+      value: `€${Number(stats.revenue || 0).toLocaleString()}`,
       icon: 'TrendingUp',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50'
     },
     {
-      title: 'Taux d\'Occupation',
-      value: `${stats.occupancy}%`,
+      title: "Taux d'Occupation",
+      value: `${Number(stats.occupancy || 0)}%`,
       icon: 'BarChart3',
       color: 'text-orange-600',
       bgColor: 'bg-orange-50'
@@ -161,7 +154,7 @@ export default function AdminDashboard() {
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-700"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-300 border-t-primary-700" />
       </div>
     );
   }
@@ -205,7 +198,7 @@ export default function AdminDashboard() {
             Tableau de Bord
           </h2>
           <p className="text-neutral-600">
-            Vue d'ensemble de votre activité de gestion de chalets
+            Vue d&apos;ensemble de votre activité de gestion de chalets
           </p>
         </div>
 
@@ -233,7 +226,7 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {menuItems.map((item, index) => (
-            <a
+            <Link
               key={index}
               href={item.href}
               className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-200 hover:shadow-md hover:border-primary-200 transition-all duration-200 group"
@@ -250,7 +243,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-neutral-600">
                 {item.description}
               </p>
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -259,7 +252,7 @@ export default function AdminDashboard() {
           <h3 className="text-lg font-semibold text-neutral-900 mb-4">
             Activité Récente
           </h3>
-          
+
           <div className="space-y-4">
             <div className="flex items-center p-4 bg-neutral-50 rounded-lg">
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
@@ -305,12 +298,12 @@ export default function AdminDashboard() {
           </div>
 
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/admin/activity"
               className="text-primary-700 hover:text-primary-800 text-sm font-medium transition-colors"
             >
-              Voir toute l'activité
-            </a>
+              Voir toute l&apos;activité
+            </Link>
           </div>
         </div>
       </main>
