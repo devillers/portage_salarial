@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ClientIcon from '../ClientIcon';
 
 export default function FileDropzone({
@@ -13,12 +13,26 @@ export default function FileDropzone({
   className = ''
 }) {
   const inputRef = useRef(null);
-  const [files, setFiles] = useState([]);
+  const [fileItems, setFileItems] = useState([]);
 
   const handleFiles = useCallback(
     (fileList) => {
       const nextFiles = Array.from(fileList || []);
-      setFiles(nextFiles);
+      const nextItems = nextFiles.map((file) => ({
+        file,
+        previewUrl: file.type?.startsWith('image/') ? URL.createObjectURL(file) : null
+      }));
+
+      setFileItems((previousItems) => {
+        previousItems.forEach((item) => {
+          if (item.previewUrl) {
+            URL.revokeObjectURL(item.previewUrl);
+          }
+        });
+
+        return nextItems;
+      });
+
       onFilesChange?.(nextFiles);
     },
     [onFilesChange]
@@ -52,13 +66,31 @@ export default function FileDropzone({
     [handleFiles]
   );
 
-  const removeFile = useCallback((index) => {
-    setFiles((prev) => {
-      const next = prev.filter((_, i) => i !== index);
-      onFilesChange?.(next);
-      return next;
-    });
-  }, [onFilesChange]);
+  const removeFile = useCallback(
+    (index) => {
+      setFileItems((prev) => {
+        const itemToRemove = prev[index];
+        if (itemToRemove?.previewUrl) {
+          URL.revokeObjectURL(itemToRemove.previewUrl);
+        }
+
+        const next = prev.filter((_, i) => i !== index);
+        onFilesChange?.(next.map((item) => item.file));
+        return next;
+      });
+    },
+    [onFilesChange]
+  );
+
+  useEffect(() => {
+    return () => {
+      fileItems.forEach((item) => {
+        if (item.previewUrl) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+      });
+    };
+  }, [fileItems]);
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -104,29 +136,43 @@ export default function FileDropzone({
         />
       </div>
 
-      {!!files.length && (
+      {!!fileItems.length && (
         <ul className="space-y-2 rounded-xl border border-neutral-200 bg-white/80 p-4">
-          {files.map((file, index) => (
-            <li
-              key={`${file.name}-${index}`}
-              className="flex items-center justify-between gap-3 rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-700"
-            >
-              <div className="flex items-center gap-3">
-                <ClientIcon name="File" className="h-4 w-4 text-primary-500" />
-                <span className="truncate font-medium">{file.name}</span>
-                <span className="text-xs text-neutral-400">{(file.size / 1024 / 1024).toFixed(2)} Mo</span>
-              </div>
+          {fileItems.map(({ file, previewUrl }, index) => {
+            const isImage = Boolean(previewUrl);
 
-              <button
-                type="button"
-                onClick={() => removeFile(index)}
-                className="rounded-full p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-600"
-                aria-label={`Retirer ${file.name}`}
+            return (
+              <li
+                key={`${file.name}-${index}`}
+                className="flex items-center justify-between gap-3 rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-700"
               >
-                <ClientIcon name="X" className="h-4 w-4" />
-              </button>
-            </li>
-          ))}
+                <div className="flex items-center gap-3">
+                  {isImage ? (
+                    <img
+                      src={previewUrl}
+                      alt={`Prévisualisation de ${file.name}`}
+                      className="h-10 w-10 flex-shrink-0 rounded-md object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-primary-50">
+                      <ClientIcon name="File" className="h-5 w-5 text-primary-500" />
+                    </div>
+                  )}
+                  <span className="truncate font-medium">{file.name}</span>
+                  <span className="text-xs text-neutral-400">{(file.size / 1024 / 1024).toFixed(2)} Mo</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  className="rounded-full p-1 text-red-500 transition hover:bg-red-50 hover:text-red-600"
+                  aria-label={`Retirer ${file.name}`}
+                >
+                  <ClientIcon name="X" className="h-4 w-4" />
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
