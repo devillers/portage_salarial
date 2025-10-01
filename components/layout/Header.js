@@ -30,7 +30,6 @@ export default function Header() {
     { name: 'Services', href: '/services' },
     { name: 'Séminaires', href: '/seminaires-evenements' },
     { name: 'Portfolio', href: '/portfolio' },
-   
     { name: 'Contact', href: '/contact' }
   ];
 
@@ -65,7 +64,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -92,16 +91,26 @@ export default function Header() {
           </nav>
 
           {/* CTA Button */}
-          <div className="hidden md:flex">
+          <div className="hidden md:flex items-center space-x-4">
             <Link
-              href="/contact"
+              href="/auth"
+              className={`text-sm font-medium transition-colors duration-200 ${
+                isScrolled
+                  ? 'text-neutral-600 hover:text-primary-700'
+                  : 'text-white/90 hover:text-white'
+              }`}
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/signup"
               className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
                 isScrolled
                   ? 'bg-primary-700 text-white hover:bg-primary-800 shadow-md hover:shadow-lg'
                   : 'bg-white text-primary-800 hover:bg-neutral-100 shadow-lg hover:shadow-xl'
               }`}
             >
-              Get Started
+              Sign up
             </Link>
           </div>
 
@@ -145,12 +154,18 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-            <div className="px-4 pt-2">
+            <div className="px-4 pt-4 space-y-3 border-t border-neutral-100">
               <Link
-                href="/contact"
+                href="/auth"
+                className="block w-full px-4 py-3 text-center text-neutral-600 font-medium rounded-full border border-neutral-200 hover:text-primary-700 hover:border-primary-200 transition-colors duration-200"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
                 className="block w-full px-6 py-3 text-center bg-primary-700 text-white rounded-full font-medium hover:bg-primary-800 transition-colors duration-200"
               >
-                Get Started
+                Sign up
               </Link>
             </div>
           </nav>
