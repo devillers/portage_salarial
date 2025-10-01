@@ -66,48 +66,80 @@ function buildMarkdown(sectionName, index) {
   return `${paragraph}\n\n- ${bulletOne}\n- ${bulletTwo}`;
 }
 
-async function ensureSeedUser() {
-  const email = 'admin@admin.com';
+const SEED_USERS = [
+  {
+    username: 'admin',
+    email: 'admin@admin.com',
+    password: 'admin123',
+    role: 'admin'
+  },
+  {
+    username: 'superadmin',
+    email: 'superadmin@admin.com',
+    password: 'superadmin123',
+    role: 'super-admin'
+  }
+];
+
+async function upsertSeedUser({ username, email, password, role }) {
   let user = await User.findOne({ email }).select('+password');
 
   if (!user) {
-    user = await User.create({
-      username: 'admin',
+    return User.create({
+      username,
       email,
-      password: 'admin123',
-      role: 'admin'
+      password,
+      role
     });
-  } else {
-    let shouldPersist = false;
+  }
 
-    if (user.username !== 'admin') {
-      user.username = 'admin';
-      shouldPersist = true;
-    }
+  let shouldPersist = false;
 
-    if (user.role !== 'admin') {
-      user.role = 'admin';
-      shouldPersist = true;
-    }
+  if (user.username !== username) {
+    user.username = username;
+    shouldPersist = true;
+  }
 
-    const hasValidPassword = await user.comparePassword('admin123');
+  if (user.role !== role) {
+    user.role = role;
+    shouldPersist = true;
+  }
 
-    if (!hasValidPassword) {
-      user.password = 'admin123';
-      shouldPersist = true;
-    }
+  const hasValidPassword = await user.comparePassword(password);
 
-    if (!user.isActive) {
-      user.isActive = true;
-      shouldPersist = true;
-    }
+  if (!hasValidPassword) {
+    user.password = password;
+    shouldPersist = true;
+  }
 
-    if (shouldPersist) {
-      await user.save();
-    }
+  if (!user.isActive) {
+    user.isActive = true;
+    shouldPersist = true;
+  }
+
+  if (shouldPersist) {
+    await user.save();
   }
 
   return user;
+}
+
+async function ensureSeedUsers() {
+  const seededUsers = {};
+
+  for (const userDefinition of SEED_USERS) {
+    const user = await upsertSeedUser(userDefinition);
+
+    if (userDefinition.role === 'admin') {
+      seededUsers.admin = user;
+    }
+
+    if (userDefinition.role === 'super-admin') {
+      seededUsers.superAdmin = user;
+    }
+  }
+
+  return seededUsers;
 }
 
 async function getUniqueSection(page, baseSection) {
@@ -144,7 +176,12 @@ export async function createFakeContent({ page, count = 3, sections }) {
     throw new Error('At least one section name is required to generate fake content.');
   }
 
-  const author = await ensureSeedUser();
+  const { admin: adminUser, superAdmin } = await ensureSeedUsers();
+  const author = adminUser || superAdmin;
+
+  if (!author) {
+    throw new Error('Unable to determine an author user for seeded content.');
+  }
   const createdItems = [];
   const baseDisplayOrder = await Content.countDocuments({ page: normalizedPage });
 
