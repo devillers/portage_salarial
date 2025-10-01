@@ -1,62 +1,57 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import useAuth from '../../hooks/useAuth';
 import ClientIcon from '../../components/ClientIcon';
 
+const INITIAL_CREDENTIALS = {
+  email: '',
+  password: ''
+};
+
 export default function AdminLoginPage() {
-  const [credentials, setCredentials] = useState({
-    username: '',
-    password: ''
-  });
+  const [credentials, setCredentials] = useState(INITIAL_CREDENTIALS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { status, login } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if already logged in
-    const token = localStorage.getItem('adminToken');
-    if (token) {
-      router.push('/admin/dashboard');
-    }
-  }, [router]);
+  const isSubmitDisabled = useMemo(() => {
+    return loading || !credentials.email.trim() || !credentials.password;
+  }, [credentials.email, credentials.password, loading]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCredentials(prev => ({
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/admin/dashboard');
+    }
+  }, [status, router]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setCredentials((prev) => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
+    const result = await login({
+      email: credentials.email.trim().toLowerCase(),
+      password: credentials.password
+    });
 
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem('adminToken', data.token);
-        localStorage.setItem('adminUser', JSON.stringify(data.user));
-        router.push('/admin/dashboard');
-      } else {
-        setError(data.message || 'Erreur de connexion');
-      }
-    } catch (err) {
-      setError('Erreur de connexion. Veuillez réessayer.');
-    } finally {
-      setLoading(false);
+    if (!result.success) {
+      setError(result.message || 'Identifiants invalides.');
+    } else {
+      router.replace('/admin/dashboard');
     }
+
+    setLoading(false);
   };
 
   return (
@@ -88,18 +83,19 @@ export default function AdminLoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-neutral-700 mb-2">
-                Nom d'utilisateur ou Email
+              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
+                Adresse e-mail
               </label>
               <input
-                type="text"
-                id="username"
-                name="username"
+                type="email"
+                id="email"
+                name="email"
                 required
-                value={credentials.username}
+                autoComplete="email"
+                value={credentials.email}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                placeholder="Votre nom d'utilisateur"
+                placeholder="admin@admin.com"
               />
             </div>
 
@@ -121,7 +117,7 @@ export default function AdminLoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitDisabled}
               className="w-full px-4 py-3 bg-primary-700 text-white rounded-lg font-semibold hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center"
             >
               {loading ? (
@@ -140,7 +136,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-6 text-center">
             <p className="text-xs text-neutral-500">
-              Accès réservé aux administrateurs autorisés
+              Accès réservé aux administrateurs autorisés. Identifiants par défaut : admin@admin.com / admin123.
             </p>
           </div>
         </div>

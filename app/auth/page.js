@@ -2,51 +2,31 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import useAuth from '../../hooks/useAuth';
 import ClientIcon from '../../components/ClientIcon';
 
-const LOGIN_MODE = 'login';
-const REGISTER_MODE = 'register';
-
 const INITIAL_FORM = {
-  username: '',
   email: '',
-  password: '',
-  confirmPassword: ''
+  password: ''
 };
 
 export default function AuthPage() {
-  const [mode, setMode] = useState(LOGIN_MODE);
   const [form, setForm] = useState(INITIAL_FORM);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+  const { status, login } = useAuth();
+
+  const isSubmittingDisabled = useMemo(() => {
+    return loading || !form.email.trim() || !form.password;
+  }, [form.email, form.password, loading]);
 
   useEffect(() => {
-    try {
-      const storedUser = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
-      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-
-      if (storedUser && storedToken) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser?.role === 'admin') {
-          router.replace('/admin/dashboard');
-        }
-      }
-    } catch (err) {
-      console.warn('Unable to restore auth session', err);
+    if (status === 'authenticated') {
+      router.replace('/admin/dashboard');
     }
-  }, [router]);
-
-  const isLoginMode = useMemo(() => mode === LOGIN_MODE, [mode]);
-
-  const toggleMode = () => {
-    setMode((prev) => (prev === LOGIN_MODE ? REGISTER_MODE : LOGIN_MODE));
-    setForm(INITIAL_FORM);
-    setError('');
-    setSuccess('');
-  };
+  }, [status, router]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -62,65 +42,21 @@ export default function AuthPage() {
     setError('');
     setSuccess('');
 
-    try {
-      if (!isLoginMode && form.password !== form.confirmPassword) {
-        setError('Les mots de passe ne correspondent pas.');
-        return;
-      }
+    const result = await login({
+      email: form.email.trim().toLowerCase(),
+      password: form.password
+    });
 
-      const payload = isLoginMode
-        ? { username: form.username.trim(), password: form.password }
-        : {
-            username: form.username.trim(),
-            email: form.email.trim(),
-            password: form.password
-          };
-
-      const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-
-      if (!data?.success) {
-        throw new Error(data?.message || "Une erreur est survenue lors de l'authentification.");
-      }
-
-      const targetUser = data.user ?? null;
-      const token = data.token ?? null;
-
-      if (token && typeof window !== 'undefined') {
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('authUser', JSON.stringify(targetUser));
-
-        if (targetUser?.role === 'admin') {
-          localStorage.setItem('adminToken', token);
-          localStorage.setItem('adminUser', JSON.stringify(targetUser));
-        }
-      }
-
-      if (isLoginMode) {
-        setSuccess('Connexion réussie. Redirection en cours...');
-      } else {
-        setSuccess('Compte créé avec succès. Redirection en cours...');
-      }
-
+    if (!result.success) {
+      setError(result.message || 'Identifiants invalides.');
+    } else {
+      setSuccess('Connexion réussie. Redirection en cours...');
       setTimeout(() => {
-        if (targetUser?.role === 'admin') {
-          router.replace('/admin/dashboard');
-        } else {
-          router.replace('/');
-        }
-      }, 800);
-    } catch (err) {
-      setError(err.message || "Impossible d'effectuer la requête.");
-    } finally {
-      setLoading(false);
+        router.replace('/admin/dashboard');
+      }, 500);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -157,7 +93,7 @@ export default function AuthPage() {
           </p>
 
           <ul className="space-y-4">
-            {["Connexion sécurisée par jeton", 'Gestion du contenu portfolio', 'Support dédié 7j/7'].map((feature) => (
+            {['Connexion sécurisée avec jeton chiffré', 'Gestion centralisée du portfolio', 'Support dédié 7j/7'].map((feature) => (
               <li key={feature} className="flex items-start gap-3">
                 <div className="mt-1">
                   <ClientIcon name="CheckCircle" className="w-5 h-5 text-emerald-300" />
@@ -166,44 +102,25 @@ export default function AuthPage() {
               </li>
             ))}
           </ul>
+
+          <div className="bg-white/10 rounded-2xl p-6 space-y-2">
+            <p className="text-sm font-semibold text-white/90">Identifiants de démonstration</p>
+            <p className="text-sm text-white/80">Email : <span className="font-medium">admin@admin.com</span></p>
+            <p className="text-sm text-white/80">Mot de passe : <span className="font-medium">admin123</span></p>
+          </div>
         </div>
       </div>
 
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10 py-16">
         <div className="w-full max-w-md space-y-8">
           <div>
-            <h2 className="text-3xl font-bold text-neutral-900 mb-2">
-              {isLoginMode ? 'Connexion à votre espace' : 'Créer un compte gestionnaire'}
-            </h2>
+            <h2 className="text-3xl font-bold text-neutral-900 mb-2">Connexion sécurisée</h2>
             <p className="text-neutral-600 text-sm">
-              {isLoginMode
-                ? 'Entrez vos identifiants pour accéder à la plateforme de gestion.'
-                : 'Renseignez vos informations pour activer votre accès sécurisé.'}
+              Connectez-vous avec vos identifiants administrateur pour accéder à la console de gestion.
             </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
-            <div className="flex items-center justify-between bg-neutral-100 rounded-xl p-1">
-              <button
-                type="button"
-                onClick={() => setMode(LOGIN_MODE)}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  isLoginMode ? 'bg-white shadow text-neutral-900' : 'text-neutral-500'
-                }`}
-              >
-                Connexion
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode(REGISTER_MODE)}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  !isLoginMode ? 'bg-white shadow text-neutral-900' : 'text-neutral-500'
-                }`}
-              >
-                Inscription
-              </button>
-            </div>
-
             {error ? (
               <div className="p-4 border border-red-200 bg-red-50 rounded-xl flex items-start gap-3">
                 <ClientIcon name="AlertCircle" className="w-5 h-5 text-red-500" />
@@ -220,43 +137,24 @@ export default function AuthPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label htmlFor="username" className="text-sm font-medium text-neutral-700">
-                  Nom d'utilisateur
+                <label htmlFor="email" className="text-sm font-medium text-neutral-700">
+                  Adresse e-mail
                 </label>
                 <div className="relative">
-                  <ClientIcon name="User" className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <ClientIcon name="Mail" className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
-                    id="username"
-                    name="username"
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
                     required
-                    value={form.username}
+                    value={form.email}
                     onChange={handleChange}
-                    placeholder="ex: gestionnaire-alpes"
+                    placeholder="vous@exemple.com"
                     className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
                 </div>
               </div>
-
-              {!isLoginMode ? (
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-neutral-700">
-                    Adresse e-mail
-                  </label>
-                  <div className="relative">
-                    <ClientIcon name="Mail" className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={handleChange}
-                      placeholder="vous@exemple.com"
-                      className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              ) : null}
 
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium text-neutral-700">
@@ -268,6 +166,7 @@ export default function AuthPage() {
                     id="password"
                     name="password"
                     type="password"
+                    autoComplete="current-password"
                     required
                     value={form.password}
                     onChange={handleChange}
@@ -277,75 +176,35 @@ export default function AuthPage() {
                 </div>
               </div>
 
-              {!isLoginMode ? (
-                <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
-                    Confirmation du mot de passe
-                  </label>
-                  <div className="relative">
-                    <ClientIcon name="Shield" className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      required
-                      value={form.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="********"
-                      className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              ) : null}
-
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isSubmittingDisabled}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary-700 text-white rounded-lg font-semibold hover:bg-primary-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
                     <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Traitement...
+                    Connexion en cours...
                   </>
                 ) : (
                   <>
-                    <ClientIcon name={isLoginMode ? 'LogIn' : 'UserPlus'} className="w-5 h-5" />
-                    {isLoginMode ? 'Se connecter' : "Créer mon compte"}
+                    <ClientIcon name="LogIn" className="w-5 h-5" />
+                    Se connecter
                   </>
                 )}
               </button>
             </form>
 
-            {isLoginMode ? (
-              <div className="text-right">
-                <Link href="/contact" className="text-sm text-primary-700 hover:text-primary-800 font-medium">
-                  Besoin d'aide ? Contactez-nous
-                </Link>
-              </div>
-            ) : null}
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+              <p className="text-xs font-semibold text-neutral-700 uppercase tracking-wide">Besoin d'aide ?</p>
+              <p className="text-sm text-neutral-600">
+                Utilisez les identifiants fournis ou contactez notre équipe support pour obtenir un accès personnalisé.
+              </p>
+            </div>
           </div>
 
           <p className="text-xs text-neutral-500 text-center">
-            En vous connectant, vous acceptez nos conditions générales d'utilisation et notre politique de confidentialité.
-          </p>
-
-          <p className="text-sm text-neutral-600 text-center">
-            {isLoginMode ? (
-              <>
-                Pas encore de compte ?{' '}
-                <button type="button" onClick={toggleMode} className="text-primary-700 font-semibold hover:text-primary-800">
-                  Créer un accès
-                </button>
-              </>
-            ) : (
-              <>
-                Vous avez déjà un accès ?{' '}
-                <button type="button" onClick={toggleMode} className="text-primary-700 font-semibold hover:text-primary-800">
-                  Se connecter
-                </button>
-              </>
-            )}
+            Authentification sécurisée par jeton chiffré.
           </p>
         </div>
       </div>
