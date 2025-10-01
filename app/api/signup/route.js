@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import dbConnect from '../../../lib/mongodb';
 import SignupApplication from '../../../models/SignupApplication';
 
@@ -22,7 +23,13 @@ const validateOwnerPayload = (data) => {
   }
 
   const owner = data.owner || {};
-  if (!isNonEmptyString(owner.firstName) || !isNonEmptyString(owner.lastName) || !isNonEmptyString(owner.email) || !isNonEmptyString(owner.birthDate)) {
+  if (
+    !isNonEmptyString(owner.firstName) ||
+    !isNonEmptyString(owner.lastName) ||
+    !isNonEmptyString(owner.email) ||
+    !isNonEmptyString(owner.birthDate) ||
+    !isNonEmptyString(owner.password)
+  ) {
     return 'Veuillez compléter les informations personnelles du propriétaire.';
   }
 
@@ -96,9 +103,20 @@ export async function POST(request) {
 
     await dbConnect();
 
+    const ownerPayload =
+      normalizedType === 'owner'
+        ? {
+            ...data,
+            owner: {
+              ...data.owner,
+              password: await bcrypt.hash(data.owner.password, 12)
+            }
+          }
+        : undefined;
+
     const application = await SignupApplication.create({
       type: normalizedType,
-      ownerData: normalizedType === 'owner' ? data : undefined,
+      ownerData: ownerPayload,
       tenantData: normalizedType === 'tenant' ? data : undefined
     });
 
