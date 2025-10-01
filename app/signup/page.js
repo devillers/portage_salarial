@@ -61,14 +61,14 @@ const createTenantInitial = () => ({
 
 const OPTIONS = [
   {
-    id: 'owner',
+    id: 'renting',
     title: "J'ai un chalet à louer à la saison",
     description:
       'Partagez les informations essentielles de votre bien pour rejoindre notre réseau et bénéficier de notre accompagnement complet.',
     icon: 'Home'
   },
   {
-    id: 'tenant',
+    id: 'looking',
     title: 'Je recherche une location à la saison',
     description:
       'Indiquez vos critères afin que notre équipe vous propose les chalets correspondant parfaitement à vos attentes.',
