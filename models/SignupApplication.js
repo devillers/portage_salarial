@@ -5,7 +5,19 @@ const FileMetadataSchema = new mongoose.Schema(
     name: { type: String, default: '' },
     size: { type: Number, default: 0 },
     type: { type: String, default: '' },
-    lastModified: { type: Number, default: null }
+    lastModified: { type: Number, default: null },
+    url: { type: String, default: '' },
+    secureUrl: { type: String, default: '' },
+    publicId: { type: String, default: '' },
+    assetId: { type: String, default: '' },
+    resourceType: { type: String, default: '' },
+    format: { type: String, default: '' },
+    bytes: { type: Number, default: 0 },
+    width: { type: Number, default: null },
+    height: { type: Number, default: null },
+    folder: { type: String, default: '' },
+    originalFilename: { type: String, default: '' },
+    version: { type: Number, default: null }
   },
   { _id: false }
 );
