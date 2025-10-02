@@ -83,6 +83,13 @@ A comprehensive multi-site web application for chalet management business, featu
    
    # Site Configuration
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+   # Cloudinary
+   CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-api-secret
+   # Optional: customize the base folder that will contain all uploads
+   CLOUDINARY_BASE_FOLDER=portage-salarial
    ```
 
 4. **Database Setup**

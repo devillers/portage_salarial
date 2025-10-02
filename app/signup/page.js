@@ -77,34 +77,124 @@ const OPTIONS = [
   },
 ];
 
-const serializeFiles = (files) =>
-  Array.isArray(files)
-    ? files.map((file) => ({
-        name: file?.name ?? "",
-        size: file?.size ?? 0,
-        type: file?.type ?? "",
-        lastModified: file?.lastModified ?? null,
-      }))
-    : [];
+const CLOUDINARY_FOLDERS = {
+  hero: "signup/hero",
+  gallery: "signup/gallery",
+  rooms: "signup/rooms",
+  identity: "signup/documents/identity",
+  ownership: "signup/documents/ownership",
+};
 
-const serializeOwnerForm = (form) => ({
-  title: form.title,
-  slug: form.slug,
-  shortDescription: form.shortDescription,
-  longDescription: form.longDescription,
-  heroPhoto: serializeFiles(form.heroPhoto),
-  gallery: serializeFiles(form.gallery),
-  rooms: form.rooms.map((room) => ({
-    name: room.name,
-    description: room.description,
-    photos: serializeFiles(room.photos),
-  })),
-  propertyAddress: form.propertyAddress,
-  mainAddress: form.mainAddress,
-  owner: form.owner,
-  identityDocument: serializeFiles(form.identityDocument),
-  ownershipProof: serializeFiles(form.ownershipProof),
+const isFileInstance = (candidate) =>
+  typeof File !== "undefined" && candidate instanceof File;
+
+const mapUploadToMetadata = (file, upload = {}) => ({
+  name: file?.name ?? "",
+  size: file?.size ?? 0,
+  type: file?.type ?? "",
+  lastModified: file?.lastModified ?? null,
+  url: upload?.secureUrl || upload?.url || "",
+  secureUrl: upload?.secureUrl || "",
+  publicId: upload?.publicId || "",
+  assetId: upload?.assetId || "",
+  resourceType: upload?.resourceType || "",
+  format: upload?.format || "",
+  bytes: upload?.bytes ?? file?.size ?? 0,
+  width: upload?.width ?? null,
+  height: upload?.height ?? null,
+  folder: upload?.folder || "",
+  originalFilename: upload?.originalFilename || file?.name || "",
+  version: upload?.version ?? null,
 });
+
+const uploadFilesToCloudinary = async (files, folder) => {
+  if (!Array.isArray(files) || files.length === 0) {
+    return [];
+  }
+
+  const fileEntries = files.filter(isFileInstance);
+
+  if (fileEntries.length === 0) {
+    return [];
+  }
+
+  const formData = new FormData();
+  fileEntries.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  if (folder) {
+    formData.append("folder", folder);
+  }
+
+  const response = await fetch("/api/uploads", {
+    method: "POST",
+    body: formData,
+  });
+
+  const payload = await response.json();
+
+  if (!response.ok || !payload?.success) {
+    throw new Error(
+      payload?.message ||
+        "Le téléversement des fichiers sur Cloudinary a échoué."
+    );
+  }
+
+  const uploadedFiles = Array.isArray(payload.files) ? payload.files : [];
+
+  return fileEntries.map((file, index) =>
+    mapUploadToMetadata(file, uploadedFiles[index] || {})
+  );
+};
+
+const buildOwnerPayload = async (form) => {
+  const [
+    heroPhoto,
+    gallery,
+    identityDocument,
+    ownershipProof,
+    roomPhotos,
+  ] = await Promise.all([
+    uploadFilesToCloudinary(form.heroPhoto, CLOUDINARY_FOLDERS.hero),
+    uploadFilesToCloudinary(form.gallery, CLOUDINARY_FOLDERS.gallery),
+    uploadFilesToCloudinary(
+      form.identityDocument,
+      CLOUDINARY_FOLDERS.identity
+    ),
+    uploadFilesToCloudinary(
+      form.ownershipProof,
+      CLOUDINARY_FOLDERS.ownership
+    ),
+    Promise.all(
+      form.rooms.map((room, index) =>
+        uploadFilesToCloudinary(
+          room.photos,
+          `${CLOUDINARY_FOLDERS.rooms}/room-${index + 1}`
+        )
+      )
+    ),
+  ]);
+
+  return {
+    title: form.title,
+    slug: form.slug,
+    shortDescription: form.shortDescription,
+    longDescription: form.longDescription,
+    heroPhoto,
+    gallery,
+    rooms: form.rooms.map((room, index) => ({
+      name: room.name,
+      description: room.description,
+      photos: roomPhotos[index] ?? [],
+    })),
+    propertyAddress: form.propertyAddress,
+    mainAddress: form.mainAddress,
+    owner: form.owner,
+    identityDocument,
+    ownershipProof,
+  };
+};
 
 const serializeTenantForm = (form) => ({
   firstName: form.firstName,
@@ -292,6 +382,7 @@ export default function SignUpPage() {
 
     try {
       setOwnerSubmitting(true);
+      const ownerPayload = await buildOwnerPayload(ownerForm);
       const response = await fetch("/api/signup", {
         method: "POST",
         headers: {
@@ -299,7 +390,7 @@ export default function SignUpPage() {
         },
         body: JSON.stringify({
           type: "owner",
-          data: serializeOwnerForm(ownerForm),
+          data: ownerPayload,
         }),
       });
 
