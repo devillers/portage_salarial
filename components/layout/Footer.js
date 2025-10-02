@@ -25,6 +25,8 @@ export default function Footer() {
       { name: 'Terms of Service', href: '/terms' },
       { name: 'Cookie Policy', href: '/cookies' },
       { name: 'Legal Notice', href: '/legal' },
+      { name: 'CGV Propriétaires', href: '/cgv-proprietaires' },
+      { name: 'CGV Locataires', href: '/cgv-locataires' },
     ],
     social: [
       { name: 'Facebook', href: '#', icon: Facebook },
