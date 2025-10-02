@@ -440,7 +440,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-          <label className="text-[11px] uppercase font-bold text-neutral-600">
+          <label className="text-[15px]  italic text-neutral-600">
               Slug généré
             </label>
             <input
@@ -453,7 +453,7 @@ export default function SignUpPage() {
 
           <div className="space-y-2 md:col-span-2">
             <>
-              <label className="text-[11px] uppercase font-bold text-neutral-600">
+              <label className="text-[15px]  text-black">
                 Description courte
               </label>
               <textarea
@@ -463,12 +463,12 @@ export default function SignUpPage() {
                 }
                 rows={3}
                 placeholder="Quelques phrases pour résumer l'expérience offerte par votre chalet."
-                className="w-full rounded-2xl border-b border-b-neutral-200 bg-white px-4 py-3 text-[11px] italic font-loose text-neutral-800 hover:shadow-sm "
+                className="w-full rounded-2xl border-b border-b-neutral-200 bg-white px-4 py-3 text-sm italic font-loose text-neutral-800 hover:shadow-sm "
               />
             </>
 
             <>
-              <label className="text-[11px] uppercase font-bold text-neutral-600">
+              <label className="text-[15px]   text-black">
                 Description détaillée
               </label>
               <textarea
@@ -534,7 +534,7 @@ export default function SignUpPage() {
                         className="h-4 w-4"
                       />
                     </button>
-                    <h3 className="text-lg font-semibold text-neutral-800">
+                    <h3 className="text-lg uppercase font-semibold text-neutral-800">
                       Pièce {index + 1}
                     </h3>
                   </div>
@@ -559,7 +559,7 @@ export default function SignUpPage() {
                 {isRoomOpen && (
                   <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-neutral-800">
+                     <label className="text-sm font-medium text-neutral-800">
                         Nom de la pièce
                       </label>
                       <input
@@ -574,7 +574,7 @@ export default function SignUpPage() {
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
-                      <label className="text-sm font-medium text-neutral-800">
+                      <label className="text-sm font-medium uppercase text-neutral-800">
                         Description
                       </label>
                       <textarea
@@ -628,7 +628,7 @@ export default function SignUpPage() {
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Numéro de rue
             </label>
             <input
@@ -646,7 +646,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Rue</label>
+           <label className="text-sm font-medium text-neutral-800">Rue</label>
             <input
               type="text"
               value={ownerForm.propertyAddress.streetName}
@@ -724,7 +724,7 @@ export default function SignUpPage() {
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Nom</label>
+           <label className="text-sm font-medium text-neutral-800">Nom</label>
             <input
               type="text"
               value={ownerForm.owner.lastName}
@@ -737,7 +737,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Prénom
             </label>
             <input
@@ -752,7 +752,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Date de naissance
             </label>
             <input
@@ -766,7 +766,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Email
             </label>
             <input
@@ -781,7 +781,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Téléphone
             </label>
             <input
@@ -796,7 +796,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">Mot de passe</label>
+           <label className="text-sm font-medium text-neutral-800">Mot de passe</label>
             <input
               type="password"
               value={ownerForm.owner.password}
@@ -849,7 +849,7 @@ export default function SignUpPage() {
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Numéro de rue
             </label>
             <input
@@ -867,7 +867,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Rue</label>
+           <label className="text-sm font-medium text-neutral-800">Rue</label>
             <input
               type="text"
               value={ownerForm.mainAddress.streetName}
@@ -942,7 +942,7 @@ export default function SignUpPage() {
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">Nom</label>
+           <label className="text-sm font-medium text-neutral-800">Nom</label>
             <input
               type="text"
               name="lastName"
@@ -953,7 +953,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Prénom
             </label>
             <input
@@ -966,7 +966,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Email
             </label>
             <input
@@ -979,7 +979,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Téléphone
             </label>
             <input
@@ -1004,7 +1004,7 @@ export default function SignUpPage() {
       content: (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Destination recherchée
             </label>
             <input
@@ -1018,7 +1018,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Période souhaitée
             </label>
             <input
@@ -1032,7 +1032,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Nombre de voyageurs
             </label>
             <input
@@ -1047,7 +1047,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Budget estimé
             </label>
             <input
@@ -1061,7 +1061,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-neutral-800">
+           <label className="text-sm font-medium text-neutral-800">
               Précisions complémentaires
             </label>
             <textarea

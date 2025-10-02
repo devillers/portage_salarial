@@ -96,8 +96,8 @@ export default function FileDropzone({
     <div className={`space-y-3 ${className}`}>
       {label && (
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-neutral-800">{label}</label>
-          {helperText && <span className="text-xs text-neutral-500">{helperText}</span>}
+          <label className="text-sm font-medium uppercase text-neutral-800">{label}</label>
+          {helperText && <span className="text-sm text-neutral-500">{helperText}</span>}
         </div>
       )}
 
