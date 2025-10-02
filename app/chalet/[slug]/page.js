@@ -24,9 +24,78 @@ async function getChalet(slug) {
   }
 }
 
+function normalizeImages(images) {
+  if (!images) {
+    return [];
+  }
+
+  if (Array.isArray(images)) {
+    return images.filter(image => image && image.url);
+  }
+
+  const normalized = [];
+
+  if (images.hero?.url) {
+    normalized.push(images.hero);
+  }
+
+  if (Array.isArray(images.gallery)) {
+    normalized.push(...images.gallery.filter(image => image && image.url));
+  }
+
+  Object.entries(images).forEach(([key, value]) => {
+    if (key === 'hero' || key === 'gallery') {
+      return;
+    }
+
+    if (!value) {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach(item => {
+        if (item?.url) {
+          normalized.push(item);
+        }
+      });
+      return;
+    }
+
+    if (typeof value === 'object' && value.url) {
+      normalized.push(value);
+    }
+  });
+
+  return normalized;
+}
+
+function getHeroImage(images) {
+  if (!images) {
+    return null;
+  }
+
+  if (Array.isArray(images)) {
+    return images.find(image => image?.isHero) || images.find(image => image?.url) || null;
+  }
+
+  if (images.hero?.url) {
+    return images.hero;
+  }
+
+  if (Array.isArray(images.gallery)) {
+    const heroFromGallery = images.gallery.find(image => image?.isHero) || images.gallery.find(image => image?.url);
+    if (heroFromGallery) {
+      return heroFromGallery;
+    }
+  }
+
+  const normalized = normalizeImages(images);
+  return normalized.length > 0 ? normalized[0] : null;
+}
+
 export async function generateMetadata({ params }) {
   const chalet = await getChalet(params.slug);
-  
+
   if (!chalet) {
     return {
       title: 'Chalet non trouvé',
@@ -39,10 +108,10 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: chalet.title,
       description: chalet.shortDescription || chalet.description,
-      images: chalet.images?.filter(img => img.isHero).map(img => ({
-        url: img.url,
-        alt: img.alt
-      })) || [],
+      images: normalizeImages(chalet.images).map(image => ({
+        url: image.url,
+        alt: image.alt
+      })),
     },
   };
 }
@@ -54,7 +123,8 @@ export default async function ChaletPage({ params }) {
     notFound();
   }
 
-  const heroImage = chalet.images?.find(img => img.isHero) || chalet.images?.[0];
+  const heroImage = getHeroImage(chalet.images);
+  const galleryImages = normalizeImages(chalet.images);
 
   return (
     <div className="min-h-screen bg-white">
@@ -218,7 +288,7 @@ export default async function ChaletPage({ params }) {
             Galerie Photos
           </h2>
           
-          <ChaletGallery images={chalet.images || []} />
+          <ChaletGallery images={galleryImages} />
         </div>
       </section>
 
