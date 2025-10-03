@@ -1,9 +1,10 @@
 'use client';
 
+/* eslint-disable react/no-unescaped-entities */
+
 import { useState } from 'react';
 import Link from 'next/link';
-import Header from '../../../components/layout/Header';
-import Footer from '../../../components/layout/Footer';
+import PageWrapper from '../../../components/layout/PageWrapper';
 import ClientIcon from '../../../components/ClientIcon';
 
 const STEPS = [
@@ -58,11 +59,8 @@ export default function LostCredentialsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <Header />
-
-      <main className="pt-24 pb-16">
-        <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <PageWrapper mainClassName="bg-neutral-50 pt-0 md:pt-6 pb-24">
+      <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-white/90 p-10 shadow-xl">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-4 text-center">
@@ -148,10 +146,8 @@ export default function LostCredentialsPage() {
               </div>
             </div>
           </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+      </section>
+    </PageWrapper>
   );
 }
+

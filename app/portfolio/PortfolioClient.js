@@ -4,8 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import ClientIcon from '../../components/ClientIcon';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 export default function PortfolioClient() {
   const [chalets, setChalets] = useState([]);
@@ -84,22 +83,19 @@ export default function PortfolioClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-700" />
+      <PageWrapper mainClassName="flex flex-1 items-center justify-center bg-neutral-50">
+        <div className="flex h-full w-full items-center justify-center py-24">
+          <div className="h-24 w-24 animate-spin rounded-full border-b-2 border-primary-700" />
         </div>
-        <Footer />
-      </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <Header />
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
 
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center text-white overflow-hidden mt-16 md:mt-20">
+      <section className="relative flex min-h-[55vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg"
@@ -111,17 +107,17 @@ export default function PortfolioClient() {
           <div className="absolute inset-0 bg-black/50" />
         </div>
 
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Notre Portfolio</h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
+          <h1 className="mb-4 text-4xl font-bold md:text-5xl">Notre Portfolio</h1>
+          <p className="mx-auto max-w-2xl text-lg text-white/90 md:text-xl">
             Découvrez nos chalets gérés dans les plus belles stations des Alpes
           </p>
         </div>
       </section>
 
       {/* Filters Section */}
-      <section className="py-8 bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white py-10 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-6xl">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -204,8 +200,7 @@ export default function PortfolioClient() {
         </div>
       </section>
 
-      <Footer />
-    </div>
+    </PageWrapper>
   );
 }
 
@@ -368,3 +363,4 @@ function ChaletCard({ chalet }) {
     </div>
   );
 }
+

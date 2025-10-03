@@ -1,11 +1,12 @@
 'use client';
 
+/* eslint-disable react/no-unescaped-entities */
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import ClientIcon from '../../components/ClientIcon';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 export default function ContactPage() {
   const searchParams = useSearchParams();
@@ -120,11 +121,9 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen">
-      <Header />
-
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center text-white overflow-hidden mt-16 md:mt-20">
+      <section className="relative flex min-h-[55vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg"
@@ -133,22 +132,22 @@ export default function ContactPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/50"></div>
+          <div className="absolute inset-0 bg-black/35"></div>
         </div>
 
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
+          <h1 className="mb-4 text-3xl font-bold md:text-5xl">
             Contactez-Nous
           </h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
-            Parlons de votre projet de gestion de chalet ou d'organisation d'événements
+          <p className="mx-auto max-w-2xl text-lg text-white/90 md:text-xl">
+            Parlons de votre projet de gestion de chalet ou d'organisation d'événements.
           </p>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white py-20 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div>
@@ -417,7 +416,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <Footer />
-    </div>
+    </PageWrapper>
   );
 }
