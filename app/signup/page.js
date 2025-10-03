@@ -276,6 +276,15 @@ export default function SignUpPage() {
 
   const handleSuccessModalClose = () => {
     setSuccessModal({ open: false, type: null, message: "" });
+    resetFeedback();
+    setSelectedOption(null);
+    setOwnerForm(createOwnerInitial());
+    setTenantForm(createTenantInitial());
+    setOwnerActiveModule("owner-chalet");
+    setTenantActiveModule("tenant-profile");
+    setOwnerExpandedRooms([true]);
+    setOwnerAcceptedCGV(false);
+    setTenantAcceptedCGV(false);
   };
 
   const ownerModuleStatus = useMemo(() => {
