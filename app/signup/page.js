@@ -1606,7 +1606,7 @@ export default function SignUpPage() {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className=" bg-neutral-50">
       <Header />
 
       <main className="pt-24 pb-16">
