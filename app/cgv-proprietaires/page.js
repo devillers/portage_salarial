@@ -1,5 +1,4 @@
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 export const metadata = {
   title: 'Conditions Générales de Vente - Propriétaires',
@@ -109,62 +108,57 @@ export default function CgvProprietairesPage() {
   const lastUpdated = '1er mars 2024';
 
   return (
-    <>
-     
-      <main className="bg-neutral-50 pt-24">
-        <section className="bg-primary-900 text-white py-16">
-          <div className="max-w-5xl mx-auto px-6">
-            <p className="uppercase tracking-widest text-primary-200 text-xs mb-4">Conditions Générales de Vente</p>
-            <h1 className="text-3xl md:text-4xl font-semibold mb-6">
-              CGV propriétaires partenaires
-            </h1>
-            <p className="text-base md:text-lg text-primary-100 max-w-3xl">
-              Ce document encadre la collaboration entre Chalet Manager et les propriétaires qui nous confient la gestion locative de leur bien.
+    <PageWrapper mainClassName="bg-neutral-50 pt-0 md:pt-6 pb-20">
+      <section className="bg-primary-900 text-white shadow-xl sm:mx-6 sm:rounded-3xl">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <p className="mb-4 text-xs uppercase tracking-widest text-primary-200">Conditions Générales de Vente</p>
+          <h1 className="text-3xl font-semibold md:text-4xl">CGV propriétaires partenaires</h1>
+          <p className="mt-6 max-w-3xl text-base text-primary-100 md:text-lg">
+            Ce document encadre la collaboration entre Chalet Manager et les propriétaires qui nous confient la gestion locative de leur bien.
+          </p>
+          <p className="mt-6 text-sm text-primary-200">Dernière mise à jour : {lastUpdated}</p>
+        </div>
+      </section>
+
+      <section className="py-16 sm:mx-6">
+        <div className="mx-auto max-w-5xl space-y-12 rounded-3xl bg-white px-6 py-12 shadow-sm">
+          {sections.map((section) => (
+            <article key={section.title}>
+              <h2 className="mb-4 text-xl font-semibold text-neutral-900 md:text-2xl">{section.title}</h2>
+              {section.paragraphs.map((paragraph) => (
+                <p key={paragraph} className="mb-4 leading-relaxed text-neutral-700">
+                  {paragraph}
+                </p>
+              ))}
+              {section.list && (
+                <ul className="list-inside list-disc space-y-2 text-neutral-700">
+                  {section.list.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </article>
+          ))}
+
+          <div className="rounded-xl border border-primary-100 bg-primary-50 p-6 text-primary-900">
+            <h3 className="mb-2 text-lg font-semibold">Besoin d’un complément d’information ?</h3>
+            <p className="mb-4 text-sm text-primary-900/80">
+              Notre équipe reste à votre disposition pour adapter un mandat sur-mesure et répondre à toutes vos questions juridiques, financières ou opérationnelles.
             </p>
-            <p className="mt-6 text-sm text-primary-200">Dernière mise à jour : {lastUpdated}</p>
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="max-w-5xl mx-auto px-6 space-y-12">
-            {sections.map((section) => (
-              <article key={section.title}>
-                <h2 className="text-xl md:text-2xl font-semibold text-neutral-900 mb-4">{section.title}</h2>
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph} className="text-neutral-700 leading-relaxed mb-4">
-                    {paragraph}
-                  </p>
-                ))}
-                {section.list && (
-                  <ul className="list-disc list-inside text-neutral-700 space-y-2">
-                    {section.list.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                )}
-              </article>
-            ))}
-
-            <div className="border border-primary-100 bg-primary-50 text-primary-900 rounded-xl p-6">
-              <h3 className="text-lg font-semibold mb-2">Besoin d’un complément d’information ?</h3>
-              <p className="text-sm text-primary-900/80 mb-4">
-                Notre équipe reste à votre disposition pour adapter un mandat sur-mesure et répondre à toutes vos questions juridiques, financières ou opérationnelles.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 text-sm">
-                <span className="font-medium">Contact :</span>
-                <a href="mailto:owners@chaletmanager.com" className="text-primary-700 hover:text-primary-800">
-                  owners@chaletmanager.com
-                </a>
-                <span className="hidden sm:block">•</span>
-                <a href="tel:+33123456789" className="text-primary-700 hover:text-primary-800">
-                  +33 1 23 45 67 89
-                </a>
-              </div>
+            <div className="flex flex-col gap-3 text-sm sm:flex-row">
+              <span className="font-medium">Contact :</span>
+              <a href="mailto:owners@chaletmanager.com" className="text-primary-700 hover:text-primary-800">
+                owners@chaletmanager.com
+              </a>
+              <span className="hidden sm:block">•</span>
+              <a href="tel:+33123456789" className="text-primary-700 hover:text-primary-800">
+                +33 1 23 45 67 89
+              </a>
             </div>
           </div>
-        </section>
-      </main>
-      
-    </>
+        </div>
+      </section>
+    </PageWrapper>
   );
 }
+

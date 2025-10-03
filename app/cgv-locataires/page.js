@@ -1,5 +1,4 @@
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 export const metadata = {
   title: 'Conditions Générales de Vente - Locataires',
@@ -107,68 +106,63 @@ export default function CgvLocatairesPage() {
   const lastUpdated = '1er mars 2024';
 
   return (
-    <>
-      
-      <main className="bg-neutral-50 pt-24">
-        <section className="bg-primary-900 text-white py-16">
-          <div className="max-w-5xl mx-auto px-6">
-            <p className="uppercase tracking-widest text-primary-200 text-xs mb-4">Conditions Générales de Vente</p>
-            <h1 className="text-3xl md:text-6xl uppercase font-thin mb-6">
-              CGV locataires
-            </h1>
-            <p className="text-base md:text-sm italic text-primary-100 max-w-3xl md:w-3/5">
-              Ce document précise les règles applicables à toute réservation de séjour réalisée auprès de Chalet Manager.
-            </p>
-            <p className="mt-6 text-[10px] uppercase text-primary-200">Dernière mise à jour : {lastUpdated}</p>
-          </div>
-        </section>
+    <PageWrapper mainClassName="bg-neutral-50 pt-0 md:pt-6 pb-20">
+      <section className="bg-primary-900 text-white shadow-xl sm:mx-6 sm:rounded-3xl">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <p className="mb-4 text-xs uppercase tracking-widest text-primary-200">Conditions Générales de Vente</p>
+          <h1 className="text-3xl font-light uppercase md:text-5xl">CGV locataires</h1>
+          <p className="mt-6 max-w-3xl text-sm italic text-primary-100 md:w-3/5 md:text-base">
+            Ce document précise les règles applicables à toute réservation de séjour réalisée auprès de Chalet Manager.
+          </p>
+          <p className="mt-6 text-[10px] uppercase text-primary-200">Dernière mise à jour : {lastUpdated}</p>
+        </div>
+      </section>
 
-        <section className="py-16">
-          <div className="max-w-5xl mx-auto px-6 space-y-12">
-            {sections.map((section) => (
-              <article key={section.title}>
-                <h2 className="text-xl md:text-2xl font-light uppercase text-neutral-900 mb-4">{section.title}</h2>
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph} className="text-neutral-700 leading-relaxed text-justify text-xs mt-4">
+      <section className="py-16 sm:mx-6">
+        <div className="mx-auto max-w-5xl space-y-12 rounded-3xl bg-white px-6 py-12 shadow-sm">
+          {sections.map((section) => (
+            <article key={section.title}>
+              <h2 className="mb-4 text-xl font-light uppercase text-neutral-900 md:text-2xl">{section.title}</h2>
+              {section.paragraphs.map((paragraph) => (
+                <p key={paragraph} className="mt-4 text-justify text-xs leading-relaxed text-neutral-700">
+                  {paragraph}
+                </p>
+              ))}
+              {section.list && (
+                <ul className="mt-4 list-inside list-disc text-justify text-xs leading-relaxed text-neutral-700">
+                  {section.list.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+              {section.paragraphsAfterList &&
+                section.paragraphsAfterList.map((paragraph) => (
+                  <p key={paragraph} className="mt-4 text-justify text-xs leading-relaxed text-neutral-700">
                     {paragraph}
                   </p>
                 ))}
-                {section.list && (
-                  <ul className="text-neutral-700 leading-relaxed text-justify text-xs mt-4 list-disc list-inside">
-                    {section.list.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                )}
-                {section.paragraphsAfterList &&
-                  section.paragraphsAfterList.map((paragraph) => (
-                    <p key={paragraph} className="text-neutral-700 leading-relaxed text-justify text-xs mt-4">
-                      {paragraph}
-                    </p>
-                  ))}
-              </article>
-            ))}
+            </article>
+          ))}
 
-            <div className="border border-primary-100 bg-primary-50 text-primary-900 rounded-xl p-6">
-              <h3 className="text-lg font-semibold mb-2">Service client Chalet Manager</h3>
-              <p className="text-sm text-primary-900/80 mb-4">
-                Pour toute question concernant votre réservation, votre arrivée ou un séjour en cours, notre équipe est joignable 7j/7.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 text-sm">
-                <span className="font-medium">Assistance :</span>
-                <a href="mailto:guests@chaletmanager.com" className="text-primary-700 hover:text-primary-800">
-                  guests@chaletmanager.com
-                </a>
-                <span className="hidden sm:block">•</span>
-                <a href="tel:+33456781234" className="text-primary-700 hover:text-primary-800">
-                  +33 4 56 78 12 34
-                </a>
-              </div>
+          <div className="rounded-xl border border-primary-100 bg-primary-50 p-6 text-primary-900">
+            <h3 className="text-lg font-semibold">Service client Chalet Manager</h3>
+            <p className="mt-3 text-sm text-primary-900/80">
+              Pour toute question concernant votre réservation, votre arrivée ou un séjour en cours, notre équipe est joignable 7j/7.
+            </p>
+            <div className="mt-4 flex flex-col gap-3 text-sm sm:flex-row">
+              <span className="font-medium">Assistance :</span>
+              <a href="mailto:guests@chaletmanager.com" className="text-primary-700 hover:text-primary-800">
+                guests@chaletmanager.com
+              </a>
+              <span className="hidden sm:block">•</span>
+              <a href="tel:+33456781234" className="text-primary-700 hover:text-primary-800">
+                +33 4 56 78 12 34
+              </a>
             </div>
           </div>
-        </section>
-      </main>
-     
-    </>
+        </div>
+      </section>
+    </PageWrapper>
   );
 }
+

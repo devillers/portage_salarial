@@ -1,8 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import Link from 'next/link';
 import Image from 'next/image';
 import ClientIcon from '../components/ClientIcon';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
+import PageWrapper from '../components/layout/PageWrapper';
 
 export const metadata = {
   title: 'Premium Chalet Management Services | Chalet Manager',
@@ -75,11 +76,9 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen">
-      <Header />
-
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-0 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center text-white overflow-hidden">
+      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden rounded-none text-white sm:rounded-3xl sm:mx-6 sm:mt-12">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -89,32 +88,35 @@ export default function HomePage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-black/30"></div>
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-slide-up">
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
+          <h1 className="mb-6 text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
             Premium Chalet
-            <span className="block text-primary-300">Management</span>
+            <span className="block text-primary-200">Management</span>
           </h1>
-          
-          <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto leading-relaxed animate-slide-up" style={{animationDelay: '0.2s'}}>
-            Transform your mountain property into a profitable venture with our comprehensive management services
+
+          <p
+            className="mx-auto mb-10 max-w-2xl text-lg text-white/90 md:text-xl"
+            style={{ animationDelay: '0.2s' }}
+          >
+            Transform your mountain property into a profitable venture with our comprehensive management services.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{animationDelay: '0.4s'}}>
+
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row" style={{ animationDelay: '0.4s' }}>
             <Link
               href="/portfolio"
-              className="px-8 py-4 bg-primary-700 text-white rounded-full font-semibold hover:bg-primary-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center justify-center"
+              className="flex items-center justify-center rounded-full bg-primary-700 px-8 py-4 font-semibold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:bg-primary-800 hover:shadow-2xl"
             >
               View Portfolio
               <ClientIcon name="ArrowRight" className="ml-2 h-5 w-5" />
             </Link>
-            
+
             <Link
               href="/contact"
-              className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-full font-semibold hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/40"
+              className="rounded-full border border-white/30 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:bg-white/20"
             >
               Get Started
             </Link>
@@ -122,16 +124,16 @@ export default function HomePage() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/50 rounded-full mt-2 animate-pulse"></div>
+        <div className="absolute bottom-10 left-1/2 hidden -translate-x-1/2 transform animate-bounce sm:block">
+          <div className="flex h-12 w-7 items-center justify-center rounded-full border-2 border-white/50">
+            <div className="mt-2 h-3 w-1 rounded-full bg-white/50"></div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white py-16 shadow-sm sm:rounded-3xl sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
               Why Choose Our Management Services?
@@ -167,8 +169,8 @@ export default function HomePage() {
       </section>
 
       {/* Services Preview */}
-      <section className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-neutral-50 py-20 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
               Our Core Services
@@ -225,8 +227,8 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-primary-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="mx-0 bg-primary-800 py-20 text-white shadow-xl sm:mx-6 sm:rounded-3xl sm:px-10">
+        <div className="mx-auto max-w-5xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Proven Results
@@ -252,8 +254,8 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white py-20 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
               What Our Clients Say
@@ -294,8 +296,8 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-primary-700 to-primary-900 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      <section className="mx-0 rounded-none bg-gradient-to-br from-primary-700 to-primary-900 py-20 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
+        <div className="mx-auto max-w-4xl px-6 text-center sm:px-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to Maximize Your Chalet Investment?
           </h2>
@@ -323,7 +325,7 @@ export default function HomePage() {
             </a>
           </div>
 
-          <div className="flex items-center justify-center space-x-6 text-primary-200">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-primary-200">
             <div className="flex items-center">
               <ClientIcon name="CheckCircle" className="h-5 w-5 mr-2" />
               No Setup Fees
@@ -339,8 +341,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </PageWrapper>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
+/* eslint-disable react/no-unescaped-entities */
+
 import { useMemo, useState } from "react";
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
+import PageWrapper from "../../components/layout/PageWrapper";
 import ClientIcon from "../../components/ClientIcon";
 import FileDropzone from "../../components/forms/FileDropzone";
 
@@ -1615,10 +1616,8 @@ export default function SignUpPage() {
   );
 
   return (
-    <div className="flex flex-col bg-neutral-50">
-      <Header />
-
-      <main className="flex h-screen flex-col items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+    <PageWrapper mainClassName="bg-neutral-50">
+      <div className="flex flex-col gap-12 px-4 py-10 sm:px-6 lg:px-8">
         <section className="relative mx-auto w-full max-w-6xl">
           <div className="rounded-3xl bg-gradient-to-br from-primary-700 via-primary-600 to-primary-500 px-8 py-16 text-white shadow-xl">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
@@ -1725,9 +1724,7 @@ export default function SignUpPage() {
             {selectedOption === "tenant" && renderTenantForm()}
           </div>
         </section>
-      </main>
-
-      <Footer />
+      </div>
 
       {cgvModal.open && (
         <div
@@ -1820,6 +1817,7 @@ export default function SignUpPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }
+
