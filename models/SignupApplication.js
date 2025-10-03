@@ -63,6 +63,7 @@ const OwnerApplicationSchema = new mongoose.Schema(
     longDescription: { type: String, default: '' },
     heroPhoto: { type: [FileMetadataSchema], default: [] },
     gallery: { type: [FileMetadataSchema], default: [] },
+    portfolioGallery: { type: [FileMetadataSchema], default: [] },
     rooms: { type: [RoomSchema], default: [] },
     propertyAddress: { type: AddressSchema, default: () => ({}) },
     mainAddress: { type: AddressSchema, default: () => ({}) },

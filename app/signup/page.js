@@ -13,6 +13,7 @@ const createOwnerInitial = () => ({
   longDescription: "",
   heroPhoto: [],
   gallery: [],
+  portfolioGallery: [],
   amenities: {
     jacuzzi: false,
     sauna: false,
@@ -188,6 +189,14 @@ const buildOwnerPayload = async (form) => {
     ),
   ]);
 
+  const portfolioGallery = [
+    ...(Array.isArray(heroPhoto) ? heroPhoto : []),
+    ...(Array.isArray(gallery) ? gallery : []),
+    ...roomPhotos.flatMap((photos) =>
+      Array.isArray(photos) ? photos : []
+    ),
+  ];
+
   return {
     title: form.title,
     slug: form.slug,
@@ -195,6 +204,7 @@ const buildOwnerPayload = async (form) => {
     longDescription: form.longDescription,
     heroPhoto,
     gallery,
+    portfolioGallery,
     amenities: form.amenities,
     rooms: form.rooms.map((room, index) => ({
       name: room.name,
@@ -233,6 +243,40 @@ export default function SignUpPage() {
   const [tenantSubmitting, setTenantSubmitting] = useState(false);
   const [ownerExpandedRooms, setOwnerExpandedRooms] = useState([true]);
   const [customAmenityInput, setCustomAmenityInput] = useState("");
+  const [ownerAcceptedCGV, setOwnerAcceptedCGV] = useState(false);
+  const [tenantAcceptedCGV, setTenantAcceptedCGV] = useState(false);
+  const [cgvModal, setCgvModal] = useState({ open: false, type: null });
+  const [successModal, setSuccessModal] = useState({
+    open: false,
+    type: null,
+    message: "",
+  });
+  const CGV_URLS = {
+    owner: "/cgv-proprietaires",
+    tenant: "/cgv-locataires",
+  };
+
+  const openCGVModal = (type) => {
+    setCgvModal({ open: true, type });
+  };
+
+  const closeCGVModal = () => {
+    setCgvModal({ open: false, type: null });
+  };
+
+  const handleCGVAcceptance = () => {
+    if (cgvModal.type === "owner") {
+      setOwnerAcceptedCGV(true);
+    } else if (cgvModal.type === "tenant") {
+      setTenantAcceptedCGV(true);
+    }
+    resetFeedback();
+    closeCGVModal();
+  };
+
+  const handleSuccessModalClose = () => {
+    setSuccessModal({ open: false, type: null, message: "" });
+  };
 
   const ownerModuleStatus = useMemo(() => {
     const hasBaseInfo =
@@ -440,6 +484,16 @@ export default function SignUpPage() {
       return;
     }
 
+    if (!ownerAcceptedCGV) {
+      setFeedback({
+        type: "error",
+        message:
+          "Merci de consulter et d'accepter les CGV avant de valider votre candidature.",
+      });
+      openCGVModal("owner");
+      return;
+    }
+
     try {
       setOwnerSubmitting(true);
       const ownerPayload = await buildOwnerPayload(ownerForm);
@@ -468,9 +522,17 @@ export default function SignUpPage() {
         message:
           "Votre demande a bien été enregistrée. Notre équipe vous contactera sous 48h pour finaliser la mise en location de votre chalet.",
       });
+      setSuccessModal({
+        open: true,
+        type: "owner",
+        message:
+          result.message ||
+          "Votre demande a bien été prise en compte. Nous vous recontactons très vite !",
+      });
       setOwnerForm(createOwnerInitial());
       setOwnerActiveModule("owner-chalet");
       setOwnerExpandedRooms([true]);
+      setOwnerAcceptedCGV(false);
     } catch (error) {
       console.error("Owner signup error:", error);
       setFeedback({
@@ -505,6 +567,16 @@ export default function SignUpPage() {
       return;
     }
 
+    if (!tenantAcceptedCGV) {
+      setFeedback({
+        type: "error",
+        message:
+          "Merci de consulter et d'accepter les CGV avant de valider votre demande.",
+      });
+      openCGVModal("tenant");
+      return;
+    }
+
     try {
       setTenantSubmitting(true);
       const response = await fetch("/api/signup", {
@@ -530,10 +602,18 @@ export default function SignUpPage() {
       setFeedback({
         type: "success",
         message:
-          "Merci pour votre demande. Nous reviendrons vers vous avec une sélection personnalisée de chalets saisonniers.",
+          "Votre demande a bien été prise en compte. Nous reviendrons vers vous rapidement avec une sélection de chalets adaptés.",
+      });
+      setSuccessModal({
+        open: true,
+        type: "tenant",
+        message:
+          result.message ||
+          "Votre demande a bien été prise en compte. Notre équipe vous contactera rapidement !",
       });
       setTenantForm(createTenantInitial());
       setTenantActiveModule("tenant-profile");
+      setTenantAcceptedCGV(false);
     } catch (error) {
       console.error("Tenant signup error:", error);
       setFeedback({
@@ -1392,7 +1472,7 @@ export default function SignUpPage() {
       {renderAccordion(ownerModules, ownerActiveModule, setOwnerActiveModule)}
 
       {isOwnerFormValid && (
-        <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
+        <div className="flex flex-col items-start justify-between gap-6 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-primary-700">
               Validation de votre candidature
@@ -1407,18 +1487,48 @@ export default function SignUpPage() {
             </span>
           </div>
 
-          <button
-            type="submit"
-            disabled={ownerSubmitting}
-            className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
-              ownerSubmitting
-                ? "bg-primary-400 cursor-not-allowed"
-                : "bg-primary-600 hover:bg-primary-700"
-            }`}
-          >
-            <ClientIcon name="Send" className="h-4 w-4" />
-            {ownerSubmitting ? "Envoi en cours..." : "Envoyer ma candidature"}
-          </button>
+          <div className="flex w-full flex-col items-start gap-3 md:w-auto">
+            <label className="flex items-start gap-3 text-sm text-primary-700">
+              <input
+                type="checkbox"
+                checked={ownerAcceptedCGV}
+                onChange={(event) => {
+                  if (!event.target.checked) {
+                    setOwnerAcceptedCGV(false);
+                    return;
+                  }
+
+                  if (!ownerAcceptedCGV) {
+                    openCGVModal("owner");
+                  }
+                }}
+                className="mt-1 h-5 w-5 rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span>
+                J'ai lu et j'accepte les Conditions Générales de Vente.
+                <button
+                  type="button"
+                  onClick={() => openCGVModal("owner")}
+                  className="ml-2 text-primary-700 underline underline-offset-4 hover:text-primary-800"
+                >
+                  Consulter les CGV
+                </button>
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              disabled={ownerSubmitting || !ownerAcceptedCGV}
+              className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
+                ownerSubmitting || !ownerAcceptedCGV
+                  ? "bg-primary-400 cursor-not-allowed"
+                  : "bg-primary-600 hover:bg-primary-700"
+              }`}
+            >
+              <ClientIcon name="Send" className="h-4 w-4" />
+              {ownerSubmitting ? "Envoi en cours..." : "Envoyer ma candidature"}
+            </button>
+          </div>
         </div>
       )}
     </form>
@@ -1433,7 +1543,7 @@ export default function SignUpPage() {
       )}
 
       {isTenantFormValid && (
-        <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
+        <div className="flex flex-col items-start justify-between gap-6 rounded-3xl border border-primary-200 bg-primary-50/70 px-6 py-6 md:flex-row md:items-center">
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-primary-700">
               Recevoir ma sélection personnalisée
@@ -1448,18 +1558,48 @@ export default function SignUpPage() {
             </span>
           </div>
 
-          <button
-            type="submit"
-            disabled={tenantSubmitting}
-            className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
-              tenantSubmitting
-                ? "bg-primary-400 cursor-not-allowed"
-                : "bg-primary-600 hover:bg-primary-700"
-            }`}
-          >
-            <ClientIcon name="Send" className="h-4 w-4" />
-            {tenantSubmitting ? "Envoi en cours..." : "Envoyer ma demande"}
-          </button>
+          <div className="flex w-full flex-col items-start gap-3 md:w-auto">
+            <label className="flex items-start gap-3 text-sm text-primary-700">
+              <input
+                type="checkbox"
+                checked={tenantAcceptedCGV}
+                onChange={(event) => {
+                  if (!event.target.checked) {
+                    setTenantAcceptedCGV(false);
+                    return;
+                  }
+
+                  if (!tenantAcceptedCGV) {
+                    openCGVModal("tenant");
+                  }
+                }}
+                className="mt-1 h-5 w-5 rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span>
+                J'ai lu et j'accepte les Conditions Générales de Vente.
+                <button
+                  type="button"
+                  onClick={() => openCGVModal("tenant")}
+                  className="ml-2 text-primary-700 underline underline-offset-4 hover:text-primary-800"
+                >
+                  Consulter les CGV
+                </button>
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              disabled={tenantSubmitting || !tenantAcceptedCGV}
+              className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition ${
+                tenantSubmitting || !tenantAcceptedCGV
+                  ? "bg-primary-400 cursor-not-allowed"
+                  : "bg-primary-600 hover:bg-primary-700"
+              }`}
+            >
+              <ClientIcon name="Send" className="h-4 w-4" />
+              {tenantSubmitting ? "Envoi en cours..." : "Envoyer ma demande"}
+            </button>
+          </div>
         </div>
       )}
     </form>
@@ -1527,6 +1667,8 @@ export default function SignUpPage() {
                   onClick={() => {
                     setSelectedOption(option.id);
                     resetFeedback();
+                    setOwnerAcceptedCGV(false);
+                    setTenantAcceptedCGV(false);
                     if (option.id === "owner") {
                       setOwnerActiveModule("owner-chalet");
                     } else {
@@ -1577,6 +1719,98 @@ export default function SignUpPage() {
       </main>
 
       <Footer />
+
+      {cgvModal.open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={closeCGVModal}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-neutral-100 px-6 py-4">
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900">
+                  Conditions Générales de Vente
+                </h2>
+                <p className="text-sm text-neutral-500">
+                  Prenez quelques instants pour consulter nos conditions avant de poursuivre.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeCGVModal}
+                className="rounded-full p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                aria-label="Fermer la fenêtre des CGV"
+              >
+                <ClientIcon name="X" className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="h-[420px] w-full border-b border-neutral-100 bg-neutral-50">
+              <iframe
+                src={`${CGV_URLS[cgvModal.type] ?? "/cgv-proprietaires"}`}
+                title="Conditions Générales de Vente"
+                className="h-full w-full"
+              />
+            </div>
+
+            <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
+              <a
+                href={CGV_URLS[cgvModal.type] ?? "/cgv-proprietaires"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-primary-600 underline underline-offset-4 hover:text-primary-700"
+              >
+                Ouvrir les CGV dans un nouvel onglet
+              </a>
+              <button
+                type="button"
+                onClick={handleCGVAcceptance}
+                className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
+              >
+                <ClientIcon name="Check" className="h-4 w-4" />
+                J'accepte les CGV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {successModal.open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={handleSuccessModalClose}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <ClientIcon name="CheckCircle2" className="h-7 w-7" />
+            </div>
+            <h3 className="mt-4 text-xl font-semibold text-neutral-900">
+              Merci pour votre confiance !
+            </h3>
+            <p className="mt-3 text-sm text-neutral-600">
+              {successModal.message ||
+                "Votre demande a bien été prise en compte. Nous revenons vers vous très prochainement."}
+            </p>
+            <button
+              type="button"
+              onClick={handleSuccessModalClose}
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
