@@ -1731,13 +1731,13 @@ export default function SignUpPage() {
             className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-neutral-100 px-6 py-4">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 shadow-lg px-6 py-4">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900">
+                <h2 className="text-3xl font-thin text-neutral-900 ">
                   Conditions Générales de Vente
                 </h2>
-                <p className="text-sm text-neutral-500">
-                  Prenez quelques instants pour consulter nos conditions avant de poursuivre.
+                <p className="text-[10px] uppercase text-primary-700 mt-6 md:w-1/2">
+                  Prenez quelques instants pour consulter nos conditions avant de poursuivre.  
                 </p>
               </div>
               <button
@@ -1763,16 +1763,16 @@ export default function SignUpPage() {
                 href={CGV_URLS[cgvModal.type] ?? "/cgv-proprietaires"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium text-primary-600 underline underline-offset-4 hover:text-primary-700"
+                className="text-xs uppercase italic font-light text-primary-600  hover:text-primary-700"
               >
                 Ouvrir les CGV dans un nouvel onglet
               </a>
               <button
                 type="button"
                 onClick={handleCGVAcceptance}
-                className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
+                className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2 font-light text-[12px] text-white transition hover:bg-primary-700"
               >
-                <ClientIcon name="Check" className="h-4 w-4" />
+                
                 J'accepte les CGV
               </button>
             </div>

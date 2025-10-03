@@ -110,7 +110,7 @@ export default function CgvProprietairesPage() {
 
   return (
     <>
-      <Header />
+     
       <main className="bg-neutral-50 pt-24">
         <section className="bg-primary-900 text-white py-16">
           <div className="max-w-5xl mx-auto px-6">
@@ -164,7 +164,7 @@ export default function CgvProprietairesPage() {
           </div>
         </section>
       </main>
-      <Footer />
+      
     </>
   );
 }

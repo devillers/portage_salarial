@@ -108,18 +108,18 @@ export default function CgvLocatairesPage() {
 
   return (
     <>
-      <Header />
+      
       <main className="bg-neutral-50 pt-24">
         <section className="bg-primary-900 text-white py-16">
           <div className="max-w-5xl mx-auto px-6">
             <p className="uppercase tracking-widest text-primary-200 text-xs mb-4">Conditions Générales de Vente</p>
-            <h1 className="text-3xl md:text-4xl font-semibold mb-6">
+            <h1 className="text-3xl md:text-6xl uppercase font-thin mb-6">
               CGV locataires
             </h1>
-            <p className="text-base md:text-lg text-primary-100 max-w-3xl">
+            <p className="text-base md:text-sm italic text-primary-100 max-w-3xl md:w-3/5">
               Ce document précise les règles applicables à toute réservation de séjour réalisée auprès de Chalet Manager.
             </p>
-            <p className="mt-6 text-sm text-primary-200">Dernière mise à jour : {lastUpdated}</p>
+            <p className="mt-6 text-[10px] uppercase text-primary-200">Dernière mise à jour : {lastUpdated}</p>
           </div>
         </section>
 
@@ -127,14 +127,14 @@ export default function CgvLocatairesPage() {
           <div className="max-w-5xl mx-auto px-6 space-y-12">
             {sections.map((section) => (
               <article key={section.title}>
-                <h2 className="text-xl md:text-2xl font-semibold text-neutral-900 mb-4">{section.title}</h2>
+                <h2 className="text-xl md:text-2xl font-light uppercase text-neutral-900 mb-4">{section.title}</h2>
                 {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph} className="text-neutral-700 leading-relaxed mb-4">
+                  <p key={paragraph} className="text-neutral-700 leading-relaxed text-justify text-xs mt-4">
                     {paragraph}
                   </p>
                 ))}
                 {section.list && (
-                  <ul className="list-disc list-inside text-neutral-700 space-y-2">
+                  <ul className="text-neutral-700 leading-relaxed text-justify text-xs mt-4 list-disc list-inside">
                     {section.list.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
@@ -142,7 +142,7 @@ export default function CgvLocatairesPage() {
                 )}
                 {section.paragraphsAfterList &&
                   section.paragraphsAfterList.map((paragraph) => (
-                    <p key={paragraph} className="text-neutral-700 leading-relaxed mt-4">
+                    <p key={paragraph} className="text-neutral-700 leading-relaxed text-justify text-xs mt-4">
                       {paragraph}
                     </p>
                   ))}
@@ -168,7 +168,7 @@ export default function CgvLocatairesPage() {
           </div>
         </section>
       </main>
-      <Footer />
+     
     </>
   );
 }
