@@ -13,6 +13,12 @@ const createOwnerInitial = () => ({
   longDescription: "",
   heroPhoto: [],
   gallery: [],
+  amenities: {
+    jacuzzi: false,
+    sauna: false,
+    piscine: false,
+    other: [],
+  },
   rooms: [
     {
       name: "",
@@ -84,6 +90,12 @@ const CLOUDINARY_FOLDERS = {
   identity: "signup/documents/identity",
   ownership: "signup/documents/ownership",
 };
+
+const DEFAULT_AMENITIES = [
+  { key: "jacuzzi", label: "Jacuzzi" },
+  { key: "sauna", label: "Sauna" },
+  { key: "piscine", label: "Piscine" },
+];
 
 const isFileInstance = (candidate) =>
   typeof File !== "undefined" && candidate instanceof File;
@@ -183,6 +195,7 @@ const buildOwnerPayload = async (form) => {
     longDescription: form.longDescription,
     heroPhoto,
     gallery,
+    amenities: form.amenities,
     rooms: form.rooms.map((room, index) => ({
       name: room.name,
       description: room.description,
@@ -219,6 +232,7 @@ export default function SignUpPage() {
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [tenantSubmitting, setTenantSubmitting] = useState(false);
   const [ownerExpandedRooms, setOwnerExpandedRooms] = useState([true]);
+  const [customAmenityInput, setCustomAmenityInput] = useState("");
 
   const ownerModuleStatus = useMemo(() => {
     const hasBaseInfo =
@@ -365,6 +379,52 @@ export default function SignUpPage() {
       prev.map((isOpen, currentIndex) =>
         currentIndex === index ? !isOpen : isOpen
       )
+    );
+  };
+
+  const addCustomAmenity = () => {
+    const value = customAmenityInput.trim();
+
+    if (!value) {
+      return;
+    }
+
+    const normalizedValue = value.toLowerCase();
+    const existingCustomAmenities = ownerForm.amenities?.other ?? [];
+    const hasDuplicateCustom = existingCustomAmenities.some(
+      (amenity) => amenity.toLowerCase() === normalizedValue
+    );
+    const matchesDefaultAmenity = DEFAULT_AMENITIES.some(
+      (amenity) => amenity.label.toLowerCase() === normalizedValue
+    );
+
+    if (hasDuplicateCustom || matchesDefaultAmenity) {
+      setCustomAmenityInput("");
+      return;
+    }
+
+    resetFeedback();
+
+    handleOwnerChange("amenities.other", [
+      ...existingCustomAmenities,
+      value,
+    ]);
+
+    setCustomAmenityInput("");
+  };
+
+  const removeCustomAmenity = (index) => {
+    const existingCustomAmenities = ownerForm.amenities?.other ?? [];
+
+    if (!existingCustomAmenities.length) {
+      return;
+    }
+
+    resetFeedback();
+
+    handleOwnerChange(
+      "amenities.other",
+      existingCustomAmenities.filter((_, currentIndex) => currentIndex !== index)
     );
   };
 
@@ -572,6 +632,88 @@ export default function SignUpPage() {
                 className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
               />
             </>
+          </div>
+
+          <div className="space-y-3 md:col-span-2">
+            <span className="text-[15px] text-black">Équipements</span>
+            <div className="space-y-4 rounded-2xl border border-neutral-200 bg-white px-4 py-4">
+              <div className="flex flex-wrap gap-4">
+                {DEFAULT_AMENITIES.map((amenity) => {
+                  const amenityId = `amenity-${amenity.key}`;
+
+                  return (
+                    <label
+                      key={amenity.key}
+                      htmlFor={amenityId}
+                      className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 shadow-sm transition hover:border-primary-200"
+                    >
+                      <input
+                        id={amenityId}
+                        type="checkbox"
+                        checked={ownerForm.amenities?.[amenity.key] ?? false}
+                        onChange={(event) =>
+                          handleOwnerChange(
+                            `amenities.${amenity.key}`,
+                            event.target.checked
+                          )
+                        }
+                        className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span>{amenity.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-wide text-neutral-500">
+                  Ajouter un autre équipement
+                </label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="text"
+                    value={customAmenityInput}
+                    onChange={(event) => setCustomAmenityInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        addCustomAmenity();
+                      }
+                    }}
+                    placeholder="Ex. Barbecue, Salle de sport..."
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomAmenity}
+                    className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+
+                {ownerForm.amenities?.other?.length > 0 && (
+                  <ul className="flex flex-wrap gap-2">
+                    {ownerForm.amenities.other.map((amenity, index) => (
+                      <li
+                        key={`${amenity}-${index}`}
+                        className="flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700"
+                      >
+                        <span>{amenity}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeCustomAmenity(index)}
+                          className="text-neutral-400 transition hover:text-neutral-600"
+                          aria-label={`Supprimer l’équipement ${amenity}`}
+                        >
+                          <ClientIcon name="X" className="h-3 w-3" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
           </div>
 
           <FileDropzone
