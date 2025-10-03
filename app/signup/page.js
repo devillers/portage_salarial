@@ -1615,11 +1615,11 @@ export default function SignUpPage() {
   );
 
   return (
-    <div className=" bg-neutral-50">
+    <div className="flex h-screen flex-col bg-neutral-50">
       <Header />
 
-      <main className="pt-24 pb-16">
-        <section className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <main className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+        <section className="relative mx-auto w-full max-w-6xl">
           <div className="rounded-3xl bg-gradient-to-br from-primary-700 via-primary-600 to-primary-500 px-8 py-16 text-white shadow-xl">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl space-y-5">
