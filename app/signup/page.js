@@ -70,14 +70,14 @@ const createTenantInitial = () => ({
 const OPTIONS = [
   {
     id: "owner",
-    title: "J'ai un chalet à louer à la saison",
+    title: "J'ai un chalet à louer ",
     description:
       "Partagez les informations essentielles de votre bien pour rejoindre notre réseau et bénéficier de notre accompagnement complet.",
     icon: "Home",
   },
   {
     id: "tenant",
-    title: "Je recherche une location à la saison",
+    title: "Je recherche une location ",
     description:
       "Indiquez vos critères afin que notre équipe vous propose les chalets correspondant parfaitement à vos attentes.",
     icon: "Search",
@@ -1627,11 +1627,10 @@ export default function SignUpPage() {
                   <ClientIcon name="Sparkles" className="h-4 w-4" />
                   Rejoindre notre réseau
                 </span>
-                <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
-                  Inscription saisonnière : propriétaire ou locataire,
-                  choisissez votre parcours.
+                <h1 className="text-4xl uppercase font-bold leading-tight sm:text-5xl">
+                  Location à la Saison
                 </h1>
-                <p className="text-white/80">
+                <p className=" uppercase text-xs italic text-white/80">
                   Nous accompagnons aussi bien les propriétaires qui souhaitent
                   confier leur chalet que les voyageurs en quête d'un séjour
                   saisonnier d'exception.
@@ -1687,7 +1686,7 @@ export default function SignUpPage() {
                   className={`text-left transition ${
                     isActive
                       ? "rounded-3xl border-2 border-primary-500 bg-white shadow-xl shadow-primary-500/10"
-                      : "rounded-3xl border border-neutral-200 bg-white/70 hover:border-primary-200 hover:shadow-lg"
+                      : "rounded-3xl bg-white/70 hover:border-l-4 hover:border-l-primary-500 animation hover:shadow-sm animation animate-fade-in-down "
                   }`}
                 >
                   <div className="flex items-start gap-4 p-6">
@@ -1717,7 +1716,7 @@ export default function SignUpPage() {
           <div className="mt-10 space-y-6">
             {renderFeedback()}
             {!selectedOption && (
-              <div className="rounded-3xl border border-dashed border-neutral-200 bg-white/60 p-8 text-center text-sm text-neutral-600">
+              <div className="rounded-3xl border border-dashed border-neutral-200 bg-white/60 p-8 text-center text-sm text-neutral-600 mt-4">
                 Sélectionnez le parcours qui correspond à votre situation pour commencer votre inscription.
               </div>
             )}
