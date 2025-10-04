@@ -43,6 +43,16 @@ const RoomSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const AmenitiesSchema = new mongoose.Schema(
+  {
+    jacuzzi: { type: Boolean, default: false },
+    sauna: { type: Boolean, default: false },
+    piscine: { type: Boolean, default: false },
+    other: { type: [String], default: [] }
+  },
+  { _id: false }
+);
+
 const OwnerDetailsSchema = new mongoose.Schema(
   {
     firstName: { type: String, default: '' },
@@ -64,6 +74,7 @@ const OwnerApplicationSchema = new mongoose.Schema(
     heroPhoto: { type: [FileMetadataSchema], default: [] },
     gallery: { type: [FileMetadataSchema], default: [] },
     portfolioGallery: { type: [FileMetadataSchema], default: [] },
+    amenities: { type: AmenitiesSchema, default: () => ({}) },
     rooms: { type: [RoomSchema], default: [] },
     propertyAddress: { type: AddressSchema, default: () => ({}) },
     mainAddress: { type: AddressSchema, default: () => ({}) },
