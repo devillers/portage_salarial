@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '../../../lib/mongodb';
 import SignupApplication from '../../../models/SignupApplication';
 
+export const runtime = 'nodejs';
+
 const isNonEmptyString = (value) => typeof value === 'string' && value.trim().length > 0;
 
 const validateOwnerPayload = (data) => {
