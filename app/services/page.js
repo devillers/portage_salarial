@@ -1,8 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import Image from 'next/image';
 import Link from 'next/link';
 import ClientIcon from '../../components/ClientIcon';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 export const metadata = {
   title: 'Our Services | Chalet Manager',
@@ -175,11 +176,9 @@ export default function ServicesPage() {
   ];
 
   return (
-    <div className="min-h-screen">
-      <Header />
-
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center text-white overflow-hidden mt-16 md:mt-20">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg"
@@ -188,22 +187,22 @@ export default function ServicesPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/50"></div>
+          <div className="absolute inset-0 bg-black/35"></div>
         </div>
 
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
+          <h1 className="mb-4 text-3xl font-bold md:text-5xl">
             Comprehensive Chalet Management Services
           </h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
-            From rental optimization to guest services, we handle every aspect of your chalet operation
+          <p className="mx-auto max-w-2xl text-lg text-white/90 md:text-xl">
+            From rental optimization to guest services, we handle every aspect of your chalet operation.
           </p>
         </div>
       </section>
 
       {/* Services Overview */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white py-20 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
               Our Core Services
@@ -362,8 +361,8 @@ export default function ServicesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-700 to-primary-900 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      <section className="bg-gradient-to-r from-primary-700 to-primary-900 py-20 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
+        <div className="mx-auto max-w-4xl px-6 text-center sm:px-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to Transform Your Chalet Management?
           </h2>
@@ -372,7 +371,7 @@ export default function ServicesPage() {
             Let our experienced team take care of everything while you enjoy the returns
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               href="/contact"
               className="px-8 py-4 bg-white text-primary-800 rounded-full font-semibold hover:bg-neutral-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
@@ -390,8 +389,6 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </PageWrapper>
   );
 }

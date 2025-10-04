@@ -1,8 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import Image from 'next/image';
 import Link from 'next/link';
 import ClientIcon from '../../components/ClientIcon';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 export const metadata = {
   title: 'Portage Salarial | Chalet Manager',
@@ -87,11 +88,9 @@ export default function PortageSalarialPage() {
   ];
 
   return (
-    <div className="min-h-screen">
-      <Header />
-
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center text-white overflow-hidden mt-16 md:mt-20">
+      <section className="relative flex min-h-[55vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg"
@@ -100,22 +99,20 @@ export default function PortageSalarialPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/50"></div>
+          <div className="absolute inset-0 bg-black/35"></div>
         </div>
 
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Portage Salarial
-          </h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
-            La solution idéale pour exercer en toute sécurité votre activité de gestion de chalets
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
+          <h1 className="mb-4 text-4xl font-bold md:text-5xl">Portage Salarial</h1>
+          <p className="mx-auto max-w-2xl text-lg text-white/90 md:text-xl">
+            La solution idéale pour exercer en toute sécurité votre activité de gestion de chalets.
           </p>
         </div>
       </section>
 
       {/* Definition Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white py-20 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-6">
@@ -373,7 +370,6 @@ export default function PortageSalarialPage() {
         </div>
       </section>
 
-      <Footer />
-    </div>
+    </PageWrapper>
   );
 }
