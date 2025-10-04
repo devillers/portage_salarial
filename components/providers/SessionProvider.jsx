@@ -10,6 +10,12 @@ import {
 } from 'react';
 
 const STORAGE_KEY = 'chalet-management.session';
+const ALLOWED_ROLES = ['admin', 'super-admin'];
+
+const isRoleAllowed = (role) => {
+  if (!role) return false;
+  return ALLOWED_ROLES.includes(role);
+};
 
 const SessionContext = createContext({
   data: null,
@@ -84,6 +90,14 @@ export default function AuthSessionProvider({ children }) {
 
   useEffect(() => {
     const stored = loadStoredSession();
+
+    if (stored?.user && !isRoleAllowed(stored.user.role)) {
+      persistSession(null);
+      setSession(null);
+      setStatus('unauthenticated');
+      return;
+    }
+
     if (stored) {
       setSession(stored);
       setStatus('authenticated');
@@ -121,6 +135,11 @@ export default function AuthSessionProvider({ children }) {
       }
 
       const user = normaliseUser(result.user, result.token);
+
+      if (!isRoleAllowed(user.role)) {
+        return { error: "Vous n'avez pas les droits nécessaires pour accéder à l'admin." };
+      }
+
       const sessionData = { user };
 
       setSession(sessionData);
@@ -159,6 +178,12 @@ export default function AuthSessionProvider({ children }) {
       externalSignOut = async () => ({ ok: true });
     };
   }, [performSignIn, performSignOut]);
+
+  useEffect(() => {
+    if (status === 'authenticated' && !isRoleAllowed(session?.user?.role)) {
+      void performSignOut({ callbackUrl: '/admin' });
+    }
+  }, [status, session?.user?.role, performSignOut]);
 
   const value = useMemo(
     () => ({
