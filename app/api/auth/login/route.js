@@ -62,6 +62,17 @@ export async function POST(request) {
       );
     }
 
+    const allowedRoles = ['admin', 'super-admin'];
+    if (!allowedRoles.includes(user.role)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Access denied'
+        },
+        { status: 403 }
+      );
+    }
+
     // Update last login
     await user.updateLastLogin();
 

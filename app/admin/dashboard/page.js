@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { signOut, useSession } from '../../../components/providers/SessionProvider';
 import ClientIcon from '../../../components/ClientIcon';
 
+const ALLOWED_ROLES = ['admin', 'super-admin'];
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const [stats, setStats] = useState({
@@ -25,9 +27,20 @@ export default function AdminDashboard() {
     }
   }, [status, router]);
 
+  useEffect(() => {
+    if (status === 'authenticated' && !ALLOWED_ROLES.includes(session?.user?.role)) {
+      signOut({ callbackUrl: '/admin' });
+    }
+  }, [status, session?.user?.role]);
+
   // Charge les stats quand la session est prête
   useEffect(() => {
     if (status !== 'authenticated') return;
+
+    if (!ALLOWED_ROLES.includes(session?.user?.role)) {
+      setLoading(false);
+      return;
+    }
 
     const controller = new AbortController();
 
@@ -46,7 +59,7 @@ export default function AdminDashboard() {
 
     loadStats();
     return () => controller.abort();
-  }, [status, apiToken]);
+  }, [status, apiToken, session?.user?.role]);
 
   const fetchStats = async (token, signal) => {
     try {
