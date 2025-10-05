@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '../../../lib/mongodb';
 import SignupApplication from '../../../models/SignupApplication';
 import User from '../../../models/User';
+import { verifyToken } from '../../../lib/auth';
 
 export const runtime = 'nodejs';
 
@@ -207,6 +208,98 @@ export async function POST(request) {
       {
         success: false,
         message: "Une erreur interne est survenue. Veuillez réessayer plus tard."
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request) {
+  try {
+    const authHeader = request.headers.get('authorization') || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : null;
+
+    if (!token) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Access token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let user;
+    try {
+      user = await verifyToken(token);
+    } catch (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    if (user?.role !== 'super-admin') {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Insufficient permissions'
+        },
+        { status: 403 }
+      );
+    }
+
+    await dbConnect();
+
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    const status = searchParams.get('status');
+
+    const query = {};
+    if (type) {
+      query.type = type;
+    }
+    if (status) {
+      query.status = status;
+    }
+
+    const applications = await SignupApplication.find(query)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const sanitized = applications.map((application) => {
+      if (application.type !== 'owner') {
+        return application;
+      }
+
+      const ownerData = application.ownerData || {};
+      const owner = ownerData.owner || {};
+      const { password, ...ownerWithoutPassword } = owner;
+
+      return {
+        ...application,
+        ownerData: {
+          ...ownerData,
+          owner: ownerWithoutPassword
+        }
+      };
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: sanitized
+    });
+  } catch (error) {
+    console.error('Error fetching signup applications:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to fetch signup applications'
       },
       { status: 500 }
     );
