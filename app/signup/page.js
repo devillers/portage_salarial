@@ -2,7 +2,7 @@
 
 /* eslint-disable react/no-unescaped-entities */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageWrapper from "../../components/layout/PageWrapper";
 import ClientIcon from "../../components/ClientIcon";
 import FileDropzone from "../../components/forms/FileDropzone";
@@ -237,6 +237,11 @@ export default function SignUpPage() {
   const [ownerForm, setOwnerForm] = useState(createOwnerInitial);
   const [tenantForm, setTenantForm] = useState(createTenantInitial);
   const [feedback, setFeedback] = useState({ type: "", message: "" });
+  const [cloudinaryStatus, setCloudinaryStatus] = useState({
+    checked: false,
+    configured: true,
+    message: "",
+  });
   const [ownerActiveModule, setOwnerActiveModule] = useState("owner-chalet");
   const [tenantActiveModule, setTenantActiveModule] =
     useState("tenant-profile");
@@ -256,6 +261,51 @@ export default function SignUpPage() {
     owner: "/cgv-proprietaires",
     tenant: "/cgv-locataires",
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchStatus = async () => {
+      try {
+        const response = await fetch("/api/uploads/config", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error();
+        }
+
+        const payload = await response.json();
+
+        if (!isMounted) return;
+
+        setCloudinaryStatus({
+          checked: true,
+          configured: Boolean(payload?.configured),
+          message:
+            payload?.message ||
+            "Cloudinary n'est pas configuré. Merci d'ajouter les variables d'environnement requises.",
+          details: payload?.details,
+        });
+      } catch (error) {
+        if (!isMounted) return;
+
+        setCloudinaryStatus({
+          checked: true,
+          configured: false,
+          message:
+            "Cloudinary n'est pas configuré. Merci de définir CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY et CLOUDINARY_API_SECRET.",
+        });
+      }
+    };
+
+    fetchStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const openCGVModal = (type) => {
     setCgvModal({ open: true, type });
@@ -494,6 +544,16 @@ export default function SignUpPage() {
       return;
     }
 
+    if (cloudinaryStatus.checked && !cloudinaryStatus.configured) {
+      setFeedback({
+        type: "error",
+        message:
+          cloudinaryStatus.message ||
+          "Cloudinary n'est pas configuré. Merci de contacter un administrateur.",
+      });
+      return;
+    }
+
     if (!ownerAcceptedCGV) {
       setFeedback({
         type: "error",
@@ -651,6 +711,18 @@ export default function SignUpPage() {
         }`}
       >
         {feedback.message}
+      </div>
+    );
+  };
+
+  const renderCloudinaryStatus = () => {
+    if (!cloudinaryStatus.checked || cloudinaryStatus.configured) {
+      return null;
+    }
+
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        {cloudinaryStatus.message}
       </div>
     );
   };
@@ -1713,6 +1785,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="mt-10 space-y-6">
+            {renderCloudinaryStatus()}
             {renderFeedback()}
             {!selectedOption && (
               <div className="rounded-3xl border border-dashed border-neutral-200 bg-white/60 p-8 text-center text-sm text-neutral-600 mt-4">
