@@ -38,8 +38,29 @@ export async function GET(request) {
     const page = searchParams.get('page') || 1;
     const search = searchParams.get('search');
     const ownerParam = searchParams.get('owner');
+    const includeInactive = searchParams.get('includeInactive') === 'true';
 
-    let query = { 'availability.isActive': true };
+    const authHeader = request.headers.get('authorization') || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : null;
+
+    let authUser = null;
+    if (token) {
+      try {
+        authUser = await verifyToken(token);
+      } catch (error) {
+        // ignore invalid token for public calls
+        authUser = null;
+      }
+    }
+
+    let query = {};
+
+    const shouldFilterActiveOnly = !includeInactive || authUser?.role !== 'super-admin';
+    if (shouldFilterActiveOnly) {
+      query['availability.isActive'] = true;
+    }
 
     // Filter by featured
     if (featured === 'true') {
