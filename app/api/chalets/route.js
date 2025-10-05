@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/mongodb';
 import Chalet from '../../../models/Chalet';
+import SignupApplication from '../../../models/SignupApplication';
 import { requireAuth, verifyToken } from '../../../lib/auth';
 
 async function resolveOwnerFilter(request, ownerParam) {
@@ -39,6 +40,7 @@ export async function GET(request) {
     const search = searchParams.get('search');
     const ownerParam = searchParams.get('owner');
     const includeInactive = searchParams.get('includeInactive') === 'true';
+    const includeSignups = searchParams.get('includeSignups') === 'true';
 
     const authHeader = request.headers.get('authorization') || '';
     const token = authHeader.startsWith('Bearer ')
@@ -96,14 +98,96 @@ export async function GET(request) {
     const chalets = await chaletQuery.exec();
     const total = await Chalet.countDocuments(query);
 
+    const chaletObjects = chalets.map((chalet) =>
+      typeof chalet.toObject === 'function' ? chalet.toObject({ virtuals: true }) : chalet
+    );
+
+    let signupEntries = [];
+
+    if (authUser?.role === 'super-admin' && includeSignups) {
+      const ownerApplications = await SignupApplication.find({ type: 'owner' }).lean();
+
+      signupEntries = ownerApplications.map((application) => {
+        const ownerData = application.ownerData || {};
+        const propertyAddress = ownerData.propertyAddress || {};
+        const heroPhotoSource = ownerData.heroPhoto?.[0] || ownerData.gallery?.[0] || {};
+        const gallerySources = Array.isArray(ownerData.gallery) ? ownerData.gallery : [];
+
+        const toUrl = (file = {}) => file.secureUrl || file.url || '';
+
+        return {
+          _id: `signup-${application._id}`,
+          slug: ownerData.slug || `signup-${application._id}`,
+          title: ownerData.title || 'Nouveau chalet (inscription)',
+          heroImage: toUrl(heroPhotoSource) || null,
+          gallery: gallerySources.map((item) => toUrl(item)).filter(Boolean),
+          location: {
+            city: propertyAddress.city || '',
+            country: propertyAddress.country || ''
+          },
+          availability: {
+            isActive: false,
+            status: 'pending-review'
+          },
+          source: 'signup-application',
+          ownerApplicationId: application._id
+        };
+      });
+    }
+
+    const seenKeys = new Set();
+    const combinedData = [];
+
+    const registerEntry = (entry, { ownerKey = '', preferSlugOnly = false } = {}) => {
+      const slugKey = entry.slug || '';
+      const ownerKeyValue = ownerKey || '';
+
+      let identifier;
+
+      if (slugKey && preferSlugOnly) {
+        identifier = `slug:${slugKey}`;
+      } else if (slugKey && ownerKeyValue) {
+        identifier = `slug:${slugKey}|owner:${ownerKeyValue}`;
+      } else if (slugKey) {
+        identifier = `slug:${slugKey}`;
+      } else if (ownerKeyValue) {
+        identifier = `owner:${ownerKeyValue}`;
+      } else {
+        identifier = `id:${entry._id || ''}`;
+      }
+
+      if (seenKeys.has(identifier)) {
+        return false;
+      }
+
+      seenKeys.add(identifier);
+      combinedData.push(entry);
+      return true;
+    };
+
+    chaletObjects.forEach((chalet) => {
+      const ownerKey = chalet.owner?._id?.toString?.() || chalet.owner?.toString?.() || '';
+      registerEntry(chalet, { ownerKey });
+    });
+
+    let uniqueSignupCount = 0;
+
+    signupEntries.forEach((entry) => {
+      if (registerEntry(entry, { preferSlugOnly: true })) {
+        uniqueSignupCount += 1;
+      }
+    });
+
+    const totalCombined = total + uniqueSignupCount;
+
     return NextResponse.json({
       success: true,
-      data: chalets,
+      data: combinedData,
       pagination: {
-        total,
+        total: totalCombined,
         page: parseInt(page),
-        limit: limit ? parseInt(limit) : total,
-        pages: limit ? Math.ceil(total / parseInt(limit)) : 1
+        limit: limit ? parseInt(limit) : totalCombined,
+        pages: limit ? Math.ceil(totalCombined / parseInt(limit)) : 1
       }
     });
 
