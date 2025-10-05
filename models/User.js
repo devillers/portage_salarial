@@ -1,6 +1,27 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+const ROLE_VALUES = ['admin', 'super-admin', 'manager', 'owner'];
+const ADMIN_ROLES = new Set(['admin', 'super-admin', 'owner']);
+
+const normalizeRole = (role) => {
+  const normalized = (role || '').toString().trim().toLowerCase();
+
+  if (normalized === 'owner') {
+    return 'owner';
+  }
+
+  if (normalized === 'super-admin') {
+    return 'super-admin';
+  }
+
+  if (normalized === 'manager') {
+    return 'manager';
+  }
+
+  return 'admin';
+};
+
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -26,8 +47,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'super-admin', 'manager', 'owner'],
-    default: 'admin'
+    enum: ROLE_VALUES,
+    default: 'admin',
+    set: normalizeRole
+  },
+  isOwner: {
+    type: Boolean,
+    default: false
   },
   chalets: [
     {
@@ -45,6 +71,11 @@ const UserSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+UserSchema.pre('validate', function(next) {
+  this.isOwner = normalizeRole(this.role) === 'owner';
+  next();
 });
 
 // Hash password before saving
@@ -72,5 +103,13 @@ UserSchema.methods.updateLastLogin = function() {
   this.lastLogin = new Date();
   return this.save();
 };
+
+UserSchema.methods.hasAdminAccess = function() {
+  return ADMIN_ROLES.has(this.role);
+};
+
+UserSchema.virtual('isAdminRole').get(function() {
+  return ADMIN_ROLES.has(this.role);
+});
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);
