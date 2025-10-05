@@ -9,6 +9,10 @@ import ClientIcon from '../../../components/ClientIcon';
 
 const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 
+const SOURCE_LABELS = {
+  'signup-application': 'Candidature'
+};
+
 export default function AdminChaletsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -151,7 +155,23 @@ export default function AdminChaletsPage() {
   const renderChaletCard = (chalet) => {
     const isSignup = chalet?.source === 'signup-application';
     const isActive = chalet?.availability?.isActive ?? false;
-    const coverImage = chalet?.images?.[0] || chalet?.heroImage || chalet?.gallery?.[0];
+    const coverImage = getAdminThumbnailImage(chalet);
+    const guestCount = chalet?.specifications?.maxGuests;
+    const hasGuestCount = Number.isFinite(guestCount) && guestCount > 0;
+    const guestLabel = hasGuestCount
+      ? `${guestCount} voyageur${guestCount > 1 ? 's' : ''}`
+      : 'À renseigner';
+    const areaValue = chalet?.specifications?.area;
+    const hasArea = Number.isFinite(areaValue) && areaValue > 0;
+    const areaLabel = hasArea ? `${areaValue} m²` : 'À renseigner';
+    const basePrice = chalet?.pricing?.basePrice;
+    const hasBasePrice = Number.isFinite(basePrice) && basePrice >= 0;
+    const priceLabel = hasBasePrice
+      ? `${Number(basePrice).toLocaleString('fr-FR')} €`
+      : 'À renseigner';
+    const sourceBadgeLabel = chalet?.source
+      ? SOURCE_LABELS[chalet.source] || chalet.source
+      : null;
 
     return (
       <li
@@ -159,10 +179,10 @@ export default function AdminChaletsPage() {
         className="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm"
       >
         <div className="relative h-48 bg-neutral-100">
-          {coverImage ? (
+          {coverImage?.url ? (
             <Image
-              src={coverImage}
-              alt={chalet.title || 'Chalet'}
+              src={coverImage.url}
+              alt={coverImage.alt || chalet.title || 'Chalet'}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
@@ -177,24 +197,30 @@ export default function AdminChaletsPage() {
             <ClientIcon name="MapPin" className="h-4 w-4 mr-1" />
             {chalet.location?.city || 'Ville à préciser'}
           </div>
-          {isSignup && (
-            <div className="absolute top-4 right-4 inline-flex items-center rounded-full bg-primary-600/90 px-3 py-1 text-xs font-semibold text-white shadow">
-              Candidature
-            </div>
-          )}
-          {!isSignup && (
-            <div
-              className={`absolute top-4 right-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium shadow ${
-                isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-600'
-              }`}
-            >
-              <span
-                className="w-2 h-2 rounded-full mr-2"
-                style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
-              />
-              {isActive ? 'Actif' : 'Inactif'}
-            </div>
-          )}
+          <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+            {isSignup ? (
+              <div className="inline-flex items-center rounded-full bg-primary-600/90 px-3 py-1 text-xs font-semibold text-white shadow">
+                Candidature
+              </div>
+            ) : (
+              <div
+                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium shadow ${
+                  isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-600'
+                }`}
+              >
+                <span
+                  className="w-2 h-2 rounded-full mr-2"
+                  style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
+                />
+                {isActive ? 'Actif' : 'Inactif'}
+              </div>
+            )}
+            {isSuperAdmin && sourceBadgeLabel && (
+              <div className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-neutral-700 shadow">
+                Source : {sourceBadgeLabel}
+              </div>
+            )}
+          </div>
         </div>
         <div className="p-6 space-y-4">
           <div>
@@ -209,23 +235,15 @@ export default function AdminChaletsPage() {
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <dt className="text-neutral-500">Capacité</dt>
-              <dd className="font-medium text-neutral-900">
-                {chalet.capacity?.guests ? `${chalet.capacity.guests} voyageurs` : 'À renseigner'}
-              </dd>
+              <dd className="font-medium text-neutral-900">{guestLabel}</dd>
             </div>
             <div>
               <dt className="text-neutral-500">Surface</dt>
-              <dd className="font-medium text-neutral-900">
-                {chalet.details?.area ? `${chalet.details.area} m²` : 'À renseigner'}
-              </dd>
+              <dd className="font-medium text-neutral-900">{areaLabel}</dd>
             </div>
             <div>
               <dt className="text-neutral-500">Prix par nuit</dt>
-              <dd className="font-medium text-neutral-900">
-                {chalet.pricing?.pricePerNight
-                  ? `${Number(chalet.pricing.pricePerNight).toLocaleString('fr-FR')} €`
-                  : 'À renseigner'}
-              </dd>
+              <dd className="font-medium text-neutral-900">{priceLabel}</dd>
             </div>
             <div>
               <dt className="text-neutral-500">Visibilité</dt>
@@ -476,4 +494,102 @@ export default function AdminChaletsPage() {
       </main>
     </div>
   );
+}
+
+function normalizeImageValue(image, fallbackAlt) {
+  if (!image) {
+    return null;
+  }
+
+  if (typeof image === 'string') {
+    const value = image?.trim?.() || image;
+    return value ? { url: value, alt: fallbackAlt } : null;
+  }
+
+  if (typeof image === 'object') {
+    const url = image.url || image.secureUrl || image.src || image.path;
+
+    if (url) {
+      return {
+        url,
+        alt: image.alt || image.caption || fallbackAlt
+      };
+    }
+  }
+
+  return null;
+}
+
+function pickImageFromArray(arrayValue, fallbackAlt) {
+  if (!Array.isArray(arrayValue)) {
+    return null;
+  }
+
+  const prioritized = arrayValue.find((item) => item?.isHero || item?.isPrimary);
+
+  if (prioritized) {
+    const normalized = normalizeImageValue(prioritized, fallbackAlt);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  for (const item of arrayValue) {
+    const normalized = normalizeImageValue(item, fallbackAlt);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
+function getAdminThumbnailImage(chalet) {
+  const fallbackAlt = chalet?.title || 'Chalet';
+  const images = chalet?.images;
+
+  if (Array.isArray(images)) {
+    const fromArray = pickImageFromArray(images, fallbackAlt);
+    if (fromArray) {
+      return fromArray;
+    }
+  } else if (images && typeof images === 'object') {
+    const heroCandidate = normalizeImageValue(images.hero, fallbackAlt);
+    if (heroCandidate) {
+      return heroCandidate;
+    }
+
+    const galleryCandidate = pickImageFromArray(images.gallery, fallbackAlt);
+    if (galleryCandidate) {
+      return galleryCandidate;
+    }
+
+    for (const value of Object.values(images)) {
+      if (!value) continue;
+
+      if (Array.isArray(value)) {
+        const candidate = pickImageFromArray(value, fallbackAlt);
+        if (candidate) {
+          return candidate;
+        }
+      } else {
+        const candidate = normalizeImageValue(value, fallbackAlt);
+        if (candidate) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  const heroImage = normalizeImageValue(chalet?.heroImage, fallbackAlt);
+  if (heroImage) {
+    return heroImage;
+  }
+
+  const galleryImage = pickImageFromArray(chalet?.gallery, fallbackAlt);
+  if (galleryImage) {
+    return galleryImage;
+  }
+
+  return null;
 }
