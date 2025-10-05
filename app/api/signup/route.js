@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import dbConnect from '../../../lib/mongodb';
 import SignupApplication from '../../../models/SignupApplication';
+import User from '../../../models/User';
 
 export const runtime = 'nodejs';
 
@@ -76,6 +77,68 @@ const normalizeType = (type) => {
   }
 };
 
+const sanitizeUsername = (value) => {
+  const base = (value || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '.')
+    .replace(/^\.+|\.+$/g, '')
+    .slice(0, 30);
+
+  return base.length >= 3 ? base : 'owner';
+};
+
+const generateUniqueUsername = async (preferredUsername) => {
+  const sanitizedBase = sanitizeUsername(preferredUsername);
+  let candidate = sanitizedBase;
+  let suffix = 0;
+
+  // Ensure we do not exceed the maxlength defined in the schema (30 chars)
+  const maxLength = 30;
+
+  while (await User.exists({ username: candidate })) {
+    suffix += 1;
+    const suffixString = suffix.toString();
+    const baseLength = Math.max(0, maxLength - suffixString.length);
+    const base = sanitizedBase.slice(0, baseLength) || 'owner';
+    candidate = `${base}${suffixString}`;
+  }
+
+  return candidate;
+};
+
+async function ensureOwnerUser(ownerDetails, slug) {
+  const email = ownerDetails?.email?.toLowerCase?.();
+  const password = ownerDetails?.password;
+
+  if (!email || !password) {
+    return null;
+  }
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    if (!['admin', 'super-admin', 'owner'].includes(existingUser.role)) {
+      existingUser.role = 'owner';
+      await existingUser.save();
+    }
+    return existingUser;
+  }
+
+  const preferredUsername = slug || ownerDetails.email?.split?.('@')?.[0] || ownerDetails.lastName || 'owner';
+  const username = await generateUniqueUsername(preferredUsername);
+
+  const user = new User({
+    username,
+    email,
+    password,
+    role: 'owner'
+  });
+
+  await user.save();
+  return user;
+}
+
 export async function POST(request) {
   try {
     const { type, data } = await request.json();
@@ -105,16 +168,27 @@ export async function POST(request) {
 
     await dbConnect();
 
-    const ownerPayload =
-      normalizedType === 'owner'
-        ? {
-            ...data,
-            owner: {
-              ...data.owner,
-              password: await bcrypt.hash(data.owner.password, 12)
-            }
-          }
-        : undefined;
+    let ownerPayload;
+    if (normalizedType === 'owner') {
+      const ownerPassword = data.owner.password;
+      const hashedPassword = await bcrypt.hash(ownerPassword, 12);
+
+      ownerPayload = {
+        ...data,
+        owner: {
+          ...data.owner,
+          password: hashedPassword
+        }
+      };
+
+      await ensureOwnerUser(
+        {
+          ...data.owner,
+          password: ownerPassword
+        },
+        data.slug
+      );
+    }
 
     const application = await SignupApplication.create({
       type: normalizedType,

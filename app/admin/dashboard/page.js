@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { signOut, useSession } from '../../../components/providers/SessionProvider';
 import ClientIcon from '../../../components/ClientIcon';
 
-const ALLOWED_ROLES = ['admin', 'super-admin'];
+const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();

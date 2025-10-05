@@ -62,7 +62,7 @@ export async function POST(request) {
       );
     }
 
-    const allowedRoles = ['admin', 'super-admin'];
+    const allowedRoles = ['admin', 'super-admin', 'owner'];
     if (!allowedRoles.includes(user.role)) {
       return NextResponse.json(
         {
