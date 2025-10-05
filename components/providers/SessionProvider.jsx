@@ -10,7 +10,7 @@ import {
 } from 'react';
 
 const STORAGE_KEY = 'chalet-management.session';
-const ALLOWED_ROLES = ['admin', 'super-admin'];
+const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 
 const isRoleAllowed = (role) => {
   if (!role) return false;
