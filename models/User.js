@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const ROLE_VALUES = ['admin', 'super-admin', 'manager', 'owner'];
+const ROLE_VALUES = Object.freeze(['admin', 'super-admin', 'manager', 'owner']);
 const ADMIN_ROLES = new Set(['admin', 'super-admin', 'owner']);
 
 const normalizeRole = (role) => {
@@ -111,5 +111,15 @@ UserSchema.methods.hasAdminAccess = function() {
 UserSchema.virtual('isAdminRole').get(function() {
   return ADMIN_ROLES.has(this.role);
 });
+const existingModel = mongoose.models.User;
 
-export default mongoose.models.User || mongoose.model('User', UserSchema);
+if (existingModel) {
+  const rolePath = existingModel.schema?.path('role');
+
+  if (rolePath?.options?.enum && !rolePath.options.enum.includes('owner')) {
+    rolePath.enumValues.push('owner');
+    rolePath.options.enum.push('owner');
+  }
+}
+
+export default existingModel || mongoose.model('User', UserSchema);
