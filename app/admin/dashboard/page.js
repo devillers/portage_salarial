@@ -16,9 +16,11 @@ export default function AdminDashboard() {
     revenue: 0,
     occupancy: 0,
     chaletsDetails: [],
-    recentBookings: []
+    recentBookings: [],
+    ownerApplications: []
   });
   const [loading, setLoading] = useState(true);
+  const [updatingChaletId, setUpdatingChaletId] = useState(null);
   const router = useRouter();
   const apiToken = session?.user?.apiToken;
   const userRole = session?.user?.role;
@@ -70,25 +72,48 @@ export default function AdminDashboard() {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
       const isSuperAdminRole = role === 'super-admin';
-      const chaletsEndpoint = isSuperAdminRole ? '/api/chalets' : '/api/chalets?owner=me';
+      const chaletsEndpoint = isSuperAdminRole
+        ? '/api/chalets?includeInactive=true'
+        : '/api/chalets?owner=me';
       const bookingsEndpoint = isSuperAdminRole ? '/api/bookings' : '/api/bookings?owner=me';
 
-      const [chaletsResponse, bookingsResponse] = await Promise.all([
+      const requests = [
         fetch(chaletsEndpoint, { headers, signal }),
         fetch(bookingsEndpoint, { headers, signal })
-      ]);
+      ];
+
+      if (isSuperAdminRole) {
+        requests.push(
+          fetch('/api/signup?type=owner', { headers, signal })
+        );
+      }
+
+      const responses = await Promise.all(requests);
+      const chaletsResponse = responses[0];
+      const bookingsResponse = responses[1];
+      const signupResponse = isSuperAdminRole ? responses[2] : null;
 
       // Gestion 401 -> déconnexion propre
-      if (chaletsResponse.status === 401 || bookingsResponse.status === 401) {
+      if (
+        chaletsResponse.status === 401 ||
+        bookingsResponse.status === 401 ||
+        (isSuperAdminRole && signupResponse?.status === 401)
+      ) {
         signOut({ callbackUrl: '/admin' });
         return;
       }
 
       const chaletsData = await chaletsResponse.json();
       const bookingsData = await bookingsResponse.json();
+      const signupData = isSuperAdminRole && signupResponse
+        ? await signupResponse.json()
+        : null;
 
       const chalets = chaletsData?.success ? chaletsData.data : [];
       const bookings = bookingsData?.success ? bookingsData.data : [];
+      const ownerApplications = isSuperAdminRole && signupData?.success && Array.isArray(signupData.data)
+        ? signupData.data
+        : [];
 
       const computedRevenue = isSuperAdminRole
         ? 125000
@@ -109,7 +134,8 @@ export default function AdminDashboard() {
         revenue: computedRevenue,
         occupancy: computedOccupancy,
         chaletsDetails: chalets,
-        recentBookings: bookings.slice(0, 5)
+        recentBookings: bookings.slice(0, 5),
+        ownerApplications: isSuperAdminRole ? ownerApplications : []
       });
     } catch (error) {
       if (error?.name !== 'AbortError') {
@@ -120,6 +146,54 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/admin' });
+  };
+
+  const handleToggleChaletStatus = async (chalet) => {
+    if (!chalet?.slug || !apiToken) {
+      return;
+    }
+
+    const nextStatus = !(chalet?.availability?.isActive ?? false);
+    setUpdatingChaletId(chalet._id);
+
+    try {
+      const response = await fetch(`/api/chalets/${chalet.slug}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`
+        },
+        body: JSON.stringify({
+          availability: {
+            isActive: nextStatus
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || 'Failed to update chalet');
+      }
+
+      const updatedChalet = data.data;
+
+      setStats((prev) => {
+        const updatedDetails = (prev?.chaletsDetails || []).map((item) =>
+          item._id === updatedChalet._id ? updatedChalet : item
+        );
+
+        return {
+          ...prev,
+          chaletsDetails: updatedDetails,
+          chalets: updatedDetails.length
+        };
+      });
+    } catch (error) {
+      console.error('Failed to toggle chalet status:', error);
+    } finally {
+      setUpdatingChaletId(null);
+    }
   };
 
   const userName = useMemo(() => {
@@ -429,32 +503,113 @@ export default function AdminDashboard() {
           </section>
         )}
 
-        {/* Super admin activity placeholder */}
+        {/* Super admin specific insights */}
         {isSuperAdmin && (
-          <section className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Activité récente</h3>
-            <p className="text-sm text-neutral-600">
-              Connectez vos outils d&apos;analyse pour suivre l&apos;activité globale de la plateforme.
-            </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                <p className="text-sm font-medium text-neutral-700">Gestion des équipes</p>
-                <p className="mt-1 text-xs text-neutral-500">
-                  Invitez de nouveaux membres ou ajustez les droits d&apos;accès depuis l&apos;onglet utilisateurs.
-                </p>
+          <section className="grid gap-6 lg:grid-cols-2 mb-10">
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900">Collection de propriétés</h3>
+                  <p className="text-sm text-neutral-600">
+                    Activez ou masquez les chalets visibles sur le portfolio public.
+                  </p>
+                </div>
+                <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">
+                  {stats.chaletsDetails?.filter((chalet) => chalet?.availability?.isActive)?.length || 0} actifs
+                </span>
               </div>
-              <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                <p className="text-sm font-medium text-neutral-700">Optimisation du catalogue</p>
-                <p className="mt-1 text-xs text-neutral-500">
-                  Consultez les performances des chalets pour optimiser vos campagnes marketing.
+
+              {stats.chaletsDetails?.length ? (
+                <ul className="space-y-4">
+                  {stats.chaletsDetails.map((chalet) => {
+                    const isActive = chalet?.availability?.isActive ?? false;
+                    return (
+                      <li key={chalet._id} className="flex items-start justify-between gap-4 border border-neutral-200 rounded-xl p-4">
+                        <div>
+                          <p className="font-medium text-neutral-900">{chalet.title}</p>
+                          <p className="text-sm text-neutral-600">
+                            {chalet.location?.city
+                              ? `${chalet.location.city}, ${chalet.location?.country ?? ''}`
+                              : 'Localisation à compléter'}
+                          </p>
+                          <p className="mt-1 text-xs text-neutral-500">
+                            Statut actuel : {isActive ? 'Visible dans le portfolio' : 'Masqué du portfolio'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleChaletStatus(chalet)}
+                          disabled={updatingChaletId === chalet._id}
+                          className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                            isActive
+                              ? 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                              : 'bg-green-100 text-green-700 hover:bg-green-200'
+                          } disabled:opacity-60 disabled:cursor-not-allowed`}
+                        >
+                          {updatingChaletId === chalet._id ? 'Mise à jour...' : isActive ? 'Désactiver' : 'Activer'}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="text-sm text-neutral-600">
+                  Ajoutez des chalets pour gérer leur visibilité depuis cette interface.
                 </p>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900">Candidatures propriétaires</h3>
+                  <p className="text-sm text-neutral-600">
+                    Retrouvez les dernières demandes reçues via le formulaire d&apos;inscription.</p>
+                </div>
+                <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
+                  {stats.ownerApplications?.filter((application) => application?.status !== 'reviewed')?.length || 0} en attente
+                </span>
               </div>
-              <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                <p className="text-sm font-medium text-neutral-700">Support prioritaire</p>
-                <p className="mt-1 text-xs text-neutral-500">
-                  Besoin d&apos;assistance ? Contactez directement notre équipe dédiée super administrateur.
+
+              {stats.ownerApplications?.length ? (
+                <ul className="space-y-4">
+                  {stats.ownerApplications.slice(0, 6).map((application) => {
+                    const owner = application?.ownerData?.owner || {};
+                    const submittedAt = application?.createdAt
+                      ? new Date(application.createdAt).toLocaleDateString('fr-FR')
+                      : 'Date inconnue';
+                    const statusLabel = application?.status === 'reviewed' ? 'Revue' : 'En attente';
+                    const statusClasses = application?.status === 'reviewed'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-amber-100 text-amber-700';
+
+                    return (
+                      <li key={application._id} className="border border-neutral-200 rounded-xl p-4">
+                        <p className="font-medium text-neutral-900">
+                          {owner.firstName} {owner.lastName}
+                        </p>
+                        <p className="text-sm text-neutral-600">
+                          {application.ownerData?.title || 'Chalet sans titre'}
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-500">
+                          Soumis le {submittedAt}
+                        </p>
+                        <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${statusClasses}`}>
+                          {statusLabel}
+                        </span>
+                        <div className="mt-2 space-y-1 text-xs text-neutral-500">
+                          {owner.email && <p>Email : {owner.email}</p>}
+                          {owner.phone && <p>Téléphone : {owner.phone}</p>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="text-sm text-neutral-600">
+                  Aucune candidature propriétaire enregistrée pour le moment.
                 </p>
-              </div>
+              )}
             </div>
           </section>
         )}
