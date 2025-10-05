@@ -3,6 +3,7 @@ import dbConnect from '../../../lib/mongodb';
 import Booking from '../../../models/Booking';
 import Chalet from '../../../models/Chalet';
 import { sendBookingConfirmation } from '../../../lib/email';
+import { verifyToken } from '../../../lib/auth';
 
 // Create new booking
 export async function POST(request) {
@@ -112,15 +113,84 @@ export async function GET(request) {
     const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
+    const ownerParam = searchParams.get('owner');
 
     let query = {};
-    
+
     if (chaletId) {
       query.chalet = chaletId;
     }
-    
+
     if (status) {
       query.status = status;
+    }
+
+    if (ownerParam) {
+      let ownerChaletIds = [];
+
+      if (ownerParam === 'me') {
+        const authHeader = request.headers.get('authorization') || '';
+        const token = authHeader.startsWith('Bearer ')
+          ? authHeader.slice(7)
+          : null;
+
+        if (!token) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: 'Authentication required'
+            },
+            { status: 401 }
+          );
+        }
+
+        try {
+          const user = await verifyToken(token);
+          const chalets = await Chalet.find({ owner: user._id }).select('_id');
+          ownerChaletIds = chalets.map((chalet) => chalet._id.toString());
+        } catch (error) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: 'Invalid or expired token'
+            },
+            { status: 401 }
+          );
+        }
+      } else {
+        const chalets = await Chalet.find({ owner: ownerParam }).select('_id');
+        ownerChaletIds = chalets.map((chalet) => chalet._id.toString());
+      }
+
+      if (ownerChaletIds.length === 0) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          pagination: {
+            total: 0,
+            page,
+            limit,
+            pages: 0
+          }
+        });
+      }
+
+      if (query.chalet) {
+        if (!ownerChaletIds.includes(query.chalet.toString())) {
+          return NextResponse.json({
+            success: true,
+            data: [],
+            pagination: {
+              total: 0,
+              page,
+              limit,
+              pages: 0
+            }
+          });
+        }
+      } else {
+        query.chalet = { $in: ownerChaletIds };
+      }
     }
 
     const skip = (page - 1) * limit;

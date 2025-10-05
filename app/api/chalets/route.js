@@ -1,7 +1,31 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/mongodb';
 import Chalet from '../../../models/Chalet';
-import { requireAuth } from '../../../lib/auth';
+import { requireAuth, verifyToken } from '../../../lib/auth';
+
+async function resolveOwnerFilter(request, ownerParam) {
+  if (!ownerParam) return null;
+
+  if (ownerParam === 'me') {
+    const authHeader = request.headers.get('authorization') || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : null;
+
+    if (!token) {
+      return { error: NextResponse.json({ success: false, message: 'Authentication required' }, { status: 401 }) };
+    }
+
+    try {
+      const user = await verifyToken(token);
+      return { ownerId: user._id?.toString?.() ?? user.id?.toString?.() ?? user._id };
+    } catch (error) {
+      return { error: NextResponse.json({ success: false, message: 'Invalid or expired token' }, { status: 401 }) };
+    }
+  }
+
+  return { ownerId: ownerParam };
+}
 
 // Get all chalets
 export async function GET(request) {
@@ -13,12 +37,22 @@ export async function GET(request) {
     const limit = searchParams.get('limit');
     const page = searchParams.get('page') || 1;
     const search = searchParams.get('search');
+    const ownerParam = searchParams.get('owner');
 
     let query = { 'availability.isActive': true };
 
     // Filter by featured
     if (featured === 'true') {
       query.featured = true;
+    }
+
+    if (ownerParam) {
+      const ownerResult = await resolveOwnerFilter(request, ownerParam);
+      if (ownerResult?.error) {
+        return ownerResult.error;
+      }
+
+      query.owner = ownerResult?.ownerId;
     }
 
     // Add search functionality
