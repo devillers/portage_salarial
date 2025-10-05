@@ -135,7 +135,7 @@ const BookingSchema = new mongoose.Schema({
     message: String,
     sender: {
       type: String,
-      enum: ['guest', 'admin', 'system'],
+      enum: ['guest', 'admin', 'owner', 'system'],
       default: 'system'
     }
   }],
@@ -145,7 +145,7 @@ const BookingSchema = new mongoose.Schema({
     refundAmount: Number,
     cancelledBy: {
       type: String,
-      enum: ['guest', 'admin', 'system']
+      enum: ['guest', 'admin', 'owner', 'system']
     }
   }
 }, {
