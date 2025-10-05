@@ -50,7 +50,7 @@ export default function AdminChaletsPage() {
         : undefined;
 
       const endpoint = isSuperAdmin
-        ? '/api/chalets?includeInactive=true'
+        ? '/api/chalets?includeInactive=true&includeSignups=true'
         : '/api/chalets?owner=me';
 
       const response = await fetch(endpoint, { headers });
@@ -66,7 +66,9 @@ export default function AdminChaletsPage() {
         throw new Error(data?.message || 'Une erreur est survenue lors du chargement des chalets');
       }
 
-      setChalets(Array.isArray(data.data) ? data.data : []);
+      const combinedEntries = Array.isArray(data.data) ? data.data : [];
+
+      setChalets(combinedEntries);
     } catch (err) {
       console.error('Failed to load chalets', err);
       setError(err?.message || 'Impossible de récupérer les chalets.');
@@ -119,15 +121,27 @@ export default function AdminChaletsPage() {
     }
   };
 
-  const activeChalets = useMemo(
-    () => chalets.filter((chalet) => chalet?.availability?.isActive),
+  const signupEntries = useMemo(
+    () => chalets.filter((chalet) => chalet?.source === 'signup-application'),
     [chalets]
   );
 
-  const inactiveChalets = useMemo(
-    () => chalets.filter((chalet) => !chalet?.availability?.isActive),
+  const persistedChalets = useMemo(
+    () => chalets.filter((chalet) => chalet?.source !== 'signup-application'),
     [chalets]
   );
+
+  const activeChalets = useMemo(
+    () => persistedChalets.filter((chalet) => chalet?.availability?.isActive),
+    [persistedChalets]
+  );
+
+  const inactiveChalets = useMemo(
+    () => persistedChalets.filter((chalet) => !chalet?.availability?.isActive),
+    [persistedChalets]
+  );
+
+  const displayChaletCount = isSuperAdmin ? persistedChalets.length : chalets.length;
 
   const userName = useMemo(() => {
     if (!session?.user) return '';
@@ -135,8 +149,9 @@ export default function AdminChaletsPage() {
   }, [session?.user]);
 
   const renderChaletCard = (chalet) => {
+    const isSignup = chalet?.source === 'signup-application';
     const isActive = chalet?.availability?.isActive ?? false;
-    const coverImage = chalet?.images?.[0];
+    const coverImage = chalet?.images?.[0] || chalet?.heroImage || chalet?.gallery?.[0];
 
     return (
       <li
@@ -162,17 +177,24 @@ export default function AdminChaletsPage() {
             <ClientIcon name="MapPin" className="h-4 w-4 mr-1" />
             {chalet.location?.city || 'Ville à préciser'}
           </div>
-          <div
-            className={`absolute top-4 right-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium shadow ${
-              isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-600'
-            }`}
-          >
-            <span
-              className="w-2 h-2 rounded-full mr-2"
-              style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
-            />
-            {isActive ? 'Actif' : 'Inactif'}
-          </div>
+          {isSignup && (
+            <div className="absolute top-4 right-4 inline-flex items-center rounded-full bg-primary-600/90 px-3 py-1 text-xs font-semibold text-white shadow">
+              Candidature
+            </div>
+          )}
+          {!isSignup && (
+            <div
+              className={`absolute top-4 right-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium shadow ${
+                isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-600'
+              }`}
+            >
+              <span
+                className="w-2 h-2 rounded-full mr-2"
+                style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
+              />
+              {isActive ? 'Actif' : 'Inactif'}
+            </div>
+          )}
         </div>
         <div className="p-6 space-y-4">
           <div>
@@ -224,7 +246,7 @@ export default function AdminChaletsPage() {
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              {isSuperAdmin && (
+              {isSuperAdmin && !isSignup && (
                 <button
                   type="button"
                   onClick={() => handleToggleChaletStatus(chalet)}
@@ -242,12 +264,18 @@ export default function AdminChaletsPage() {
                       : 'Publier'}
                 </button>
               )}
-              <Link
-                href={`/admin/chalets/${chalet.slug || ''}`}
-                className="inline-flex items-center rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:border-neutral-300"
-              >
-                Gérer
-              </Link>
+              {!isSignup ? (
+                <Link
+                  href={`/admin/chalets/${chalet.slug || ''}`}
+                  className="inline-flex items-center rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:border-neutral-300"
+                >
+                  Gérer
+                </Link>
+              ) : (
+                <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-4 py-2 text-xs font-semibold text-primary-700">
+                  En attente de traitement
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -311,7 +339,7 @@ export default function AdminChaletsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-neutral-900">{chalets.length} chalet(s)</h2>
+            <h2 className="text-2xl font-bold text-neutral-900">{displayChaletCount} chalet(s)</h2>
             <p className="text-sm text-neutral-600">
               {isSuperAdmin
                 ? 'Activez ou masquez les propriétés pour contrôler leur visibilité publique.'
@@ -342,7 +370,7 @@ export default function AdminChaletsPage() {
           </div>
         )}
 
-        {chalets.length ? (
+        {persistedChalets.length || signupEntries.length ? (
           <div className="space-y-10">
             <section>
               <div className="flex items-center justify-between mb-4">
@@ -377,6 +405,26 @@ export default function AdminChaletsPage() {
                 ) : (
                   <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center text-neutral-500">
                     Aucun chalet masqué. Tous vos chalets sont publiés.
+                  </div>
+                )}
+              </section>
+            )}
+
+            {isSuperAdmin && (
+              <section>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-neutral-900">Candidatures</h3>
+                  <span className="text-sm text-neutral-500">
+                    {signupEntries.length} en cours d&apos;examen
+                  </span>
+                </div>
+                {signupEntries.length ? (
+                  <ul className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    {signupEntries.map((chalet) => renderChaletCard(chalet))}
+                  </ul>
+                ) : (
+                  <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center text-neutral-500">
+                    Aucune nouvelle candidature pour le moment.
                   </div>
                 )}
               </section>
