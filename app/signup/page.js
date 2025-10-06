@@ -12,6 +12,9 @@ const createOwnerInitial = () => ({
   slug: "",
   shortDescription: "",
   longDescription: "",
+  capacity: "",
+  seasonPrice: "",
+  monthlyPrice: "",
   heroPhoto: [],
   gallery: [],
   portfolioGallery: [],
@@ -64,6 +67,8 @@ const createTenantInitial = () => ({
   preferredRegion: "",
   desiredDates: "",
   guests: "",
+  seasonPrice: "",
+  monthlyPrice: "",
   budget: "",
   requirements: "",
 });
@@ -203,6 +208,9 @@ const buildOwnerPayload = async (form) => {
     slug: form.slug,
     shortDescription: form.shortDescription,
     longDescription: form.longDescription,
+    capacity: form.capacity,
+    seasonPrice: form.seasonPrice,
+    monthlyPrice: form.monthlyPrice,
     heroPhoto,
     gallery,
     portfolioGallery,
@@ -228,6 +236,8 @@ const serializeTenantForm = (form) => ({
   preferredRegion: form.preferredRegion,
   desiredDates: form.desiredDates,
   guests: form.guests,
+  seasonPrice: form.seasonPrice,
+  monthlyPrice: form.monthlyPrice,
   budget: form.budget,
   requirements: form.requirements,
 });
@@ -342,7 +352,10 @@ export default function SignUpPage() {
     const hasBaseInfo =
       ownerForm.title.trim() &&
       ownerForm.shortDescription.trim() &&
-      ownerForm.longDescription.trim();
+      ownerForm.longDescription.trim() &&
+      String(ownerForm.capacity).trim() &&
+      ownerForm.seasonPrice.trim() &&
+      ownerForm.monthlyPrice.trim();
     const hasRooms =
       ownerForm.rooms.length > 0 &&
       ownerForm.rooms.every(
@@ -385,7 +398,12 @@ export default function SignUpPage() {
       tenantForm.firstName.trim() &&
       tenantForm.lastName.trim() &&
       tenantForm.email.trim();
-    const hasProject = tenantForm.preferredRegion.trim();
+    const hasProject =
+      tenantForm.preferredRegion.trim() &&
+      tenantForm.desiredDates.trim() &&
+      String(tenantForm.guests).trim() &&
+      tenantForm.seasonPrice.trim() &&
+      tenantForm.monthlyPrice.trim();
 
     return {
       profile: Boolean(hasProfile),
@@ -761,6 +779,52 @@ export default function SignUpPage() {
               value={ownerForm.slug}
               readOnly
                 className="w-full rounded-2xl border-b border-b-neutral-200 bg-white px-4 py-3 text-[11px] italic font-loose text-neutral-800 hover:shadow-sm "
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[15px]  text-black">
+              Capacité d'accueil
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={ownerForm.capacity}
+              onChange={(event) =>
+                handleOwnerChange("capacity", event.target.value)
+              }
+              placeholder="Nombre de personnes pouvant séjourner"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[15px]  text-black">
+              Tarif pour la saison
+            </label>
+            <input
+              type="text"
+              value={ownerForm.seasonPrice}
+              onChange={(event) =>
+                handleOwnerChange("seasonPrice", event.target.value)
+              }
+              placeholder="Ex. 25 000 €"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[15px]  text-black">
+              Tarif au mois
+            </label>
+            <input
+              type="text"
+              value={ownerForm.monthlyPrice}
+              onChange={(event) =>
+                handleOwnerChange("monthlyPrice", event.target.value)
+              }
+              placeholder="Ex. 8 500 €"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
 
@@ -1428,7 +1492,7 @@ export default function SignUpPage() {
 
           <div className="space-y-2">
            <label className="text-sm font-medium text-neutral-800">
-              Nombre de voyageurs
+              Capacité du logement recherchée
             </label>
             <input
               type="number"
@@ -1436,21 +1500,49 @@ export default function SignUpPage() {
               name="guests"
               value={tenantForm.guests}
               onChange={handleTenantChange}
-              placeholder="Ex. 6"
+              placeholder="Nombre de personnes à loger"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
 
           <div className="space-y-2">
            <label className="text-sm font-medium text-neutral-800">
-              Budget estimé
+              Budget pour la saison
+            </label>
+            <input
+              type="text"
+              name="seasonPrice"
+              value={tenantForm.seasonPrice}
+              onChange={handleTenantChange}
+              placeholder="Ex. 25 000 €"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+
+          <div className="space-y-2">
+           <label className="text-sm font-medium text-neutral-800">
+              Budget au mois
+            </label>
+            <input
+              type="text"
+              name="monthlyPrice"
+              value={tenantForm.monthlyPrice}
+              onChange={handleTenantChange}
+              placeholder="Ex. 8 500 €"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+
+          <div className="space-y-2">
+           <label className="text-sm font-medium text-neutral-800">
+              Budget estimé global (optionnel)
             </label>
             <input
               type="text"
               name="budget"
               value={tenantForm.budget}
               onChange={handleTenantChange}
-              placeholder="Ex. 25 000 € la saison"
+              placeholder="Autre information budgétaire utile"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>
