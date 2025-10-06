@@ -105,7 +105,10 @@ export async function GET(request) {
     let signupEntries = [];
 
     if (authUser?.role === 'super-admin' && includeSignups) {
-      const ownerApplications = await SignupApplication.find({ type: 'owner' }).lean();
+      const ownerApplications = await SignupApplication.find({
+        type: 'owner',
+        status: { $ne: 'reviewed' }
+      }).lean();
 
       signupEntries = ownerApplications.map((application) => {
         const ownerData = application.ownerData || {};
