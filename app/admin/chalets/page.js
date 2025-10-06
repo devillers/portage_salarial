@@ -28,33 +28,28 @@ export default function AdminChaletsPage() {
   const userRole = session?.user?.role;
   const isSuperAdmin = userRole === 'super-admin';
 
+  // Redirect unauthenticated users
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.replace('/admin');
     }
   }, [status, router]);
 
+  // Enforce allowed roles
   useEffect(() => {
     if (status === 'authenticated' && !ALLOWED_ROLES.includes(userRole)) {
       signOut({ callbackUrl: '/admin' });
     }
-  }, [status, userRole]);
+  }, [status, userRole, signOut]);
 
   const fetchChalets = useCallback(async () => {
-    if (status !== 'authenticated' || !ALLOWED_ROLES.includes(userRole)) {
-      return;
-    }
+    if (status !== 'authenticated' || !ALLOWED_ROLES.includes(userRole)) return;
 
     setLoading(true);
     setError('');
 
     try {
-      const headers = apiToken
-        ? {
-            Authorization: `Bearer ${apiToken}`
-          }
-        : undefined;
-
+      const headers = apiToken ? { Authorization: `Bearer ${apiToken}` } : undefined;
       const endpoint = isSuperAdmin
         ? '/api/chalets?includeInactive=true&includeSignups=true'
         : '/api/chalets?owner=me';
@@ -67,13 +62,11 @@ export default function AdminChaletsPage() {
       }
 
       const data = await response.json();
-
       if (!response.ok || !data?.success) {
         throw new Error(data?.message || 'Une erreur est survenue lors du chargement des chalets');
       }
 
       const combinedEntries = Array.isArray(data.data) ? data.data : [];
-
       setChalets(combinedEntries);
     } catch (err) {
       console.error('Failed to load chalets', err);
@@ -81,16 +74,14 @@ export default function AdminChaletsPage() {
     } finally {
       setLoading(false);
     }
-  }, [apiToken, isSuperAdmin, status, userRole]);
+  }, [apiToken, isSuperAdmin, status, userRole, signOut]);
 
   useEffect(() => {
     fetchChalets();
   }, [fetchChalets]);
 
   const handleToggleChaletStatus = async (chalet) => {
-    if (!isSuperAdmin || !chalet?.slug || !apiToken) {
-      return;
-    }
+    if (!isSuperAdmin || !chalet?.slug || !apiToken) return;
 
     const nextStatus = !(chalet?.availability?.isActive ?? false);
     setUpdatingChaletId(chalet._id);
@@ -103,22 +94,17 @@ export default function AdminChaletsPage() {
           Authorization: `Bearer ${apiToken}`
         },
         body: JSON.stringify({
-          availability: {
-            isActive: nextStatus
-          }
+          availability: { isActive: nextStatus }
         })
       });
 
       const data = await response.json();
-
       if (!response.ok || !data?.success) {
         throw new Error(data?.message || 'Mise à jour impossible');
       }
 
       const updatedChalet = data.data;
-      setChalets((prev) =>
-        prev.map((item) => (item._id === updatedChalet._id ? updatedChalet : item))
-      );
+      setChalets((prev) => prev.map((item) => (item._id === updatedChalet._id ? updatedChalet : item)));
     } catch (err) {
       console.error('Failed to toggle chalet status', err);
       setError(err?.message || 'Impossible de mettre à jour le statut du chalet.');
@@ -127,18 +113,11 @@ export default function AdminChaletsPage() {
     }
   };
 
-  const handleViewChaletDetails = (chalet) => {
-    setSelectedChalet(chalet);
-  };
-
-  const closeChaletDetails = () => {
-    setSelectedChalet(null);
-  };
+  const handleViewChaletDetails = (chalet) => setSelectedChalet(chalet);
+  const closeChaletDetails = () => setSelectedChalet(null);
 
   const handleValidateSignupChalet = async (chalet) => {
-    if (!isSuperAdmin || !apiToken || !chalet?.ownerApplicationId) {
-      return;
-    }
+    if (!isSuperAdmin || !apiToken || !chalet?.ownerApplicationId) return;
 
     setValidatingSignupId(chalet._id);
     setError('');
@@ -154,13 +133,11 @@ export default function AdminChaletsPage() {
       });
 
       const data = await response.json();
-
       if (!response.ok || !data?.success) {
         throw new Error(data?.message || 'Impossible de valider la candidature.');
       }
 
       const publishedChalet = data.data;
-
       setChalets((prev) => {
         const withoutSignup = prev.filter((item) => item._id !== chalet._id);
         return publishedChalet ? [...withoutSignup, publishedChalet] : withoutSignup;
@@ -175,22 +152,14 @@ export default function AdminChaletsPage() {
     }
   };
 
+  // Close details on ESC
   useEffect(() => {
-    if (!selectedChalet) {
-      return;
-    }
-
+    if (!selectedChalet) return;
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        closeChaletDetails();
-      }
+      if (event.key === 'Escape') closeChaletDetails();
     };
-
     window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedChalet]);
 
   const signupEntries = useMemo(
@@ -220,184 +189,125 @@ export default function AdminChaletsPage() {
     return session.user.name || session.user.email || '';
   }, [session?.user]);
 
-<<<<<<< HEAD
- const renderChaletRow = (chalet) => {
-  const isSignup = chalet?.source === 'signup-application';
-  const isActive = chalet?.availability?.isActive ?? false;
-  const coverImage = getAdminThumbnailImage(chalet);
-=======
+  // ---- TABLE RENDERERS ----------------------------------------------------
   const renderChaletRow = (chalet) => {
     const isSignup = chalet?.source === 'signup-application';
     const isActive = chalet?.availability?.isActive ?? false;
     const coverImage = getAdminThumbnailImage(chalet);
+
     const guestCount = chalet?.specifications?.maxGuests;
     const hasGuestCount = Number.isFinite(guestCount) && guestCount > 0;
-    const guestLabel = hasGuestCount
-      ? `${guestCount} voyageur${guestCount > 1 ? 's' : ''}`
-      : 'À renseigner';
+
     const areaValue = chalet?.specifications?.area;
     const hasArea = Number.isFinite(areaValue) && areaValue > 0;
-    const areaLabel = hasArea ? `${areaValue} m²` : 'À renseigner';
+
     const basePrice = chalet?.pricing?.basePrice;
     const hasBasePrice = Number.isFinite(basePrice) && basePrice >= 0;
-    const priceLabel = hasBasePrice
-      ? `${Number(basePrice).toLocaleString('fr-FR')} €`
-      : 'À renseigner';
-    const lastUpdatedAt = chalet?.updatedAt
-      ? new Date(chalet.updatedAt).toLocaleDateString('fr-FR')
-      : 'Date inconnue';
+
+    const infoParts = [
+      hasGuestCount ? `${guestCount} pers` : null,
+      hasArea ? `${areaValue} m²` : null,
+      hasBasePrice ? `${Number(basePrice).toLocaleString('fr-FR')} € / nuit` : null
+    ].filter(Boolean);
+    const infoText = infoParts.length ? infoParts.join(' · ') : '—';
+
+    const city = chalet?.location?.city || 'Ville à préciser';
+    const country = chalet?.location?.country ? `, ${chalet.location.country}` : '';
+
+    const sourceBadgeLabel = chalet?.source ? (SOURCE_LABELS[chalet.source] || chalet.source) : null;
+
     const canToggle = isSuperAdmin && !isSignup && chalet?.slug;
     const canValidateSignup = isSuperAdmin && isSignup && chalet?.ownerApplicationId;
-    const isValidatingSignup = validatingSignupId === chalet?._id;
+
     const isUpdating = updatingChaletId === chalet?._id;
-    const sourceBadgeLabel = chalet?.source
-      ? SOURCE_LABELS[chalet.source] || chalet.source
-      : null;
->>>>>>> 2246fce9f0519c71292c64dbfc6c4befafcbbb15
+    const isValidatingSignup = validatingSignupId === chalet?._id;
 
-  const guestCount = chalet?.specifications?.maxGuests;
-  const hasGuestCount = Number.isFinite(guestCount) && guestCount > 0;
-
-  const areaValue = chalet?.specifications?.area;
-  const hasArea = Number.isFinite(areaValue) && areaValue > 0;
-
-  const basePrice = chalet?.pricing?.basePrice;
-  const hasBasePrice = Number.isFinite(basePrice) && basePrice >= 0;
-
-  const infoParts = [
-    hasGuestCount ? `${guestCount} pers` : null,
-    hasArea ? `${areaValue} m²` : null,
-    hasBasePrice ? `${Number(basePrice).toLocaleString('fr-FR')} € / nuit` : null
-  ].filter(Boolean);
-
-  const infoText = infoParts.length ? infoParts.join(' · ') : '—';
-
-  const city = chalet?.location?.city || 'Ville à préciser';
-  const country = chalet?.location?.country ? `, ${chalet.location.country}` : '';
-
-  const sourceBadgeLabel = chalet?.source
-    ? (SOURCE_LABELS[chalet.source] || chalet.source)
-    : null;
-
-  const canToggle = (session?.user?.role === 'super-admin') && !isSignup && chalet?.slug;
-  const isUpdating = updatingChaletId === chalet?._id;
-
-  return (
-    <tr key={chalet._id} className="hover:bg-neutral-50">
-      {/* Col 1 — Chalet */}
-      <td className="px-4 py-3 align-top">
-        <div className="flex items-start gap-3">
-          <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-            {coverImage?.url ? (
-              <Image
-                src={coverImage.url}
-                alt={coverImage.alt || chalet.title || 'Chalet'}
-                fill
-                sizes="160px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-neutral-400">
-                <ClientIcon name="ImageOff" className="h-5 w-5" />
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="truncate text-sm font-semibold text-neutral-900">
-                {chalet.title || 'Chalet sans titre'}
-              </p>
-
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                  isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-200 text-neutral-700'
-                }`}
-              >
-                <span
-                  className="mr-1.5 h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
+    return (
+      <tr key={chalet._id} className="hover:bg-neutral-50">
+        {/* Col 1 — Chalet */}
+        <td className="px-4 py-3 align-top">
+          <div className="flex items-start gap-3">
+            <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+              {coverImage?.url ? (
+                <Image
+                  src={coverImage.url}
+                  alt={coverImage.alt || chalet.title || 'Chalet'}
+                  fill
+                  sizes="160px"
+                  className="object-cover"
                 />
-                {isActive ? 'Actif' : 'Inactif'}
-              </span>
-
-              {sourceBadgeLabel && (
-                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                  isSignup ? 'bg-primary-50 text-primary-700' : 'bg-neutral-100 text-neutral-600'
-                }`}>
-                  {sourceBadgeLabel}
-                </span>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-neutral-400">
+                  <ClientIcon name="ImageOff" className="h-5 w-5" />
+                </div>
               )}
             </div>
 
-            <p className="mt-0.5 text-xs text-neutral-500">
-              {city}{country}
-            </p>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="truncate text-sm font-semibold text-neutral-900">
+                  {chalet.title || 'Chalet sans titre'}
+                </p>
 
-            {/* Sur mobile, on affiche aussi l'info clé sous le titre */}
-            <p className="mt-1 text-xs text-neutral-600 md:hidden">
-              {infoText}
-            </p>
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-200 text-neutral-700'
+                  }`}
+                >
+                  <span
+                    className="mr-1.5 h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
+                  />
+                  {isActive ? 'Actif' : 'Inactif'}
+                </span>
+
+                {sourceBadgeLabel && (
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    isSignup ? 'bg-primary-50 text-primary-700' : 'bg-neutral-100 text-neutral-600'
+                  }`}>
+                    {sourceBadgeLabel}
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-0.5 text-xs text-neutral-500">{city}{country}</p>
+
+              {/* Sur mobile, afficher l'info clé sous le titre */}
+              <p className="mt-1 text-xs text-neutral-600 md:hidden">{infoText}</p>
+            </div>
           </div>
-        </div>
-      </td>
+        </td>
 
-      {/* Col 2 — Infos clés (masquée sur mobile pour alléger) */}
-      <td className="hidden md:table-cell px-4 py-3 align-top text-sm text-neutral-700">
-        {infoText}
-      </td>
+        {/* Col 2 — Infos clés (masquée sur mobile) */}
+        <td className="hidden md:table-cell px-4 py-3 align-top text-sm text-neutral-700">{infoText}</td>
 
-      {/* Col 3 — Actions */}
-      <td className="px-4 py-3 align-top">
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => handleViewChaletDetails(chalet)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
-          >
-            <ClientIcon name="Eye" className="h-4 w-4" />
-            <span className="sr-only">Voir le chalet</span>
-          </button>
-
-          {!isSignup ? (
-            <Link
-              href={`/admin/chalets/${chalet.slug || ''}`}
-              className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-neutral-200 hover:text-neutral-900 hover:ring-neutral-300"
-            >
-              Gérer
-            </Link>
-          ) : (
-            <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700">
-              En cours
-            </span>
-          )}
-
-          {canToggle && (
+        {/* Col 3 — Actions */}
+        <td className="px-4 py-3 align-top">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              role="switch"
-              aria-checked={isActive}
-              onClick={() => handleToggleChaletStatus(chalet)}
-              disabled={isUpdating}
-              className={`relative inline-flex h-8 w-14 items-center rounded-full px-1 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
-                isActive ? 'bg-green-500' : 'bg-neutral-300'
-              } ${isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'}`}
+              onClick={() => handleViewChaletDetails(chalet)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
             >
-              <span
-                className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition ${
-                  isActive ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-              <span className="sr-only">Basculer le statut</span>
+              <ClientIcon name="Eye" className="h-4 w-4" />
+              <span className="sr-only">Voir le chalet</span>
             </button>
-<<<<<<< HEAD
-          )}
-        </div>
-      </td>
-    </tr>
-  );
-};
-=======
+
+            {/* Lien gérer / statut candidature */}
+            {!isSignup ? (
+              <Link
+                href={`/admin/chalets/${chalet.slug || ''}`}
+                className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-neutral-200 transition-colors hover:text-neutral-900 hover:ring-neutral-300"
+              >
+                Gérer
+              </Link>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700">
+                En cours
+              </span>
+            )}
+
+            {/* Switch publication / validation */}
             {isSignup ? (
               canValidateSignup ? (
                 <div className="flex items-center gap-2">
@@ -446,70 +356,51 @@ export default function AdminChaletsPage() {
             ) : (
               <span className="text-xs text-neutral-400">Modification restreinte</span>
             )}
-            {!isSignup ? (
-              <Link
-                href={`/admin/chalets/${chalet.slug || ''}`}
-                className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-neutral-200 transition-colors hover:text-neutral-900 hover:ring-neutral-300"
-              >
-                Gérer
-              </Link>
-            ) : (
-              <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700">
-                {isValidatingSignup ? 'Publication…' : 'En attente de traitement'}
-              </span>
-            )}
           </div>
         </td>
       </tr>
     );
   };
->>>>>>> 2246fce9f0519c71292c64dbfc6c4befafcbbb15
 
- const renderChaletsTable = (items) => {
-  if (!Array.isArray(items) || items.length === 0) return null;
+  const renderChaletsTable = (items) => {
+    if (!Array.isArray(items) || items.length === 0) return null;
 
-  return (
-    <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <table className="min-w-full text-left">
-        <thead className="bg-neutral-50">
-          <tr>
-            <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Chalet
-            </th>
-            <th scope="col" className="hidden md:table-cell px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Infos clés
-            </th>
-            <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-neutral-200 bg-white text-sm text-neutral-700">
-          {items.map((chalet) => renderChaletRow(chalet))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+    return (
+      <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <table className="min-w-full text-left">
+          <thead className="bg-neutral-50">
+            <tr>
+              <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Chalet
+              </th>
+              <th scope="col" className="hidden md:table-cell px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Infos clés
+              </th>
+              <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-200 bg-white text-sm text-neutral-700">
+            {items.map((chalet) => renderChaletRow(chalet))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
+  // ---- SELECTED CHALET DETAILS -------------------------------------------
   const selectedChaletImage = useMemo(() => {
-    if (!selectedChalet) {
-      return null;
-    }
-
+    if (!selectedChalet) return null;
     return getAdminThumbnailImage(selectedChalet);
   }, [selectedChalet]);
 
   const selectedChaletDetails = useMemo(() => {
-    if (!selectedChalet) {
-      return null;
-    }
+    if (!selectedChalet) return null;
 
     const guestCount = selectedChalet?.specifications?.maxGuests;
     const hasGuestCount = Number.isFinite(guestCount) && guestCount > 0;
-    const guestLabel = hasGuestCount
-      ? `${guestCount} voyageur${guestCount > 1 ? 's' : ''}`
-      : 'À renseigner';
+    const guestLabel = hasGuestCount ? `${guestCount} voyageur${guestCount > 1 ? 's' : ''}` : 'À renseigner';
 
     const areaValue = selectedChalet?.specifications?.area;
     const hasArea = Number.isFinite(areaValue) && areaValue > 0;
@@ -517,29 +408,19 @@ export default function AdminChaletsPage() {
 
     const basePrice = selectedChalet?.pricing?.basePrice;
     const hasBasePrice = Number.isFinite(basePrice) && basePrice >= 0;
-    const priceLabel = hasBasePrice
-      ? `${Number(basePrice).toLocaleString('fr-FR')} €`
-      : 'À renseigner';
+    const priceLabel = hasBasePrice ? `${Number(basePrice).toLocaleString('fr-FR')} €` : 'À renseigner';
 
     const isActive = selectedChalet?.availability?.isActive ?? false;
     const lastUpdatedAt = selectedChalet?.updatedAt
       ? new Date(selectedChalet.updatedAt).toLocaleString('fr-FR')
       : 'Date inconnue';
 
-    const amenities = Array.isArray(selectedChalet?.amenities)
-      ? selectedChalet.amenities
-      : [];
+    const amenities = Array.isArray(selectedChalet?.amenities) ? selectedChalet.amenities : [];
 
-    return {
-      guestLabel,
-      areaLabel,
-      priceLabel,
-      isActive,
-      lastUpdatedAt,
-      amenities
-    };
+    return { guestLabel, areaLabel, priceLabel, isActive, lastUpdatedAt, amenities };
   }, [selectedChalet]);
 
+  // ---- RENDER -------------------------------------------------------------
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
@@ -622,9 +503,7 @@ export default function AdminChaletsPage() {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
         )}
 
         {persistedChalets.length || signupEntries.length ? (
@@ -632,9 +511,7 @@ export default function AdminChaletsPage() {
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-neutral-900">Chalets actifs</h3>
-                <span className="text-sm text-neutral-500">
-                  {activeChalets.length} visible(s) dans le portfolio
-                </span>
+                <span className="text-sm text-neutral-500">{activeChalets.length} visible(s) dans le portfolio</span>
               </div>
               {activeChalets.length ? (
                 renderChaletsTable(activeChalets)
@@ -649,9 +526,7 @@ export default function AdminChaletsPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-neutral-900">Chalets masqués</h3>
-                  <span className="text-sm text-neutral-500">
-                    {inactiveChalets.length} en brouillon
-                  </span>
+                  <span className="text-sm text-neutral-500">{inactiveChalets.length} en brouillon</span>
                 </div>
                 {inactiveChalets.length ? (
                   renderChaletsTable(inactiveChalets)
@@ -667,9 +542,7 @@ export default function AdminChaletsPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-neutral-900">Candidatures</h3>
-                  <span className="text-sm text-neutral-500">
-                    {signupEntries.length} en cours d&apos;examen
-                  </span>
+                  <span className="text-sm text-neutral-500">{signupEntries.length} en cours d'examen</span>
                 </div>
                 {signupEntries.length ? (
                   renderChaletsTable(signupEntries)
@@ -685,16 +558,12 @@ export default function AdminChaletsPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-neutral-900">Chalets en attente de publication</h3>
-                  <span className="text-sm text-neutral-500">
-                    {inactiveChalets.length} à compléter
-                  </span>
+                  <span className="text-sm text-neutral-500">{inactiveChalets.length} à compléter</span>
                 </div>
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
-                  Complétez les informations et contactez l&apos;équipe Chalet Manager pour publier ces chalets.
+                  Complétez les informations et contactez l'équipe Chalet Manager pour publier ces chalets.
                 </div>
-                <div className="mt-6">
-                  {renderChaletsTable(inactiveChalets)}
-                </div>
+                <div className="mt-6">{renderChaletsTable(inactiveChalets)}</div>
               </section>
             )}
           </div>
@@ -740,9 +609,7 @@ export default function AdminChaletsPage() {
           >
             <div className="flex items-start justify-between border-b border-neutral-200 px-6 py-4">
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900">
-                  {selectedChalet?.title || 'Chalet sans titre'}
-                </h3>
+                <h3 className="text-lg font-semibold text-neutral-900">{selectedChalet?.title || 'Chalet sans titre'}</h3>
                 <p className="text-sm text-neutral-500">
                   {selectedChalet?.location?.city || 'Ville à préciser'}
                   {selectedChalet?.location?.country ? `, ${selectedChalet.location.country}` : ''}
@@ -779,9 +646,7 @@ export default function AdminChaletsPage() {
               <div className="space-y-6 px-6 py-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Informations clés
-                    </h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Informations clés</h4>
                     <dl className="mt-3 space-y-2 text-sm text-neutral-700">
                       <div className="flex items-center justify-between">
                         <dt>Capacité</dt>
@@ -808,20 +673,17 @@ export default function AdminChaletsPage() {
                     </dl>
                   </div>
                   <div className="rounded-xl border border-neutral-200 p-4">
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Localisation
-                    </h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Localisation</h4>
                     <div className="mt-3 space-y-1 text-sm text-neutral-700">
                       <p>{selectedChalet?.location?.address || 'Adresse à préciser'}</p>
                       <p>
-                        {(selectedChalet?.location?.postalCode || '')}{' '}
-                        {selectedChalet?.location?.city || ''}
+                        {(selectedChalet?.location?.postalCode || '')} {selectedChalet?.location?.city || ''}
                       </p>
                       <p>{selectedChalet?.location?.country || ''}</p>
                     </div>
                     {selectedChalet?.location?.coordinates && (
                       <p className="mt-3 text-xs text-neutral-500">
-                        Coordonnées : {selectedChalet.location.coordinates.latitude?.toFixed?.(4) || '—'},{' '}
+                        Coordonnées : {selectedChalet.location.coordinates.latitude?.toFixed?.(4) || '—'}, {' '}
                         {selectedChalet.location.coordinates.longitude?.toFixed?.(4) || '—'}
                       </p>
                     )}
@@ -829,9 +691,7 @@ export default function AdminChaletsPage() {
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                    Description
-                  </h4>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Description</h4>
                   <p className="mt-3 whitespace-pre-line text-sm leading-6 text-neutral-700">
                     {selectedChalet?.description || 'Aucune description fournie.'}
                   </p>
@@ -839,9 +699,7 @@ export default function AdminChaletsPage() {
 
                 {selectedChaletDetails?.amenities?.length ? (
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Équipements
-                    </h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Équipements</h4>
                     <ul className="mt-3 flex flex-wrap gap-2">
                       {selectedChaletDetails.amenities.map((amenity, index) => (
                         <li
@@ -857,18 +715,10 @@ export default function AdminChaletsPage() {
 
                 {selectedChalet?.contact && (
                   <div className="grid gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Contact
-                    </h4>
-                    {selectedChalet.contact?.email && (
-                      <p>Email : {selectedChalet.contact.email}</p>
-                    )}
-                    {selectedChalet.contact?.phone && (
-                      <p>Téléphone : {selectedChalet.contact.phone}</p>
-                    )}
-                    {selectedChalet.contact?.website && (
-                      <p>Site web : {selectedChalet.contact.website}</p>
-                    )}
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Contact</h4>
+                    {selectedChalet.contact?.email && <p>Email : {selectedChalet.contact.email}</p>}
+                    {selectedChalet.contact?.phone && <p>Téléphone : {selectedChalet.contact.phone}</p>}
+                    {selectedChalet.contact?.website && <p>Site web : {selectedChalet.contact.website}</p>}
                   </div>
                 )}
               </div>
@@ -876,10 +726,7 @@ export default function AdminChaletsPage() {
 
             <div className="flex items-center justify-between border-t border-neutral-200 bg-neutral-50 px-6 py-4">
               <div className="text-xs text-neutral-500">
-                Source :{' '}
-                {selectedChalet?.source
-                  ? SOURCE_LABELS[selectedChalet.source] || selectedChalet.source
-                  : 'Interne'}
+                Source : {selectedChalet?.source ? SOURCE_LABELS[selectedChalet.source] || selectedChalet.source : 'Interne'}
               </div>
               {!selectedChalet?.source || selectedChalet.source !== 'signup-application' ? (
                 <Link
@@ -891,9 +738,7 @@ export default function AdminChaletsPage() {
                   Gérer ce chalet
                 </Link>
               ) : (
-                <span className="text-xs font-semibold text-primary-700">
-                  Candidature en cours d&apos;examen
-                </span>
+                <span className="text-xs font-semibold text-primary-700">Candidature en cours d'examen</span>
               )}
             </div>
           </div>
@@ -903,10 +748,9 @@ export default function AdminChaletsPage() {
   );
 }
 
+// ---- IMAGE HELPERS --------------------------------------------------------
 function normalizeImageValue(image, fallbackAlt) {
-  if (!image) {
-    return null;
-  }
+  if (!image) return null;
 
   if (typeof image === 'string') {
     const value = image?.trim?.() || image;
@@ -915,12 +759,8 @@ function normalizeImageValue(image, fallbackAlt) {
 
   if (typeof image === 'object') {
     const url = image.url || image.secureUrl || image.src || image.path;
-
     if (url) {
-      return {
-        url,
-        alt: image.alt || image.caption || fallbackAlt
-      };
+      return { url, alt: image.alt || image.caption || fallbackAlt };
     }
   }
 
@@ -928,26 +768,18 @@ function normalizeImageValue(image, fallbackAlt) {
 }
 
 function pickImageFromArray(arrayValue, fallbackAlt) {
-  if (!Array.isArray(arrayValue)) {
-    return null;
-  }
+  if (!Array.isArray(arrayValue)) return null;
 
   const prioritized = arrayValue.find((item) => item?.isHero || item?.isPrimary);
-
   if (prioritized) {
     const normalized = normalizeImageValue(prioritized, fallbackAlt);
-    if (normalized) {
-      return normalized;
-    }
+    if (normalized) return normalized;
   }
 
   for (const item of arrayValue) {
     const normalized = normalizeImageValue(item, fallbackAlt);
-    if (normalized) {
-      return normalized;
-    }
+    if (normalized) return normalized;
   }
-
   return null;
 }
 
@@ -957,46 +789,31 @@ function getAdminThumbnailImage(chalet) {
 
   if (Array.isArray(images)) {
     const fromArray = pickImageFromArray(images, fallbackAlt);
-    if (fromArray) {
-      return fromArray;
-    }
+    if (fromArray) return fromArray;
   } else if (images && typeof images === 'object') {
     const heroCandidate = normalizeImageValue(images.hero, fallbackAlt);
-    if (heroCandidate) {
-      return heroCandidate;
-    }
+    if (heroCandidate) return heroCandidate;
 
     const galleryCandidate = pickImageFromArray(images.gallery, fallbackAlt);
-    if (galleryCandidate) {
-      return galleryCandidate;
-    }
+    if (galleryCandidate) return galleryCandidate;
 
     for (const value of Object.values(images)) {
       if (!value) continue;
-
       if (Array.isArray(value)) {
         const candidate = pickImageFromArray(value, fallbackAlt);
-        if (candidate) {
-          return candidate;
-        }
+        if (candidate) return candidate;
       } else {
         const candidate = normalizeImageValue(value, fallbackAlt);
-        if (candidate) {
-          return candidate;
-        }
+        if (candidate) return candidate;
       }
     }
   }
 
   const heroImage = normalizeImageValue(chalet?.heroImage, fallbackAlt);
-  if (heroImage) {
-    return heroImage;
-  }
+  if (heroImage) return heroImage;
 
   const galleryImage = pickImageFromArray(chalet?.gallery, fallbackAlt);
-  if (galleryImage) {
-    return galleryImage;
-  }
+  if (galleryImage) return galleryImage;
 
   return null;
 }
