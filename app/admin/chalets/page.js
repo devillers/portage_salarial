@@ -22,6 +22,7 @@ export default function AdminChaletsPage() {
   const [error, setError] = useState('');
   const [updatingChaletId, setUpdatingChaletId] = useState(null);
   const [selectedChalet, setSelectedChalet] = useState(null);
+  const [validatingSignupId, setValidatingSignupId] = useState(null);
 
   const apiToken = session?.user?.apiToken;
   const userRole = session?.user?.role;
@@ -134,6 +135,46 @@ export default function AdminChaletsPage() {
     setSelectedChalet(null);
   };
 
+  const handleValidateSignupChalet = async (chalet) => {
+    if (!isSuperAdmin || !apiToken || !chalet?.ownerApplicationId) {
+      return;
+    }
+
+    setValidatingSignupId(chalet._id);
+    setError('');
+
+    try {
+      const response = await fetch('/api/chalets/publish-signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`
+        },
+        body: JSON.stringify({ applicationId: chalet.ownerApplicationId })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || 'Impossible de valider la candidature.');
+      }
+
+      const publishedChalet = data.data;
+
+      setChalets((prev) => {
+        const withoutSignup = prev.filter((item) => item._id !== chalet._id);
+        return publishedChalet ? [...withoutSignup, publishedChalet] : withoutSignup;
+      });
+
+      setSelectedChalet((current) => (current?._id === chalet._id ? null : current));
+    } catch (err) {
+      console.error('Failed to publish signup chalet', err);
+      setError(err?.message || 'Impossible de valider le chalet.');
+    } finally {
+      setValidatingSignupId(null);
+    }
+  };
+
   useEffect(() => {
     if (!selectedChalet) {
       return;
@@ -200,6 +241,8 @@ export default function AdminChaletsPage() {
       ? new Date(chalet.updatedAt).toLocaleDateString('fr-FR')
       : 'Date inconnue';
     const canToggle = isSuperAdmin && !isSignup && chalet?.slug;
+    const canValidateSignup = isSuperAdmin && isSignup && chalet?.ownerApplicationId;
+    const isValidatingSignup = validatingSignupId === chalet?._id;
     const isUpdating = updatingChaletId === chalet?._id;
     const sourceBadgeLabel = chalet?.source
       ? SOURCE_LABELS[chalet.source] || chalet.source
@@ -277,7 +320,34 @@ export default function AdminChaletsPage() {
               <ClientIcon name="Eye" className="h-4 w-4" />
               <span className="sr-only">Voir le chalet</span>
             </button>
-            {canToggle ? (
+            {isSignup ? (
+              canValidateSignup ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={false}
+                    onClick={() => handleValidateSignupChalet(chalet)}
+                    disabled={isValidatingSignup}
+                    className={`relative inline-flex h-9 w-16 items-center rounded-full px-1 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                      isValidatingSignup ? 'bg-primary-500' : 'bg-neutral-300'
+                    } ${isValidatingSignup ? 'cursor-wait opacity-70' : 'cursor-pointer'}`}
+                  >
+                    <span
+                      className={`inline-block h-7 w-7 transform rounded-full bg-white shadow transition ${
+                        isValidatingSignup ? 'translate-x-7' : 'translate-x-0'
+                      }`}
+                    />
+                    <span className="sr-only">Valider cette candidature et publier le chalet</span>
+                  </button>
+                  <span className="text-xs font-semibold text-primary-700">
+                    {isValidatingSignup ? 'Validation…' : 'Valider'}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-xs text-neutral-400">En attente</span>
+              )
+            ) : canToggle ? (
               <button
                 type="button"
                 role="switch"
@@ -296,9 +366,7 @@ export default function AdminChaletsPage() {
                 <span className="sr-only">Basculer le statut du chalet</span>
               </button>
             ) : (
-              <span className="text-xs text-neutral-400">
-                {isSignup ? 'En attente' : 'Modification restreinte'}
-              </span>
+              <span className="text-xs text-neutral-400">Modification restreinte</span>
             )}
             {!isSignup ? (
               <Link
@@ -309,7 +377,7 @@ export default function AdminChaletsPage() {
               </Link>
             ) : (
               <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700">
-                En attente de traitement
+                {isValidatingSignup ? 'Publication…' : 'En attente de traitement'}
               </span>
             )}
           </div>
