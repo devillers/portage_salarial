@@ -179,206 +179,179 @@ export default function AdminChaletsPage() {
     return session.user.name || session.user.email || '';
   }, [session?.user]);
 
-  const renderChaletRow = (chalet) => {
-    const isSignup = chalet?.source === 'signup-application';
-    const isActive = chalet?.availability?.isActive ?? false;
-    const coverImage = getAdminThumbnailImage(chalet);
-    const guestCount = chalet?.specifications?.maxGuests;
-    const hasGuestCount = Number.isFinite(guestCount) && guestCount > 0;
-    const guestLabel = hasGuestCount
-      ? `${guestCount} voyageur${guestCount > 1 ? 's' : ''}`
-      : 'À renseigner';
-    const areaValue = chalet?.specifications?.area;
-    const hasArea = Number.isFinite(areaValue) && areaValue > 0;
-    const areaLabel = hasArea ? `${areaValue} m²` : 'À renseigner';
-    const basePrice = chalet?.pricing?.basePrice;
-    const hasBasePrice = Number.isFinite(basePrice) && basePrice >= 0;
-    const priceLabel = hasBasePrice
-      ? `${Number(basePrice).toLocaleString('fr-FR')} €`
-      : 'À renseigner';
-    const lastUpdatedAt = chalet?.updatedAt
-      ? new Date(chalet.updatedAt).toLocaleDateString('fr-FR')
-      : 'Date inconnue';
-    const canToggle = isSuperAdmin && !isSignup && chalet?.slug;
-    const isUpdating = updatingChaletId === chalet?._id;
-    const sourceBadgeLabel = chalet?.source
-      ? SOURCE_LABELS[chalet.source] || chalet.source
-      : null;
+ const renderChaletRow = (chalet) => {
+  const isSignup = chalet?.source === 'signup-application';
+  const isActive = chalet?.availability?.isActive ?? false;
+  const coverImage = getAdminThumbnailImage(chalet);
 
-    return (
-      <tr key={chalet._id} className="transition-colors hover:bg-neutral-50">
-        <td className="px-6 py-4 align-top">
-          <div className="flex items-start gap-3">
-            <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-              {coverImage?.url ? (
-                <Image
-                  src={coverImage.url}
-                  alt={coverImage.alt || chalet.title || 'Chalet'}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-neutral-400">
-                  <ClientIcon name="ImageOff" className="h-6 w-6" />
-                </div>
-              )}
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-neutral-900">
+  const guestCount = chalet?.specifications?.maxGuests;
+  const hasGuestCount = Number.isFinite(guestCount) && guestCount > 0;
+
+  const areaValue = chalet?.specifications?.area;
+  const hasArea = Number.isFinite(areaValue) && areaValue > 0;
+
+  const basePrice = chalet?.pricing?.basePrice;
+  const hasBasePrice = Number.isFinite(basePrice) && basePrice >= 0;
+
+  const infoParts = [
+    hasGuestCount ? `${guestCount} pers` : null,
+    hasArea ? `${areaValue} m²` : null,
+    hasBasePrice ? `${Number(basePrice).toLocaleString('fr-FR')} € / nuit` : null
+  ].filter(Boolean);
+
+  const infoText = infoParts.length ? infoParts.join(' · ') : '—';
+
+  const city = chalet?.location?.city || 'Ville à préciser';
+  const country = chalet?.location?.country ? `, ${chalet.location.country}` : '';
+
+  const sourceBadgeLabel = chalet?.source
+    ? (SOURCE_LABELS[chalet.source] || chalet.source)
+    : null;
+
+  const canToggle = (session?.user?.role === 'super-admin') && !isSignup && chalet?.slug;
+  const isUpdating = updatingChaletId === chalet?._id;
+
+  return (
+    <tr key={chalet._id} className="hover:bg-neutral-50">
+      {/* Col 1 — Chalet */}
+      <td className="px-4 py-3 align-top">
+        <div className="flex items-start gap-3">
+          <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+            {coverImage?.url ? (
+              <Image
+                src={coverImage.url}
+                alt={coverImage.alt || chalet.title || 'Chalet'}
+                fill
+                sizes="160px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-neutral-400">
+                <ClientIcon name="ImageOff" className="h-5 w-5" />
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="truncate text-sm font-semibold text-neutral-900">
                 {chalet.title || 'Chalet sans titre'}
               </p>
-              <p className="text-xs text-neutral-500">
-                Dernière mise à jour : {lastUpdatedAt}
-              </p>
-              {sourceBadgeLabel && (
+
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                  isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-200 text-neutral-700'
+                }`}
+              >
                 <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    isSignup ? 'bg-primary-50 text-primary-700' : 'bg-neutral-100 text-neutral-600'
-                  }`}
-                >
+                  className="mr-1.5 h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
+                />
+                {isActive ? 'Actif' : 'Inactif'}
+              </span>
+
+              {sourceBadgeLabel && (
+                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                  isSignup ? 'bg-primary-50 text-primary-700' : 'bg-neutral-100 text-neutral-600'
+                }`}>
                   {sourceBadgeLabel}
                 </span>
               )}
             </div>
+
+            <p className="mt-0.5 text-xs text-neutral-500">
+              {city}{country}
+            </p>
+
+            {/* Sur mobile, on affiche aussi l'info clé sous le titre */}
+            <p className="mt-1 text-xs text-neutral-600 md:hidden">
+              {infoText}
+            </p>
           </div>
-        </td>
-        <td className="px-6 py-4 align-top">
-          <div className="text-sm font-medium text-neutral-900">
-            {chalet.location?.city || 'Ville à préciser'}
-          </div>
-          <div className="text-xs text-neutral-500">
-            {chalet.location?.country || 'Pays à préciser'}
-          </div>
-        </td>
-        <td className="px-6 py-4 align-top text-sm text-neutral-700">{guestLabel}</td>
-        <td className="px-6 py-4 align-top text-sm text-neutral-700">{areaLabel}</td>
-        <td className="px-6 py-4 align-top text-sm text-neutral-700">{priceLabel}</td>
-        <td className="px-6 py-4 align-top">
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-              isActive ? 'bg-green-100 text-green-700' : 'bg-neutral-200 text-neutral-700'
-            }`}
+        </div>
+      </td>
+
+      {/* Col 2 — Infos clés (masquée sur mobile pour alléger) */}
+      <td className="hidden md:table-cell px-4 py-3 align-top text-sm text-neutral-700">
+        {infoText}
+      </td>
+
+      {/* Col 3 — Actions */}
+      <td className="px-4 py-3 align-top">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleViewChaletDetails(chalet)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
           >
-            <span
-              className="mr-2 h-2 w-2 rounded-full"
-              style={{ backgroundColor: isActive ? '#16a34a' : '#a3a3a3' }}
-            />
-            {isActive ? 'Actif' : 'Inactif'}
-          </span>
-        </td>
-        <td className="px-6 py-4 align-top">
-          <div className="flex flex-wrap items-center gap-2">
+            <ClientIcon name="Eye" className="h-4 w-4" />
+            <span className="sr-only">Voir le chalet</span>
+          </button>
+
+          {!isSignup ? (
+            <Link
+              href={`/admin/chalets/${chalet.slug || ''}`}
+              className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-neutral-200 hover:text-neutral-900 hover:ring-neutral-300"
+            >
+              Gérer
+            </Link>
+          ) : (
+            <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700">
+              En cours
+            </span>
+          )}
+
+          {canToggle && (
             <button
               type="button"
-              onClick={() => handleViewChaletDetails(chalet)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 transition-colors hover:border-primary-200 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+              role="switch"
+              aria-checked={isActive}
+              onClick={() => handleToggleChaletStatus(chalet)}
+              disabled={isUpdating}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full px-1 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                isActive ? 'bg-green-500' : 'bg-neutral-300'
+              } ${isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'}`}
             >
-              <ClientIcon name="Eye" className="h-4 w-4" />
-              <span className="sr-only">Voir le chalet</span>
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition ${
+                  isActive ? 'translate-x-6' : 'translate-x-0'
+                }`}
+              />
+              <span className="sr-only">Basculer le statut</span>
             </button>
-            {canToggle ? (
-              <button
-                type="button"
-                role="switch"
-                aria-checked={isActive}
-                onClick={() => handleToggleChaletStatus(chalet)}
-                disabled={isUpdating}
-                className={`relative inline-flex h-9 w-16 items-center rounded-full px-1 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
-                  isActive ? 'bg-green-500' : 'bg-neutral-300'
-                } ${isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'}`}
-              >
-                <span
-                  className={`inline-block h-7 w-7 transform rounded-full bg-white shadow transition ${
-                    isActive ? 'translate-x-7' : 'translate-x-0'
-                  }`}
-                />
-                <span className="sr-only">Basculer le statut du chalet</span>
-              </button>
-            ) : (
-              <span className="text-xs text-neutral-400">
-                {isSignup ? 'En attente' : 'Modification restreinte'}
-              </span>
-            )}
-            {!isSignup ? (
-              <Link
-                href={`/admin/chalets/${chalet.slug || ''}`}
-                className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-sm ring-1 ring-neutral-200 transition-colors hover:text-neutral-900 hover:ring-neutral-300"
-              >
-                Gérer
-              </Link>
-            ) : (
-              <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700">
-                En attente de traitement
-              </span>
-            )}
-          </div>
-        </td>
-      </tr>
-    );
-  };
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+};
 
-  const renderChaletsTable = (items) => {
-    if (!Array.isArray(items) || items.length === 0) {
-      return null;
-    }
+ const renderChaletsTable = (items) => {
+  if (!Array.isArray(items) || items.length === 0) return null;
 
-    return (
-      <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-neutral-200 text-left">
-          <thead className="bg-neutral-50">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500"
-              >
-                Chalet
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500"
-              >
-                Localisation
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500"
-              >
-                Capacité
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500"
-              >
-                Surface
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500"
-              >
-                Prix / nuit
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500"
-              >
-                Statut
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-200 bg-white text-sm text-neutral-700">
-            {items.map((chalet) => renderChaletRow(chalet))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <table className="min-w-full text-left">
+        <thead className="bg-neutral-50">
+          <tr>
+            <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Chalet
+            </th>
+            <th scope="col" className="hidden md:table-cell px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Infos clés
+            </th>
+            <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-neutral-200 bg-white text-sm text-neutral-700">
+          {items.map((chalet) => renderChaletRow(chalet))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
   const selectedChaletImage = useMemo(() => {
     if (!selectedChalet) {
