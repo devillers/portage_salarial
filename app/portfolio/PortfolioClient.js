@@ -324,12 +324,7 @@ function ChaletCard({ chalet }) {
         {Array.isArray(chalet?.amenities) && chalet.amenities.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {chalet.amenities.slice(0, 3).map((amenity, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded-full"
-              >
-                {amenity?.name ?? amenity}
-              </span>
+              <AmenityBadge key={index} amenity={amenity} />
             ))}
             {chalet.amenities.length > 3 && (
               <span className="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded-full">
@@ -361,6 +356,28 @@ function ChaletCard({ chalet }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function getAmenityLabel(amenity) {
+  if (!amenity) return '';
+  if (typeof amenity === 'string') return amenity;
+  if (typeof amenity?.name === 'string') return amenity.name;
+  if (typeof amenity?.description === 'string') return amenity.description;
+  return '';
+}
+
+function AmenityBadge({ amenity }) {
+  const label = getAmenityLabel(amenity);
+
+  if (!label) {
+    return null;
+  }
+
+  return (
+    <span className="px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded-full">
+      {label}
+    </span>
   );
 }
 
