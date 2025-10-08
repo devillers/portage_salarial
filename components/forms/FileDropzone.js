@@ -1,7 +1,70 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ClientIcon from '../ClientIcon';
+
+const isFileInstance = (candidate) =>
+  typeof File !== 'undefined' && candidate instanceof File;
+
+const parseAcceptString = (accept = '') =>
+  accept
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+const getFileExtension = (file) => {
+  if (!file?.name) {
+    return '';
+  }
+
+  const parts = file.name.split('.');
+  return parts.length > 1 ? parts.pop().toLowerCase() : '';
+};
+
+const isAcceptedType = (file, acceptedTypes) => {
+  if (!Array.isArray(acceptedTypes) || acceptedTypes.length === 0) {
+    return true;
+  }
+
+  return acceptedTypes.some((type) => {
+    if (type.startsWith('.')) {
+      return `.${getFileExtension(file)}` === type.toLowerCase();
+    }
+
+    if (type.endsWith('/*')) {
+      const group = type.split('/')[0];
+      return file.type?.startsWith(`${group}/`);
+    }
+
+    return file.type === type;
+  });
+};
+
+const createPreviewItems = (files = []) => {
+  if (!Array.isArray(files)) {
+    return [];
+  }
+
+  return files.map((file, index) => {
+    const isImagePreview =
+      isFileInstance(file) && file.type?.startsWith('image/');
+
+    return {
+      file,
+      key: `${file?.name ?? 'file'}-${index}-${file?.lastModified ?? 'static'}`,
+      previewUrl: isImagePreview ? URL.createObjectURL(file) : null
+    };
+  });
+};
+
+const formatLimitMessage = (maxFileSize) => {
+  if (!maxFileSize) {
+    return '';
+  }
+
+  const megabytes = (maxFileSize / 1024 / 1024).toFixed(0);
+  return ` (${megabytes} Mo)`;
+};
 
 export default function FileDropzone({
   label,
@@ -10,33 +73,36 @@ export default function FileDropzone({
   multiple = false,
   onFilesChange,
   helperText,
-  className = ''
+  className = '',
+  value = [],
+  maxFileSize,
+  error,
+  onError
 }) {
   const inputRef = useRef(null);
-  const [fileItems, setFileItems] = useState([]);
+  const acceptedTypes = useMemo(() => parseAcceptString(accept), [accept]);
+  const [fileItems, setFileItems] = useState(() => createPreviewItems(value));
+  const [localError, setLocalError] = useState('');
 
-  const handleFiles = useCallback(
-    (fileList) => {
-      const nextFiles = Array.from(fileList || []);
-      const nextItems = nextFiles.map((file) => ({
-        file,
-        previewUrl: file.type?.startsWith('image/') ? URL.createObjectURL(file) : null
-      }));
+  const displayError = useCallback(
+    (message) => {
+      setLocalError(message);
+      onError?.(message);
+    },
+    [onError]
+  );
 
-      setFileItems((previousItems) => {
-        previousItems.forEach((item) => {
-          if (item.previewUrl) {
-            URL.revokeObjectURL(item.previewUrl);
-          }
-        });
-
-        return nextItems;
+  useEffect(() => {
+    setFileItems((previousItems) => {
+      previousItems.forEach((item) => {
+        if (item.previewUrl) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
       });
 
-      onFilesChange?.(nextFiles);
-    },
-    [onFilesChange]
-  );
+      return createPreviewItems(value);
+    });
+  }, [value]);
 
   const handleDrop = useCallback(
     (event) => {
@@ -44,10 +110,87 @@ export default function FileDropzone({
       event.stopPropagation();
 
       if (event.dataTransfer?.files?.length) {
-        handleFiles(event.dataTransfer.files);
+        const files = event.dataTransfer.files;
+        const nextFiles = Array.from(files || []);
+
+        let hasError = false;
+
+        const filteredFiles = nextFiles.filter((file) => {
+          if (!isAcceptedType(file, acceptedTypes)) {
+            hasError = true;
+            displayError("Ce type de fichier n'est pas pris en charge.");
+            return false;
+          }
+
+          if (maxFileSize && file.size > maxFileSize) {
+            hasError = true;
+            displayError(
+              `Le fichier ${file.name} dépasse la taille maximale autorisée${formatLimitMessage(maxFileSize)}.`
+            );
+            return false;
+          }
+
+          return true;
+        });
+
+        if (hasError && filteredFiles.length === 0) {
+          return;
+        }
+
+        if (!multiple && filteredFiles.length > 1) {
+          filteredFiles.splice(1);
+        }
+
+        if (!hasError) {
+          displayError('');
+        }
+        onFilesChange?.(filteredFiles);
       }
     },
-    [handleFiles]
+    [acceptedTypes, displayError, maxFileSize, multiple, onFilesChange]
+  );
+
+  const handleFiles = useCallback(
+    (fileList) => {
+      const nextFiles = Array.from(fileList || []);
+      let hasError = false;
+
+      const filteredFiles = nextFiles.filter((file) => {
+        if (!isAcceptedType(file, acceptedTypes)) {
+          hasError = true;
+          displayError("Ce type de fichier n'est pas pris en charge.");
+          return false;
+        }
+
+        if (maxFileSize && file.size > maxFileSize) {
+          hasError = true;
+          displayError(
+            `Le fichier ${file.name} dépasse la taille maximale autorisée${formatLimitMessage(maxFileSize)}.`
+          );
+          return false;
+        }
+
+        return true;
+      });
+
+      if (hasError && filteredFiles.length === 0) {
+        inputRef.current && (inputRef.current.value = '');
+        return;
+      }
+
+      if (!multiple && filteredFiles.length > 1) {
+        filteredFiles.splice(1);
+      }
+
+      if (!hasError) {
+        displayError('');
+      }
+      onFilesChange?.(filteredFiles);
+      if (inputRef.current) {
+        inputRef.current.value = '';
+      }
+    },
+    [acceptedTypes, displayError, maxFileSize, multiple, onFilesChange]
   );
 
   const handleDragOver = useCallback((event) => {
@@ -68,18 +211,12 @@ export default function FileDropzone({
 
   const removeFile = useCallback(
     (index) => {
-      setFileItems((prev) => {
-        const itemToRemove = prev[index];
-        if (itemToRemove?.previewUrl) {
-          URL.revokeObjectURL(itemToRemove.previewUrl);
-        }
-
-        const next = prev.filter((_, i) => i !== index);
-        onFilesChange?.(next.map((item) => item.file));
-        return next;
-      });
+      const files = Array.isArray(value) ? value : [];
+      const nextFiles = files.filter((_, i) => i !== index);
+      displayError('');
+      onFilesChange?.(nextFiles);
     },
-    [onFilesChange]
+    [displayError, onFilesChange, value]
   );
 
   useEffect(() => {
@@ -124,8 +261,14 @@ export default function FileDropzone({
           Glissez-déposez vos fichiers ici ou <span className="text-primary-600">cliquez pour parcourir</span>
         </p>
         <p className="mt-2 text-xs text-neutral-500">
-          {multiple ? 'Formats JPG, PNG ou PDF. Taille max : 10 Mo par fichier.' : 'Un fichier au format JPG, PNG ou PDF. Taille max : 10 Mo.'}
+          {helperText ||
+            (multiple
+              ? 'Formats autorisés : JPG, JPEG ou WEBP. Limite totale du formulaire : 200 Mo.'
+              : 'Formats autorisés : JPG, JPEG ou WEBP. Limite totale du formulaire : 200 Mo.')}
         </p>
+        {(error || localError) && (
+          <p className="mt-2 text-xs text-red-600">{error || localError}</p>
+        )}
         <input
           ref={inputRef}
           type="file"
