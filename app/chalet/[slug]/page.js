@@ -8,6 +8,14 @@ import ChaletBooking from '../../../components/chalet/ChaletBooking';
 import ChaletMap from '../../../components/chalet/ChaletMap';
 import ChaletGallery from '../../../components/chalet/ChaletGallery';
 
+function getAmenityLabel(amenity) {
+  if (!amenity) return '';
+  if (typeof amenity === 'string') return amenity;
+  if (typeof amenity?.name === 'string') return amenity.name;
+  if (typeof amenity?.description === 'string') return amenity.description;
+  return '';
+}
+
 async function getChalet(slug) {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/chalets/${slug}`, {
@@ -127,6 +135,9 @@ export default async function ChaletPage({ params }) {
 
   const heroImage = getHeroImage(chalet.images);
   const galleryImages = normalizeImages(chalet.images);
+  const descriptionParagraphs = typeof chalet.description === 'string'
+    ? chalet.description.split('\n').filter(Boolean)
+    : [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -274,11 +285,15 @@ export default async function ChaletPage({ params }) {
           </h2>
           
           <div className="prose prose-lg max-w-none text-neutral-700 leading-relaxed">
-            {chalet.description.split('\n').map((paragraph, index) => (
-              <p key={index} className="mb-4">
-                {paragraph}
-              </p>
-            ))}
+            {descriptionParagraphs.length > 0 ? (
+              descriptionParagraphs.map((paragraph, index) => (
+                <p key={index} className="mb-4">
+                  {paragraph}
+                </p>
+              ))
+            ) : (
+              <p className="mb-4">Description à venir.</p>
+            )}
           </div>
         </div>
       </section>
@@ -303,23 +318,33 @@ export default async function ChaletPage({ params }) {
           
           {chalet.amenities && chalet.amenities.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {chalet.amenities.map((amenity, index) => (
-                <div key={index} className="flex items-center p-4 bg-white rounded-lg border border-neutral-200">
-                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
-                    <ClientIcon name={amenity.icon || 'Check'} className="h-5 w-5 text-primary-700" />
+              {chalet.amenities.map((amenity, index) => {
+                const amenityLabel = getAmenityLabel(amenity);
+                if (!amenityLabel) {
+                  return null;
+                }
+
+                const amenityDescription = typeof amenity?.description === 'string' ? amenity.description : '';
+                const amenityIcon = typeof amenity?.icon === 'string' && amenity.icon.trim() ? amenity.icon : 'Check';
+
+                return (
+                  <div key={index} className="flex items-center p-4 bg-white rounded-lg border border-neutral-200">
+                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                      <ClientIcon name={amenityIcon} className="h-5 w-5 text-primary-700" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-neutral-900">
+                        {amenityLabel}
+                      </h3>
+                      {amenityDescription && (
+                        <p className="text-sm text-neutral-600">
+                          {amenityDescription}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-neutral-900">
-                      {amenity.name}
-                    </h3>
-                    {amenity.description && (
-                      <p className="text-sm text-neutral-600">
-                        {amenity.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12">
