@@ -7,6 +7,9 @@ import PageWrapper from "../../components/layout/PageWrapper";
 import ClientIcon from "../../components/ClientIcon";
 import FileDropzone from "../../components/forms/FileDropzone";
 
+const MAX_OWNER_TOTAL_BYTES = 200 * 1024 * 1024;
+const MAX_OWNER_VIDEO_BYTES = 50 * 1024 * 1024;
+
 const createOwnerInitial = () => ({
   title: "",
   slug: "",
@@ -17,6 +20,7 @@ const createOwnerInitial = () => ({
   monthlyPrice: "",
   heroPhoto: [],
   gallery: [],
+  propertyVideo: [],
   portfolioGallery: [],
   amenities: {
     jacuzzi: false,
@@ -96,6 +100,7 @@ const CLOUDINARY_FOLDERS = {
   rooms: "signup/rooms",
   identity: "signup/documents/identity",
   ownership: "signup/documents/ownership",
+  video: "signup/videos",
 };
 
 const DEFAULT_AMENITIES = [
@@ -125,6 +130,57 @@ const mapUploadToMetadata = (file, upload = {}) => ({
   originalFilename: upload?.originalFilename || file?.name || "",
   version: upload?.version ?? null,
 });
+
+const getFileSizeInBytes = (file) => {
+  if (!file) {
+    return 0;
+  }
+
+  if (isFileInstance(file)) {
+    return file.size ?? 0;
+  }
+
+  if (typeof file.bytes === "number") {
+    return file.bytes;
+  }
+
+  if (typeof file.size === "number") {
+    return file.size;
+  }
+
+  return 0;
+};
+
+const computeOwnerUploadBytes = (form) => {
+  if (!form) {
+    return 0;
+  }
+
+  const baseCollections = [
+    form.heroPhoto,
+    form.gallery,
+    form.identityDocument,
+    form.ownershipProof,
+    form.propertyVideo,
+  ];
+
+  const flatBase = baseCollections.flatMap((files) =>
+    Array.isArray(files) ? files : []
+  );
+
+  const roomFiles = Array.isArray(form.rooms)
+    ? form.rooms.flatMap((room) =>
+        Array.isArray(room.photos) ? room.photos : []
+      )
+    : [];
+
+  return [...flatBase, ...roomFiles].reduce(
+    (total, file) => total + getFileSizeInBytes(file),
+    0
+  );
+};
+
+const formatBytesToMegabytes = (bytes) => (bytes / 1024 / 1024).toFixed(2);
 
 const uploadFilesToCloudinary = async (files, folder) => {
   if (!Array.isArray(files) || files.length === 0) {
@@ -173,6 +229,7 @@ const buildOwnerPayload = async (form) => {
     gallery,
     identityDocument,
     ownershipProof,
+    propertyVideo,
     roomPhotos,
   ] = await Promise.all([
     uploadFilesToCloudinary(form.heroPhoto, CLOUDINARY_FOLDERS.hero),
@@ -184,6 +241,10 @@ const buildOwnerPayload = async (form) => {
     uploadFilesToCloudinary(
       form.ownershipProof,
       CLOUDINARY_FOLDERS.ownership
+    ),
+    uploadFilesToCloudinary(
+      form.propertyVideo,
+      CLOUDINARY_FOLDERS.video
     ),
     Promise.all(
       form.rooms.map((room, index) =>
@@ -225,6 +286,7 @@ const buildOwnerPayload = async (form) => {
     owner: form.owner,
     identityDocument,
     ownershipProof,
+    propertyVideo,
   };
 };
 
@@ -423,13 +485,33 @@ export default function SignUpPage() {
 
   const resetFeedback = () => setFeedback({ type: "", message: "" });
 
+  const ownerFileFields = useMemo(
+    () =>
+      new Set([
+        "heroPhoto",
+        "gallery",
+        "identityDocument",
+        "ownershipProof",
+        "propertyVideo",
+      ]),
+    []
+  );
+
+  const ownerUploadsTotalBytes = useMemo(
+    () => computeOwnerUploadBytes(ownerForm),
+    [ownerForm]
+  );
+
   const handleOwnerChange = (path, value) => {
     resetFeedback();
+
+    const segments = Array.isArray(path) ? path : path.split(".");
+    const isFileFieldUpdate = ownerFileFields.has(segments[0]);
+    let errorMessage = "";
 
     setOwnerForm((prev) => {
       const updated = structuredClone(prev);
 
-      const segments = Array.isArray(path) ? path : path.split(".");
       let pointer = updated;
 
       segments.slice(0, -1).forEach((segment) => {
@@ -449,8 +531,43 @@ export default function SignUpPage() {
           .replace(/\s+/g, "-");
       }
 
+      if (isFileFieldUpdate) {
+        if (segments[0] === "propertyVideo") {
+          const videoFiles = Array.isArray(updated.propertyVideo)
+            ? updated.propertyVideo
+            : [];
+
+          if (videoFiles.length > 1) {
+            updated.propertyVideo = videoFiles.slice(0, 1);
+          }
+
+          const [videoFile] = updated.propertyVideo;
+
+          if (
+            videoFile &&
+            getFileSizeInBytes(videoFile) > MAX_OWNER_VIDEO_BYTES
+          ) {
+            errorMessage =
+              "La vidéo dépasse la taille maximale autorisée de 50 Mo.";
+            return prev;
+          }
+        }
+
+        const totalBytes = computeOwnerUploadBytes(updated);
+
+        if (totalBytes > MAX_OWNER_TOTAL_BYTES) {
+          errorMessage =
+            "La taille totale des fichiers dépasse la limite de 200 Mo.";
+          return prev;
+        }
+      }
+
       return updated;
     });
+
+    if (errorMessage) {
+      setFeedback({ type: "error", message: errorMessage });
+    }
   };
 
   const handleRoomChange = (index, key, value) => {
@@ -464,11 +581,26 @@ export default function SignUpPage() {
 
   const handleRoomPhotosChange = (index, files) => {
     resetFeedback();
+    let errorMessage = "";
+
     setOwnerForm((prev) => {
       const updated = structuredClone(prev);
       updated.rooms[index].photos = files;
+
+      const totalBytes = computeOwnerUploadBytes(updated);
+
+      if (totalBytes > MAX_OWNER_TOTAL_BYTES) {
+        errorMessage =
+          "La taille totale des fichiers dépasse la limite de 200 Mo.";
+        return prev;
+      }
+
       return updated;
     });
+
+    if (errorMessage) {
+      setFeedback({ type: "error", message: errorMessage });
+    }
   };
 
   const addRoom = () => {
@@ -942,21 +1074,39 @@ export default function SignUpPage() {
             </div>
           </div>
 
+          <p className="text-xs text-neutral-500 md:col-span-2">
+            Taille totale des fichiers :
+            {" "}
+            {formatBytesToMegabytes(ownerUploadsTotalBytes)} / 200 Mo max.
+          </p>
+
           <FileDropzone
             label="Photo principale"
             description="Sélectionnez la photo phare qui met le mieux en valeur votre chalet."
+            value={ownerForm.heroPhoto}
             onFilesChange={(files) => handleOwnerChange("heroPhoto", files)}
-            accept="image/jpeg,image/png"
-            helperText="1 fichier"
+            accept="image/jpeg,image/jpg,image/webp"
+            helperText="1 fichier (JPG, JPEG ou WEBP). Limite totale du formulaire : 200 Mo."
           />
 
           <FileDropzone
             label="Galerie photos"
             description="Ajoutez plusieurs visuels pour présenter chaque pièce et ambiance."
             multiple
+            value={ownerForm.gallery}
             onFilesChange={(files) => handleOwnerChange("gallery", files)}
-            accept="image/jpeg,image/png"
-            helperText="Jusqu'à 12 fichiers"
+            accept="image/jpeg,image/jpg,image/webp"
+            helperText="Jusqu'à 12 fichiers (JPG, JPEG ou WEBP). Limite totale du formulaire : 200 Mo."
+          />
+
+          <FileDropzone
+            label="Vidéo de présentation"
+            description="Ajoutez une courte vidéo pour présenter votre chalet."
+            value={ownerForm.propertyVideo}
+            onFilesChange={(files) => handleOwnerChange("propertyVideo", files)}
+            accept="video/mp4,video/webm"
+            helperText="1 fichier vidéo (MP4 ou WEBM), 50 Mo max. Limite totale du formulaire : 200 Mo."
+            maxFileSize={MAX_OWNER_VIDEO_BYTES}
           />
         </div>
       ),
@@ -1055,10 +1205,12 @@ export default function SignUpPage() {
                       label="Photos de la pièce"
                       description="Ajoutez plusieurs photos mettant en valeur cette pièce."
                       multiple
+                      value={room.photos}
                       onFilesChange={(files) =>
                         handleRoomPhotosChange(index, files)
                       }
-                      accept="image/jpeg,image/png"
+                      accept="image/jpeg,image/jpg,image/webp"
+                      helperText="Formats JPG, JPEG ou WEBP. Limite totale du formulaire : 200 Mo."
                     />
                   </div>
                 )}
@@ -1280,20 +1432,23 @@ export default function SignUpPage() {
           <FileDropzone
             label="Pièce d'identité"
             description="Téléchargez un document officiel (CNI, passeport...)."
+            value={ownerForm.identityDocument}
             onFilesChange={(files) =>
               handleOwnerChange("identityDocument", files)
             }
-            accept="image/jpeg,image/png,application/pdf"
-            helperText="2 fichiers max"
+            accept="image/jpeg,image/jpg,image/webp"
+            helperText="2 fichiers max (JPG, JPEG ou WEBP). Limite totale du formulaire : 200 Mo."
           />
 
           <FileDropzone
             label="Acte de propriété"
             description="Téléchargez un justificatif attestant votre statut de propriétaire."
+            value={ownerForm.ownershipProof}
             onFilesChange={(files) =>
               handleOwnerChange("ownershipProof", files)
             }
-            accept="image/jpeg,image/png,application/pdf"
+            accept="image/jpeg,image/jpg,image/webp"
+            helperText="Formats JPG, JPEG ou WEBP. Limite totale du formulaire : 200 Mo."
           />
         </div>
       ),
