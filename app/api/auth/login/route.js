@@ -63,7 +63,10 @@ export async function POST(request) {
     }
 
     const allowedRoles = ['admin', 'super-admin', 'owner'];
-    if (!allowedRoles.includes(user.role)) {
+    const normalizedRole = (user.role || '').toString().trim().toLowerCase();
+    const effectiveRole = normalizedRole || (user.isOwner ? 'owner' : '');
+
+    if (!allowedRoles.includes(effectiveRole)) {
       return NextResponse.json(
         {
           success: false,
@@ -84,7 +87,8 @@ export async function POST(request) {
       id: user._id,
       username: user.username,
       email: user.email,
-      role: user.role,
+      role: effectiveRole || user.role,
+      isOwner: effectiveRole === 'owner' ? true : user.isOwner,
       lastLogin: user.lastLogin
     };
 

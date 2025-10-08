@@ -12,9 +12,24 @@ import {
 const STORAGE_KEY = 'chalet-management.session';
 const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 
-const isRoleAllowed = (role) => {
-  if (!role) return false;
-  return ALLOWED_ROLES.includes(role);
+const normaliseRoleValue = (role, isOwner = false) => {
+  const candidate = (role || '').toString().trim().toLowerCase();
+
+  if (candidate) {
+    return candidate;
+  }
+
+  if (isOwner) {
+    return 'owner';
+  }
+
+  return '';
+};
+
+const isRoleAllowed = (role, isOwner = false) => {
+  const normalizedRole = normaliseRoleValue(role, isOwner);
+  if (!normalizedRole) return false;
+  return ALLOWED_ROLES.includes(normalizedRole);
 };
 
 const SessionContext = createContext({
@@ -28,7 +43,10 @@ let externalSignIn = async () => ({
 
 let externalSignOut = async () => ({ ok: true });
 
-const normaliseUser = (user, token) => ({
+const normaliseUser = (user, token) => {
+  const role = normaliseRoleValue(user?.role, user?.isOwner);
+
+  return {
   id: user?.id
     ? typeof user.id === 'string'
       ? user.id
@@ -38,11 +56,13 @@ const normaliseUser = (user, token) => ({
       ? user._id
       : user._id.toString?.() ?? ''
     : '',
-  name: user?.username || user?.name || '',
-  email: user?.email || '',
-  role: user?.role || 'user',
-  apiToken: token || user?.apiToken || ''
-});
+    name: user?.username || user?.name || '',
+    email: user?.email || '',
+    role: role || 'user',
+    isOwner: role === 'owner',
+    apiToken: token || user?.apiToken || ''
+  };
+};
 
 const loadStoredSession = () => {
   if (typeof window === 'undefined') return null;
@@ -91,7 +111,7 @@ export default function AuthSessionProvider({ children }) {
   useEffect(() => {
     const stored = loadStoredSession();
 
-    if (stored?.user && !isRoleAllowed(stored.user.role)) {
+    if (stored?.user && !isRoleAllowed(stored.user.role, stored.user.isOwner)) {
       persistSession(null);
       setSession(null);
       setStatus('unauthenticated');
@@ -136,7 +156,7 @@ export default function AuthSessionProvider({ children }) {
 
       const user = normaliseUser(result.user, result.token);
 
-      if (!isRoleAllowed(user.role)) {
+      if (!isRoleAllowed(user.role, user.isOwner)) {
         return { error: "Vous n'avez pas les droits nécessaires pour accéder à l'admin." };
       }
 
@@ -180,10 +200,10 @@ export default function AuthSessionProvider({ children }) {
   }, [performSignIn, performSignOut]);
 
   useEffect(() => {
-    if (status === 'authenticated' && !isRoleAllowed(session?.user?.role)) {
+    if (status === 'authenticated' && !isRoleAllowed(session?.user?.role, session?.user?.isOwner)) {
       void performSignOut({ callbackUrl: '/admin' });
     }
-  }, [status, session?.user?.role, performSignOut]);
+  }, [status, session?.user?.role, session?.user?.isOwner, performSignOut]);
 
   const value = useMemo(
     () => ({

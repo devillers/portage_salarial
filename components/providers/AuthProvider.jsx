@@ -6,6 +6,16 @@ const STORAGE_KEY = 'cm-admin-token';
 
 const AuthContext = createContext(null);
 
+const normaliseRole = (role, isOwner = false) => {
+  const candidate = (role || '').toString().trim().toLowerCase();
+
+  if (candidate) {
+    return candidate;
+  }
+
+  return isOwner ? 'owner' : '';
+};
+
 function getStoredToken() {
   if (typeof window === 'undefined') {
     return null;
@@ -71,8 +81,17 @@ export default function AuthProvider({ children }) {
         throw new Error('Invalid payload');
       }
 
+      const normalizedRole = normaliseRole(payload.user?.role, payload.user?.isOwner);
+      const normalizedUser = payload.user
+        ? {
+            ...payload.user,
+            role: normalizedRole || undefined,
+            isOwner: normalizedRole === 'owner'
+          }
+        : null;
+
       setToken(candidateToken);
-      setUser(payload.user);
+      setUser(normalizedUser);
       setStatus('authenticated');
       return true;
     } catch (error) {
@@ -123,7 +142,16 @@ export default function AuthProvider({ children }) {
 
       persistToken(payload.token);
       setToken(payload.token);
-      setUser(payload.user ?? null);
+      const normalizedRole = normaliseRole(payload.user?.role, payload.user?.isOwner);
+      const normalizedUser = payload.user
+        ? {
+            ...payload.user,
+            role: normalizedRole || undefined,
+            isOwner: normalizedRole === 'owner'
+          }
+        : null;
+
+      setUser(normalizedUser);
       setStatus('authenticated');
 
       return { success: true };
