@@ -119,8 +119,13 @@ async function ensureOwnerUser(ownerDetails, slug) {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    if (!['admin', 'super-admin', 'owner'].includes(existingUser.role)) {
+    const normalizedRole = (existingUser.role || '').toString().trim().toLowerCase();
+    const shouldUpdateRole = !['admin', 'super-admin', 'owner'].includes(normalizedRole);
+    const isOwnerRole = normalizedRole === 'owner';
+
+    if (shouldUpdateRole || (isOwnerRole && !existingUser.isOwner)) {
       existingUser.role = 'owner';
+      existingUser.isOwner = true;
       await existingUser.save();
     }
     return existingUser;
@@ -133,7 +138,8 @@ async function ensureOwnerUser(ownerDetails, slug) {
     username,
     email,
     password,
-    role: 'owner'
+    role: 'owner',
+    isOwner: true
   });
 
   await user.save();
