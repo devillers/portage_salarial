@@ -13,6 +13,18 @@ const normaliseIdentifier = (value) =>
     .trim()
     .toLowerCase();
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\$&');
+
+const buildCaseInsensitiveExactMatch = (value) => {
+  const normalised = normaliseIdentifier(value);
+
+  if (!normalised) {
+    return null;
+  }
+
+  return new RegExp(`^${escapeRegex(normalised)}$`, 'i');
+};
+
 const sanitiseUsername = (value) => {
   const base = (value || '')
     .toString()
@@ -52,6 +64,7 @@ export async function POST(request) {
     const body = await request.json();
     const { username, password } = body;
     const normalisedUsername = normaliseIdentifier(username);
+    const caseInsensitiveUsername = buildCaseInsensitiveExactMatch(username);
 
     // Validate required fields
     if (!normalisedUsername || !password) {
@@ -65,20 +78,31 @@ export async function POST(request) {
     }
 
     // Find user with password field included
-    let user = await User.findOne({
-      $or: [
-        { username: normalisedUsername },
-        { email: normalisedUsername }
-      ]
-    }).select('+password');
+    let userQuery = null;
+
+    if (caseInsensitiveUsername) {
+      userQuery = {
+        $or: [
+          { username: caseInsensitiveUsername },
+          { email: caseInsensitiveUsername }
+        ]
+      };
+    }
+
+    let user = userQuery
+      ? await User.findOne(userQuery).select('+password')
+      : null;
 
     let createdTenantUser = false;
 
     if (!user) {
-      const tenantApplication = await SignupApplication.findOne({
-        type: 'tenant',
-        'tenantData.email': normalisedUsername
-      });
+      const tenantEmailMatch = buildCaseInsensitiveExactMatch(normalisedUsername);
+      const tenantApplication = tenantEmailMatch
+        ? await SignupApplication.findOne({
+            type: 'tenant',
+            'tenantData.email': tenantEmailMatch
+          })
+        : null;
 
       if (tenantApplication?.tenantData?.password) {
         const passwordMatches = await bcrypt.compare(
