@@ -62,11 +62,13 @@ export async function POST(request) {
       );
     }
 
-    const allowedRoles = ['admin', 'super-admin', 'owner'];
+    const allowedRoles = new Set(['admin', 'super-admin', 'owner']);
     const normalizedRole = (user.role || '').toString().trim().toLowerCase();
-    const effectiveRole = normalizedRole || (user.isOwner ? 'owner' : '');
+    const effectiveRole = user.isOwner
+      ? 'owner'
+      : normalizedRole || (user.isOwner ? 'owner' : '');
 
-    if (!allowedRoles.includes(effectiveRole)) {
+    if (!allowedRoles.has(effectiveRole)) {
       return NextResponse.json(
         {
           success: false,

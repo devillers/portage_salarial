@@ -15,6 +15,10 @@ const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 const normaliseRoleValue = (role, isOwner = false) => {
   const candidate = (role || '').toString().trim().toLowerCase();
 
+  if (isOwner && candidate !== 'owner') {
+    return 'owner';
+  }
+
   if (candidate) {
     return candidate;
   }
