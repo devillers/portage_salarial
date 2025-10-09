@@ -37,13 +37,21 @@ export default function AdminChaletsPage() {
 
   // Enforce allowed roles
   useEffect(() => {
-    if (status === 'authenticated' && !ALLOWED_ROLES.includes(userRole)) {
+    if (status !== 'authenticated') {
+      return;
+    }
+
+    if (!userRole) {
+      return;
+    }
+
+    if (!ALLOWED_ROLES.includes(userRole)) {
       signOut({ callbackUrl: '/admin' });
     }
-  }, [status, userRole, signOut]);
+  }, [status, userRole]);
 
   const fetchChalets = useCallback(async () => {
-    if (status !== 'authenticated' || !ALLOWED_ROLES.includes(userRole)) return;
+    if (status !== 'authenticated' || !userRole || !ALLOWED_ROLES.includes(userRole)) return;
 
     setLoading(true);
     setError('');
@@ -74,7 +82,7 @@ export default function AdminChaletsPage() {
     } finally {
       setLoading(false);
     }
-  }, [apiToken, isSuperAdmin, status, userRole, signOut]);
+  }, [apiToken, isSuperAdmin, status, userRole]);
 
   useEffect(() => {
     fetchChalets();
@@ -542,7 +550,7 @@ export default function AdminChaletsPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-neutral-900">Candidatures</h3>
-                  <span className="text-sm text-neutral-500">{signupEntries.length} en cours d'examen</span>
+                  <span className="text-sm text-neutral-500">{signupEntries.length} en cours d&apos;examen</span>
                 </div>
                 {signupEntries.length ? (
                   renderChaletsTable(signupEntries)
@@ -561,7 +569,7 @@ export default function AdminChaletsPage() {
                   <span className="text-sm text-neutral-500">{inactiveChalets.length} à compléter</span>
                 </div>
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
-                  Complétez les informations et contactez l'équipe Chalet Manager pour publier ces chalets.
+                  Complétez les informations et contactez l&apos;équipe Chalet Manager pour publier ces chalets.
                 </div>
                 <div className="mt-6">{renderChaletsTable(inactiveChalets)}</div>
               </section>
@@ -738,7 +746,7 @@ export default function AdminChaletsPage() {
                   Gérer ce chalet
                 </Link>
               ) : (
-                <span className="text-xs font-semibold text-primary-700">Candidature en cours d'examen</span>
+                <span className="text-xs font-semibold text-primary-700">Candidature en cours d&apos;examen</span>
               )}
             </div>
           </div>

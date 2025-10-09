@@ -34,7 +34,17 @@ export default function AdminDashboard() {
   }, [status, router]);
 
   useEffect(() => {
-    if (status === 'authenticated' && !ALLOWED_ROLES.includes(session?.user?.role)) {
+    if (status !== 'authenticated') {
+      return;
+    }
+
+    const role = session?.user?.role;
+
+    if (!role) {
+      return;
+    }
+
+    if (!ALLOWED_ROLES.includes(role)) {
       signOut({ callbackUrl: '/admin' });
     }
   }, [status, session?.user?.role]);
@@ -43,7 +53,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (status !== 'authenticated') return;
 
-    if (!ALLOWED_ROLES.includes(session?.user?.role)) {
+    if (!session?.user?.role || !ALLOWED_ROLES.includes(session?.user?.role)) {
       setLoading(false);
       return;
     }

@@ -35,7 +35,15 @@ export default function AdminChaletDetailPage() {
 
   // Enforce access control for the allowed roles
   useEffect(() => {
-    if (status === 'authenticated' && !ALLOWED_ROLES.includes(userRole)) {
+    if (status !== 'authenticated') {
+      return;
+    }
+
+    if (!userRole) {
+      return;
+    }
+
+    if (!ALLOWED_ROLES.includes(userRole)) {
       signOut({ callbackUrl: '/admin' });
     }
   }, [status, userRole]);
@@ -46,7 +54,7 @@ export default function AdminChaletDetailPage() {
         return;
       }
 
-      if (!ALLOWED_ROLES.includes(userRole)) {
+      if (!userRole || !ALLOWED_ROLES.includes(userRole)) {
         setLoading(false);
         setChalet(null);
         return;
