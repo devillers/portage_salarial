@@ -204,7 +204,18 @@ export default function AuthSessionProvider({ children }) {
   }, [performSignIn, performSignOut]);
 
   useEffect(() => {
-    if (status === 'authenticated' && !isRoleAllowed(session?.user?.role, session?.user?.isOwner)) {
+    if (status !== 'authenticated') {
+      return;
+    }
+
+    const role = session?.user?.role;
+    const isOwner = session?.user?.isOwner;
+
+    if (!role) {
+      return;
+    }
+
+    if (!isRoleAllowed(role, isOwner)) {
       void performSignOut({ callbackUrl: '/admin' });
     }
   }, [status, session?.user?.role, session?.user?.isOwner, performSignOut]);
