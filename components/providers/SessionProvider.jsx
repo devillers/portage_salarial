@@ -10,7 +10,7 @@ import {
 } from 'react';
 
 const STORAGE_KEY = 'chalet-management.session';
-const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
+const ALLOWED_ROLES = ['admin', 'super-admin', 'owner', 'tenant'];
 
 const normaliseRoleValue = (role, isOwner = false) => {
   const candidate = (role || '').toString().trim().toLowerCase();

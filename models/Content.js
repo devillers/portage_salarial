@@ -4,7 +4,7 @@ const ContentSchema = new mongoose.Schema({
   page: {
     type: String,
     required: [true, 'Page identifier is required'],
-    enum: ['home', 'services', 'portfolio', 'portage-salarial', 'seminaires-evenements', 'contact'],
+    enum: ['home', 'services', 'portfolio', 'portage-salarial', 'seminaires-evenements', 'contact', 'tenant-posts'],
     index: true
   },
   section: {
