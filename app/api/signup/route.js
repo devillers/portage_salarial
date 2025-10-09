@@ -204,12 +204,8 @@ export async function POST(request) {
 
     let tenantPayload;
     if (normalizedType === 'tenant') {
-      const tenantPassword = data.password;
-      const hashedPassword = await bcrypt.hash(tenantPassword, 12);
-
       tenantPayload = {
-        ...data,
-        password: hashedPassword
+        ...data
       };
     }
 
