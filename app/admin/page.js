@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signIn, useSession } from '../../components/providers/SessionProvider';
+import { signIn, signOut, useSession } from '../../components/providers/SessionProvider';
 import ClientIcon from '../../components/ClientIcon';
 
 const INITIAL_CREDENTIALS = {
@@ -15,7 +15,7 @@ export default function AdminLoginPage() {
   const [credentials, setCredentials] = useState(INITIAL_CREDENTIALS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   const isSubmitDisabled = useMemo(() => {
@@ -23,10 +23,31 @@ export default function AdminLoginPage() {
   }, [credentials.email, credentials.password, loading]);
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      router.replace('/admin/dashboard');
+    if (status !== 'authenticated') {
+      return;
     }
-  }, [status, router]);
+
+    const role = session?.user?.role;
+
+    if (!role) {
+      return;
+    }
+
+    setError('');
+
+    if (['admin', 'super-admin', 'owner'].includes(role)) {
+      router.replace('/admin/dashboard');
+      return;
+    }
+
+    if (role === 'tenant') {
+      router.replace('/tenant/dashboard');
+      return;
+    }
+
+    setError("Cet espace est réservé aux administrateurs autorisés.");
+    void signOut({ callbackUrl: '/admin' });
+  }, [status, session?.user?.role, router]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -56,8 +77,6 @@ export default function AdminLoginPage() {
             ? 'Identifiants invalides.'
             : result.error
         );
-      } else {
-        router.replace(result?.url ?? '/admin/dashboard');
       }
     } catch (e) {
       setError('Une erreur est survenue. Veuillez réessayer.');
