@@ -53,7 +53,12 @@ const validateOwnerPayload = (data) => {
 const validateTenantPayload = (data) => {
   if (!data) return 'Les informations du locataire sont manquantes.';
 
-  if (!isNonEmptyString(data.firstName) || !isNonEmptyString(data.lastName) || !isNonEmptyString(data.email)) {
+  if (
+    !isNonEmptyString(data.firstName) ||
+    !isNonEmptyString(data.lastName) ||
+    !isNonEmptyString(data.email) ||
+    !isNonEmptyString(data.password)
+  ) {
     return 'Veuillez renseigner vos informations de contact.';
   }
 
@@ -197,10 +202,21 @@ export async function POST(request) {
       );
     }
 
+    let tenantPayload;
+    if (normalizedType === 'tenant') {
+      const tenantPassword = data.password;
+      const hashedPassword = await bcrypt.hash(tenantPassword, 12);
+
+      tenantPayload = {
+        ...data,
+        password: hashedPassword
+      };
+    }
+
     const application = await SignupApplication.create({
       type: normalizedType,
       ownerData: ownerPayload,
-      tenantData: normalizedType === 'tenant' ? data : undefined
+      tenantData: normalizedType === 'tenant' ? tenantPayload : undefined
     });
 
     return NextResponse.json({
