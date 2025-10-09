@@ -67,6 +67,7 @@ const createTenantInitial = () => ({
   firstName: "",
   lastName: "",
   email: "",
+  password: "",
   phone: "",
   preferredRegion: "",
   desiredDates: "",
@@ -294,6 +295,7 @@ const serializeTenantForm = (form) => ({
   firstName: form.firstName,
   lastName: form.lastName,
   email: form.email,
+  password: form.password,
   phone: form.phone,
   preferredRegion: form.preferredRegion,
   desiredDates: form.desiredDates,
@@ -459,7 +461,8 @@ export default function SignUpPage() {
     const hasProfile =
       tenantForm.firstName.trim() &&
       tenantForm.lastName.trim() &&
-      tenantForm.email.trim();
+      tenantForm.email.trim() &&
+      tenantForm.password.trim();
     const hasProject =
       tenantForm.preferredRegion.trim() &&
       tenantForm.desiredDates.trim() &&
@@ -1588,6 +1591,20 @@ export default function SignUpPage() {
               name="email"
               value={tenantForm.email}
               onChange={handleTenantChange}
+              className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-neutral-800">
+              Mot de passe
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={tenantForm.password}
+              onChange={handleTenantChange}
+              autoComplete="new-password"
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
             />
           </div>

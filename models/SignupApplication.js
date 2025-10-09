@@ -90,6 +90,7 @@ const TenantApplicationSchema = new mongoose.Schema(
     firstName: { type: String, default: '' },
     lastName: { type: String, default: '' },
     email: { type: String, default: '' },
+    password: { type: String, required: true },
     phone: { type: String, default: '' },
     preferredRegion: { type: String, default: '' },
     desiredDates: { type: String, default: '' },
