@@ -1,7 +1,49 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import dbConnect from '../../../../lib/mongodb';
 import User from '../../../../models/User';
+import SignupApplication from '../../../../models/SignupApplication';
 import { generateToken } from '../../../../lib/auth';
+
+const MAX_USERNAME_LENGTH = 30;
+
+const normaliseIdentifier = (value) =>
+  (value || '')
+    .toString()
+    .trim()
+    .toLowerCase();
+
+const sanitiseUsername = (value) => {
+  const base = (value || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '.')
+    .replace(/^\.+|\.+$/g, '');
+
+  if (base.length >= 3) {
+    return base.slice(0, MAX_USERNAME_LENGTH);
+  }
+
+  return 'tenant';
+};
+
+async function generateTenantUsername(email) {
+  const [localPart] = (email || '').split('@');
+  const sanitisedBase = sanitiseUsername(localPart);
+  let candidate = sanitisedBase;
+  let suffix = 0;
+
+  while (await User.exists({ username: candidate })) {
+    suffix += 1;
+    const suffixString = suffix.toString();
+    const baseLength = Math.max(0, MAX_USERNAME_LENGTH - suffixString.length);
+    const base = (sanitisedBase || 'tenant').slice(0, baseLength) || 'tenant';
+    candidate = `${base}${suffixString}`;
+  }
+
+  return candidate;
+}
 
 export async function POST(request) {
   try {
@@ -9,9 +51,10 @@ export async function POST(request) {
 
     const body = await request.json();
     const { username, password } = body;
+    const normalisedUsername = normaliseIdentifier(username);
 
     // Validate required fields
-    if (!username || !password) {
+    if (!normalisedUsername || !password) {
       return NextResponse.json(
         {
           success: false,
@@ -22,12 +65,45 @@ export async function POST(request) {
     }
 
     // Find user with password field included
-    const user = await User.findOne({ 
+    let user = await User.findOne({
       $or: [
-        { username: username.toLowerCase() },
-        { email: username.toLowerCase() }
+        { username: normalisedUsername },
+        { email: normalisedUsername }
       ]
     }).select('+password');
+
+    let createdTenantUser = false;
+
+    if (!user) {
+      const tenantApplication = await SignupApplication.findOne({
+        type: 'tenant',
+        'tenantData.email': normalisedUsername
+      });
+
+      if (tenantApplication?.tenantData?.password) {
+        const passwordMatches = await bcrypt.compare(
+          password,
+          tenantApplication.tenantData.password
+        );
+
+        if (passwordMatches) {
+          const tenantUsername = await generateTenantUsername(normalisedUsername);
+
+          const tenantUser = new User({
+            username: tenantUsername,
+            email: normalisedUsername,
+            password,
+            role: 'tenant',
+            isOwner: false,
+            isActive: true
+          });
+
+          await tenantUser.save();
+          user = await User.findById(tenantUser._id).select('+password');
+          createdTenantUser = true;
+        }
+      }
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -51,7 +127,9 @@ export async function POST(request) {
     }
 
     // Compare password
-    const isValidPassword = await user.comparePassword(password);
+    const isValidPassword = createdTenantUser
+      ? true
+      : await user.comparePassword(password);
     if (!isValidPassword) {
       return NextResponse.json(
         {
