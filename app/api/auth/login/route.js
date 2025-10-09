@@ -62,7 +62,7 @@ export async function POST(request) {
       );
     }
 
-    const allowedRoles = new Set(['admin', 'super-admin', 'owner']);
+    const allowedRoles = new Set(['admin', 'super-admin', 'owner', 'tenant']);
     const normalizedRole = (user.role || '').toString().trim().toLowerCase();
     const effectiveRole = user.isOwner
       ? 'owner'

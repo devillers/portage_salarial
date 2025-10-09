@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const ROLE_VALUES = Object.freeze(['admin', 'super-admin', 'manager', 'owner']);
+const ROLE_VALUES = Object.freeze(['admin', 'super-admin', 'manager', 'owner', 'tenant']);
 const ADMIN_ROLES = new Set(['admin', 'super-admin', 'owner']);
 
 const normalizeRole = (role) => {
@@ -17,6 +17,10 @@ const normalizeRole = (role) => {
 
   if (normalized === 'manager') {
     return 'manager';
+  }
+
+  if (normalized === 'tenant') {
+    return 'tenant';
   }
 
   return 'admin';
@@ -116,9 +120,16 @@ const existingModel = mongoose.models.User;
 if (existingModel) {
   const rolePath = existingModel.schema?.path('role');
 
-  if (rolePath?.options?.enum && !rolePath.options.enum.includes('owner')) {
-    rolePath.enumValues.push('owner');
-    rolePath.options.enum.push('owner');
+  if (rolePath?.options?.enum) {
+    if (!rolePath.options.enum.includes('owner')) {
+      rolePath.enumValues.push('owner');
+      rolePath.options.enum.push('owner');
+    }
+
+    if (!rolePath.options.enum.includes('tenant')) {
+      rolePath.enumValues.push('tenant');
+      rolePath.options.enum.push('tenant');
+    }
   }
 }
 
