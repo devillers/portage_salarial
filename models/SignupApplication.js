@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const FileMetadataSchema = new mongoose.Schema(
   {
@@ -128,5 +129,33 @@ const SignupApplicationSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+SignupApplicationSchema.pre('save', async function (next) {
+  if (this.type !== 'tenant') {
+    return next();
+  }
+
+  if (!this.isModified('tenantData.password')) {
+    return next();
+  }
+
+  const password = this.tenantData?.password;
+  if (!password || typeof password !== 'string') {
+    return next();
+  }
+
+  // Avoid hashing if the password is already hashed (e.g., starts with $2)
+  if (password.startsWith('$2')) {
+    return next();
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 12);
+    this.tenantData.password = hashedPassword;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default mongoose.models.SignupApplication || mongoose.model('SignupApplication', SignupApplicationSchema);
