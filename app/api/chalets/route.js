@@ -4,6 +4,8 @@ import Chalet from '../../../models/Chalet';
 import SignupApplication from '../../../models/SignupApplication';
 import { requireAuth, verifyToken } from '../../../lib/auth';
 
+const escapeRegex = (value = '') => value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 async function resolveOwnerFilter(request, ownerParam) {
   if (!ownerParam) return null;
 
@@ -59,7 +61,31 @@ export async function GET(request) {
 
     let query = {};
 
-    const shouldFilterActiveOnly = !includeInactive || authUser?.role !== 'super-admin';
+    const authUserId = authUser?._id?.toString?.() ?? authUser?.id?.toString?.() ?? null;
+    const authUserEmail = (authUser?.email || '').toString();
+    const isSuperAdmin = authUser?.role === 'super-admin';
+
+    let ownerResult = null;
+    if (ownerParam) {
+      ownerResult = await resolveOwnerFilter(request, ownerParam);
+      if (ownerResult?.error) {
+        return ownerResult.error;
+      }
+
+      if (ownerResult?.ownerId) {
+        query.owner = ownerResult.ownerId;
+      }
+    }
+
+    const resolvedOwnerId = ownerResult?.ownerId?.toString?.() ?? ownerResult?.ownerId ?? null;
+    const isOwnerViewingOwn = Boolean(
+      authUser &&
+        authUser.role === 'owner' &&
+        ownerParam &&
+        (ownerParam === 'me' || (authUserId && resolvedOwnerId && authUserId === resolvedOwnerId))
+    );
+
+    const shouldFilterActiveOnly = !includeInactive && !isSuperAdmin && !isOwnerViewingOwn;
     if (shouldFilterActiveOnly) {
       query['availability.isActive'] = true;
     }
@@ -67,15 +93,6 @@ export async function GET(request) {
     // Filter by featured
     if (featured === 'true') {
       query.featured = true;
-    }
-
-    if (ownerParam) {
-      const ownerResult = await resolveOwnerFilter(request, ownerParam);
-      if (ownerResult?.error) {
-        return ownerResult.error;
-      }
-
-      query.owner = ownerResult?.ownerId;
     }
 
     // Add search functionality
@@ -104,38 +121,49 @@ export async function GET(request) {
 
     let signupEntries = [];
 
-    if (authUser?.role === 'super-admin' && includeSignups) {
+    const mapOwnerApplicationToEntry = (application) => {
+      const ownerData = application.ownerData || {};
+      const propertyAddress = ownerData.propertyAddress || {};
+      const heroPhotoSource = ownerData.heroPhoto?.[0] || ownerData.gallery?.[0] || {};
+      const gallerySources = Array.isArray(ownerData.gallery) ? ownerData.gallery : [];
+
+      const toUrl = (file = {}) => file.secureUrl || file.url || '';
+
+      return {
+        _id: `signup-${application._id}`,
+        slug: ownerData.slug || `signup-${application._id}`,
+        title: ownerData.title || 'Nouveau chalet (inscription)',
+        heroImage: toUrl(heroPhotoSource) || null,
+        gallery: gallerySources.map((item) => toUrl(item)).filter(Boolean),
+        location: {
+          city: propertyAddress.city || '',
+          country: propertyAddress.country || ''
+        },
+        availability: {
+          isActive: false,
+          status: 'pending-review'
+        },
+        source: 'signup-application',
+        ownerApplicationId: application._id
+      };
+    };
+
+    if (isSuperAdmin && includeSignups) {
       const ownerApplications = await SignupApplication.find({
         type: 'owner',
         status: { $ne: 'reviewed' }
       }).lean();
 
-      signupEntries = ownerApplications.map((application) => {
-        const ownerData = application.ownerData || {};
-        const propertyAddress = ownerData.propertyAddress || {};
-        const heroPhotoSource = ownerData.heroPhoto?.[0] || ownerData.gallery?.[0] || {};
-        const gallerySources = Array.isArray(ownerData.gallery) ? ownerData.gallery : [];
+      signupEntries = ownerApplications.map(mapOwnerApplicationToEntry);
+    } else if (isOwnerViewingOwn && authUserEmail) {
+      const emailRegex = new RegExp(`^${escapeRegex(authUserEmail)}$`, 'i');
+      const ownerApplications = await SignupApplication.find({
+        type: 'owner',
+        status: { $ne: 'reviewed' },
+        'ownerData.owner.email': emailRegex
+      }).lean();
 
-        const toUrl = (file = {}) => file.secureUrl || file.url || '';
-
-        return {
-          _id: `signup-${application._id}`,
-          slug: ownerData.slug || `signup-${application._id}`,
-          title: ownerData.title || 'Nouveau chalet (inscription)',
-          heroImage: toUrl(heroPhotoSource) || null,
-          gallery: gallerySources.map((item) => toUrl(item)).filter(Boolean),
-          location: {
-            city: propertyAddress.city || '',
-            country: propertyAddress.country || ''
-          },
-          availability: {
-            isActive: false,
-            status: 'pending-review'
-          },
-          source: 'signup-application',
-          ownerApplicationId: application._id
-        };
-      });
+      signupEntries = ownerApplications.map(mapOwnerApplicationToEntry);
     }
 
     const seenKeys = new Set();
