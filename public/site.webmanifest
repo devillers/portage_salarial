@@ -1,0 +1,19 @@
+{
+  "name": "Chalet Manager",
+  "short_name": "ChaletManager",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "theme_color": "#0F172A",
+  "background_color": "#FFFFFF",
+  "display": "standalone"
+}

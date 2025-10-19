@@ -7,11 +7,20 @@ import Image from 'next/image';
 import ClientIcon from '../components/ClientIcon';
 import PageWrapper from '../components/layout/PageWrapper';
 import { useTranslation } from '../components/providers/LanguageProvider';
+import { buildMetadata } from '../lib/seo';
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: 'Premium Chalet Management Services | Chalet Manager',
-  description: 'Transform your chalet into a profitable venture with our comprehensive management services. From guest relations to maintenance, we handle everything.',
-};
+  description:
+    'Transform your chalet into a profitable venture with our comprehensive management services. From guest relations to maintenance, we handle everything.',
+  path: '/',
+  keywords: [
+    'gestion chalet',
+    'location chalet',
+    'conciergerie montagne',
+    'chalet de luxe',
+  ],
+});
 
 export default function HomePage() {
   const { content: home } = useTranslation('home');
@@ -30,7 +39,7 @@ export default function HomePage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg"
-            alt={hero.backgroundAlt}
+            alt={hero.backgroundAlt || 'Chalet de montagne de luxe entouré de neige'}
             fill
             className="object-cover"
             priority

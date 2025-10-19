@@ -4,11 +4,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ClientIcon from '../../components/ClientIcon';
 import PageWrapper from '../../components/layout/PageWrapper';
+import { buildMetadata } from '../../lib/seo';
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: 'Séminaires & Événements | Chalet Manager',
-  description: 'Organisation complète de séminaires incentive, événements corporate et séjours yoga avec Les Joly Dames. MICE event planning professionnel dans les Alpes.',
-};
+  description:
+    'Organisation complète de séminaires incentive, événements corporate et séjours yoga avec Les Joly Dames. MICE event planning professionnel dans les Alpes.',
+  path: '/seminaires-evenements',
+  keywords: [
+    'organisation seminaire',
+    'evenement entreprise alpes',
+    'retreat montagne',
+    'evenement corporate chalet',
+  ],
+});
 
 export default function SeminairesEvenementsPage() {
   const miceSteps = [

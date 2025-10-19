@@ -7,6 +7,9 @@ import ClientIcon from '../../../components/ClientIcon';
 import ChaletBooking from '../../../components/chalet/ChaletBooking';
 import ChaletMap from '../../../components/chalet/ChaletMap';
 import ChaletGallery from '../../../components/chalet/ChaletGallery';
+import { getSiteUrl, seoConstants } from '../../../lib/seo';
+
+export const revalidate = 3600;
 
 function getAmenityLabel(amenity) {
   if (!amenity) return '';
@@ -17,15 +20,17 @@ function getAmenityLabel(amenity) {
 }
 
 async function getChalet(slug) {
+  const siteUrl = getSiteUrl();
+
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/chalets/${slug}`, {
-      cache: 'no-store'
+    const response = await fetch(`${siteUrl}/api/chalets/${slug}`, {
+      next: { revalidate }
     });
-    
+
     if (!response.ok) {
       return null;
     }
-    
+
     const data = await response.json();
     return data.success ? data.data : null;
   } catch (error) {
@@ -112,16 +117,49 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  return {
-    title: `${chalet.title} | Chalet Manager`,
-    description: chalet.shortDescription || chalet.description,
-    openGraph: {
-      title: chalet.title,
-      description: chalet.shortDescription || chalet.description,
-      images: normalizeImages(chalet.images).map(image => ({
+  const siteUrl = getSiteUrl();
+  const pagePath = `/chalet/${params.slug}`;
+  const pageUrl = `${siteUrl}${pagePath}`;
+  const normalizedImages = normalizeImages(chalet.images);
+  const metaTitle = chalet.seo?.metaTitle || `${chalet.title} | Chalet Manager`;
+  const metaDescription = chalet.seo?.metaDescription || chalet.shortDescription || chalet.description;
+  const keywords = Array.isArray(chalet.seo?.keywords) ? chalet.seo.keywords : [];
+
+  const openGraphImages = normalizedImages.length > 0
+    ? normalizedImages.map(image => ({
         url: image.url,
-        alt: image.alt
-      })),
+        alt: image.alt || chalet.title,
+        width: image.width || 1200,
+        height: image.height || 800,
+      }))
+    : [
+        {
+          url: seoConstants.DEFAULT_OG_IMAGE,
+          alt: metaTitle,
+          width: 1200,
+          height: 630,
+        },
+      ];
+
+  return {
+    title: metaTitle,
+    description: metaDescription,
+    keywords: keywords.length > 0 ? keywords : undefined,
+    alternates: {
+      canonical: pagePath,
+    },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      type: 'article',
+      url: pageUrl,
+      images: openGraphImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: metaTitle,
+      description: metaDescription,
+      images: [openGraphImages[0]?.url ?? seoConstants.DEFAULT_OG_IMAGE],
     },
   };
 }
@@ -138,9 +176,119 @@ export default async function ChaletPage({ params }) {
   const descriptionParagraphs = typeof chalet.description === 'string'
     ? chalet.description.split('\n').filter(Boolean)
     : [];
+  const metaDescription = chalet.shortDescription || descriptionParagraphs.join(' ') || '';
+  const siteUrl = getSiteUrl();
+  const pageUrl = `${siteUrl}/chalet/${params.slug}`;
+  const amenityFeatures = Array.isArray(chalet.amenities)
+    ? chalet.amenities
+        .map(amenity => {
+          const name = getAmenityLabel(amenity);
+          return name
+            ? {
+                '@type': 'LocationFeatureSpecification',
+                name,
+              }
+            : null;
+        })
+        .filter(Boolean)
+    : [];
+
+  const imageUrls = galleryImages.map(image => image.url).filter(Boolean);
+  const accommodationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Accommodation',
+    name: chalet.title,
+    description: metaDescription,
+    url: pageUrl,
+  };
+
+  if (imageUrls.length > 0) {
+    accommodationSchema.image = imageUrls;
+  }
+
+  if (chalet.location) {
+    accommodationSchema.address = {
+      '@type': 'PostalAddress',
+      streetAddress: chalet.location.address,
+      addressLocality: chalet.location.city,
+      postalCode: chalet.location.postalCode,
+      addressCountry: chalet.location.country,
+    };
+
+    if (chalet.location.coordinates) {
+      accommodationSchema.geo = {
+        '@type': 'GeoCoordinates',
+        latitude: chalet.location.coordinates.latitude,
+        longitude: chalet.location.coordinates.longitude,
+      };
+    }
+  }
+
+  if (chalet.pricing?.basePrice) {
+    accommodationSchema.priceRange = `€${Number(chalet.pricing.basePrice).toFixed(0)} par nuit`;
+  }
+
+  if (chalet.specifications) {
+    accommodationSchema.numberOfRooms = chalet.specifications.bedrooms;
+    accommodationSchema.numberOfBedrooms = chalet.specifications.bedrooms;
+    accommodationSchema.numberOfBathroomsTotal = chalet.specifications.bathrooms;
+
+    if (chalet.specifications.maxGuests) {
+      accommodationSchema.occupancy = {
+        '@type': 'QuantitativeValue',
+        maxValue: chalet.specifications.maxGuests,
+        unitCode: 'C62',
+      };
+    }
+  }
+
+  if (amenityFeatures.length > 0) {
+    accommodationSchema.amenityFeature = amenityFeatures;
+  }
+
+  if (chalet.contact?.phone || chalet.contact?.email) {
+    accommodationSchema.contactPoint = {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      telephone: chalet.contact.phone,
+      email: chalet.contact.email,
+    };
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Accueil',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Portfolio',
+        item: `${siteUrl}/portfolio`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: chalet.title,
+        item: pageUrl,
+      },
+    ],
+  };
+
+  const structuredData = [accommodationSchema, breadcrumbSchema];
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        key="structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
