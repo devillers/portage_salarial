@@ -286,13 +286,23 @@ npm run build
 - Progressive enhancement
 - Accessibility features (WCAG 2.1 AA)
 
+## Developer documentation
+
+- [Architecture overview](./docs/ARCHITECTURE.md) – explains how the Next.js app, API routes, Mongoose models and shared libraries interact.
+- [API reference](./docs/API_REFERENCE.md) – documents the major REST endpoints, authentication rules and query parameters.
+- [Testing strategy](./docs/TESTING_STRATEGY.md) – step-by-step plan for introducing automated coverage using Vitest, Testing Library and an in-memory MongoDB instance.
+- [Security & compliance enhancements](./docs/SECURITY_PRACTICES.md) – recommended hardening controls (rate limiting, backups, GDPR workflows, monitoring).
+
+These living documents address the current gaps in technical documentation and should be updated alongside new features.
+
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Follow the [testing roadmap](./docs/TESTING_STRATEGY.md) to add or update coverage where possible
+5. Reference relevant documentation updates in your pull request description
+6. Submit a pull request
 
 ## License
 
