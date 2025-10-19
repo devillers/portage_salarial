@@ -4,11 +4,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ClientIcon from '../../components/ClientIcon';
 import PageWrapper from '../../components/layout/PageWrapper';
+import { buildMetadata } from '../../lib/seo';
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: 'Portage Salarial | Chalet Manager',
-  description: 'Découvrez le portage salarial pour la gestion de chalets. Structure tripartite offrant sécurité sociale, simplicité administrative et flexibilité pour les experts indépendants.',
-};
+  description:
+    'Découvrez le portage salarial pour la gestion de chalets. Structure tripartite offrant sécurité sociale, simplicité administrative et flexibilité pour les experts indépendants.',
+  path: '/portage-salarial',
+  keywords: [
+    'portage salarial',
+    'gestion de chalet',
+    'consultant independant',
+    'statut portage',
+  ],
+});
 
 export default function PortageSalarialPage() {
   const benefits = [

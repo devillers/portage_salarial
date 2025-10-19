@@ -4,11 +4,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ClientIcon from '../../components/ClientIcon';
 import PageWrapper from '../../components/layout/PageWrapper';
+import { buildMetadata } from '../../lib/seo';
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: 'Our Services | Chalet Manager',
-  description: 'Comprehensive chalet management services including rental management, concierge services, maintenance, tax administration, and event planning.',
-};
+  description:
+    'Comprehensive chalet management services including rental management, concierge services, maintenance, tax administration, and event planning.',
+  path: '/services',
+  keywords: [
+    'services gestion chalet',
+    'conciergerie chalet',
+    'maintenance chalet',
+    'gestion locative montagne',
+  ],
+});
 
 export default function ServicesPage() {
   const services = [
@@ -18,6 +27,7 @@ export default function ServicesPage() {
       title: 'Rental Management',
       description: 'Complete end-to-end rental management for maximum occupancy and revenue',
       image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg',
+      imageAlt: "Vue intérieure lumineuse d'un chalet de montagne avec espace de vie moderne",
       features: [
         'Dynamic pricing optimization based on market conditions',
         'Professional photography and property listing creation',
@@ -41,6 +51,7 @@ export default function ServicesPage() {
       title: 'Concierge Services',
       description: 'Premium guest services ensuring exceptional experiences throughout their stay',
       image: 'https://images.pexels.com/photos/1329711/pexels-photo-1329711.jpeg',
+      imageAlt: "Service de conciergerie accueillant des clients dans un chalet de luxe",
       features: [
         'Pre-arrival planning and welcome coordination',
         'Local activity recommendations and bookings',
@@ -64,6 +75,7 @@ export default function ServicesPage() {
       title: 'Maintenance & Care',
       description: 'Proactive property maintenance ensuring your chalet remains in pristine condition',
       image: 'https://images.pexels.com/photos/1454804/pexels-photo-1454804.jpeg',
+      imageAlt: "Technicien effectuant la maintenance d'un chalet en bois",
       features: [
         'Regular property inspections and preventive maintenance',
         'Emergency repair services and 24/7 support',
@@ -87,6 +99,7 @@ export default function ServicesPage() {
       title: 'Tax Administration',
       description: 'Professional handling of all tax obligations and administrative requirements',
       image: 'https://images.pexels.com/photos/6863183/pexels-photo-6863183.jpeg',
+      imageAlt: "Expert-comptable travaillant sur la fiscalité d'un chalet",
       features: [
         'Tourist tax collection and remittance',
         'Income tax preparation and filing',
@@ -110,6 +123,7 @@ export default function ServicesPage() {
       title: 'Event Organization',
       description: 'Professional event planning and coordination for special occasions',
       image: 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg',
+      imageAlt: "Organisation d'un événement corporate dans un chalet alpin",
       features: [
         'Corporate retreat and team building coordination',
         'Wedding and celebration planning',
@@ -229,7 +243,7 @@ export default function ServicesPage() {
                     <div className="relative h-96 rounded-2xl overflow-hidden shadow-xl">
                       <Image
                         src={service.image}
-                        alt={service.title}
+                        alt={service.imageAlt || service.title}
                         fill
                         className="object-cover"
                       />

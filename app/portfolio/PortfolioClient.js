@@ -6,31 +6,43 @@ import { useState, useEffect, useMemo } from 'react';
 import ClientIcon from '../../components/ClientIcon';
 import PageWrapper from '../../components/layout/PageWrapper';
 
-export default function PortfolioClient() {
-  const [chalets, setChalets] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function PortfolioClient({ initialChalets = [] }) {
+  const [chalets, setChalets] = useState(initialChalets);
+  const [loading, setLoading] = useState(initialChalets.length === 0);
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [priceFilter, setPriceFilter] = useState('');
   const [sortBy, setSortBy] = useState('featured');
 
   useEffect(() => {
+    setChalets(initialChalets);
+  }, [initialChalets]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
     (async () => {
       try {
-        const res = await fetch('/api/chalets', { cache: 'no-store' });
+        const res = await fetch('/api/chalets', {
+          cache: 'no-store',
+          signal: controller.signal,
+        });
         const data = await res.json();
         if (data?.success && Array.isArray(data.data)) {
           setChalets(data.data);
-        } else {
-          setChalets([]);
         }
       } catch (e) {
-        console.error('Error fetching chalets:', e);
-        setChalets([]);
+        if (!controller.signal.aborted) {
+          console.error('Error fetching chalets:', e);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     })();
+
+    return () => controller.abort();
   }, []);
 
   const filteredChalets = useMemo(() => {

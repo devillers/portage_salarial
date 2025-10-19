@@ -5,6 +5,7 @@ import Script from 'next/script';
 import AuthSessionProvider from '../components/providers/SessionProvider';
 import { LanguageProvider } from '../components/providers/LanguageProvider';
 import { defaultLocale } from '../lib/i18n';
+import { getSiteUrl, seoConstants } from '../lib/seo';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -12,8 +13,10 @@ const inter = Inter({
   variable: '--font-inter'
 });
 
+const siteUrl = getSiteUrl();
+
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Chalet Manager - Premium Chalet Management Services',
     template: '%s | Chalet Manager'
@@ -30,19 +33,31 @@ export const metadata = {
   authors: [{ name: 'Chalet Manager' }],
   creator: 'Chalet Manager',
   publisher: 'Chalet Manager',
+  alternates: {
+    canonical: siteUrl,
+  },
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    locale: 'fr_FR',
+    url: siteUrl,
     title: 'Chalet Manager - Premium Chalet Management Services',
     description: 'Professional chalet management services for luxury mountain properties.',
-    siteName: 'Chalet Manager'
+    siteName: 'Chalet Manager',
+    images: [
+      {
+        url: seoConstants.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'Chalet Manager - Premium Chalet Management Services'
+      }
+    ]
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Chalet Manager - Premium Chalet Management Services',
     description: 'Professional chalet management services for luxury mountain properties.',
-    creator: '@chaletmanager'
+    creator: '@chaletmanager',
+    images: [seoConstants.DEFAULT_OG_IMAGE]
   },
   robots: {
     index: true,
@@ -57,7 +72,14 @@ export const metadata = {
   },
   verification: {
     google: 'your-google-verification-code'
-  }
+  },
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/apple-touch-icon.svg'
+  },
+  category: 'Real Estate',
+  manifest: '/site.webmanifest'
 };
 
 export default function RootLayout({ children }) {
