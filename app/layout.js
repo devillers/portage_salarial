@@ -3,6 +3,8 @@ import './globals.css';
 import Script from 'next/script';
 
 import AuthSessionProvider from '../components/providers/SessionProvider';
+import { LanguageProvider } from '../components/providers/LanguageProvider';
+import { defaultLocale } from '../lib/i18n';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -60,7 +62,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang={defaultLocale} className={inter.variable}>
       <head>
         <link
           rel="stylesheet"
@@ -70,7 +72,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={`${inter.className} antialiased bg-neutral-50 text-neutral-900`}>
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <AuthSessionProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </AuthSessionProvider>
 
         <Script
           src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
