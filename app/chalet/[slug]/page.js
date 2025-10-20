@@ -108,8 +108,11 @@ function getHeroImage(images) {
   return normalized.length > 0 ? normalized[0] : null;
 }
 
-export async function generateMetadata({ params }) {
-  const chalet = await getChalet(params.slug);
+export async function generateMetadata(props) {
+  const { params } = await props;
+  const { slug } = params;
+
+  const chalet = await getChalet(slug);
 
   if (!chalet) {
     return {
@@ -118,7 +121,7 @@ export async function generateMetadata({ params }) {
   }
 
   const siteUrl = getSiteUrl();
-  const pagePath = `/chalet/${params.slug}`;
+  const pagePath = `/chalet/${slug}`;
   const pageUrl = `${siteUrl}${pagePath}`;
   const normalizedImages = normalizeImages(chalet.images);
   const metaTitle = chalet.seo?.metaTitle || `${chalet.title} | Chalet Manager`;
@@ -164,8 +167,11 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function ChaletPage({ params }) {
-  const chalet = await getChalet(params.slug);
+export default async function ChaletPage(props) {
+  const { params } = await props;
+  const { slug } = params;
+
+  const chalet = await getChalet(slug);
 
   if (!chalet) {
     notFound();
@@ -178,7 +184,7 @@ export default async function ChaletPage({ params }) {
     : [];
   const metaDescription = chalet.shortDescription || descriptionParagraphs.join(' ') || '';
   const siteUrl = getSiteUrl();
-  const pageUrl = `${siteUrl}/chalet/${params.slug}`;
+  const pageUrl = `${siteUrl}/chalet/${slug}`;
   const amenityFeatures = Array.isArray(chalet.amenities)
     ? chalet.amenities
         .map(amenity => {
