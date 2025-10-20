@@ -109,7 +109,7 @@ function getHeroImage(images) {
 }
 
 export async function generateMetadata(props) {
-  const { params } = await props;
+  const { params } = props;
   const { slug } = params;
 
   const chalet = await getChalet(slug);
@@ -168,7 +168,7 @@ export async function generateMetadata(props) {
 }
 
 export default async function ChaletPage(props) {
-  const { params } = await props;
+  const { params } = props;
   const { slug } = params;
 
   const chalet = await getChalet(slug);

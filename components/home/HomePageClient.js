@@ -214,14 +214,18 @@ export default function HomePageClient() {
                 className="rounded-3xl border border-neutral-200 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
               >
                 <div className="mb-6 flex items-center gap-4">
-                  <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-primary-100">
-                    <Image
-                      src={testimonial.avatar}
-                      alt={testimonial.name}
-                      width={48}
-                      height={48}
-                      className="object-cover"
-                    />
+                  <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-primary-100 flex items-center justify-center bg-primary-50">
+                    {testimonial.avatar ? (
+                      <Image
+                        src={testimonial.avatar}
+                        alt={testimonial.name}
+                        width={48}
+                        height={48}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <ClientIcon name="User" className="h-6 w-6 text-primary-500" />
+                    )}
                   </div>
                   <div>
                     <p className="font-semibold text-neutral-900">{testimonial.name}</p>
