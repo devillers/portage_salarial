@@ -75,6 +75,15 @@ const buildSlugCandidates = (value) => {
   return Array.from(new Set(candidates));
 };
 
+const resolveParams = async (params) => {
+  if (params && typeof params.then === 'function') {
+    const resolved = await params;
+    return resolved || {};
+  }
+
+  return params || {};
+};
+
 const findChaletBySlugIdentifier = async (value) => {
   if (!value) {
     return null;
@@ -109,11 +118,11 @@ const findChaletBySlugIdentifier = async (value) => {
 };
 
 // Get single chalet by slug
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
     await dbConnect();
 
-    const { slug } = params || {};
+    const { slug } = await resolveParams(context?.params);
     const chalet = await findChaletBySlugIdentifier(slug);
 
     if (!chalet) {
@@ -146,12 +155,14 @@ export async function GET(request, { params }) {
 }
 
 // Update chalet (protected)
-export async function PUT(request, { params }) {
+export async function PUT(request, context) {
+  const resolvedParams = await resolveParams(context?.params);
+
   return requireAuth(async (req) => {
     try {
       await dbConnect();
 
-      const { slug } = params || {};
+      const { slug } = resolvedParams;
       const existingChalet = await findChaletBySlugIdentifier(slug);
 
       if (!existingChalet) {
@@ -213,7 +224,7 @@ export async function PUT(request, { params }) {
   })(request);
 }
 
-export async function PATCH(request, { params }) {
+export async function PATCH(request, context) {
   try {
     const authHeader = request.headers.get('authorization') || '';
     const token = authHeader.startsWith('Bearer ')
@@ -255,7 +266,7 @@ export async function PATCH(request, { params }) {
 
     await dbConnect();
 
-    const { slug } = params || {};
+    const { slug } = await resolveParams(context?.params);
     const existingChalet = await findChaletBySlugIdentifier(slug);
 
     if (!existingChalet) {
@@ -339,12 +350,14 @@ export async function PATCH(request, { params }) {
 }
 
 // Delete chalet (protected)
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
+  const resolvedParams = await resolveParams(context?.params);
+
   return requireAuth(async (req) => {
     try {
       await dbConnect();
 
-      const { slug } = params || {};
+      const { slug } = resolvedParams;
       const existingChalet = await findChaletBySlugIdentifier(slug);
 
       if (!existingChalet) {
