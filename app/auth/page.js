@@ -1,6 +1,3 @@
-
-//app/auth/page.js
-
 import { Suspense } from 'react';
 import AuthPageClient from './_client-auth-page';
 
