@@ -1,15 +1,120 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '../../../../lib/mongodb';
 import Chalet from '../../../../models/Chalet';
 import { requireAuth, verifyToken } from '../../../../lib/auth';
+
+const escapeRegex = (value = '') => value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const decodeSlugValue = (value) => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  const stringValue = value.toString();
+
+  try {
+    return decodeURIComponent(stringValue);
+  } catch (error) {
+    return stringValue;
+  }
+};
+
+const normalizeWhitespace = (value = '') => value.replace(/\s+/g, ' ').trim();
+
+const stripDiacritics = (value = '') => {
+  if (typeof value !== 'string' || typeof value.normalize !== 'function') {
+    return value;
+  }
+
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+
+const slugifyModelStyle = (value = '') => {
+  if (!value) {
+    return '';
+  }
+
+  const base = stripDiacritics(value.toLowerCase());
+
+  return base
+    .replace(/[^\w ]+/g, '')
+    .replace(/ +/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .trim();
+};
+
+const buildSlugCandidates = (value) => {
+  const decoded = normalizeWhitespace(decodeSlugValue(value));
+
+  if (!decoded) {
+    return [];
+  }
+
+  const lower = decoded.toLowerCase();
+  const withoutDiacritics = stripDiacritics(lower);
+  const hyphenNormalized = withoutDiacritics
+    .replace(/[^\w-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .trim();
+
+  const candidates = [
+    decoded,
+    lower,
+    withoutDiacritics,
+    hyphenNormalized,
+    slugifyModelStyle(decoded),
+    slugifyModelStyle(lower),
+    slugifyModelStyle(withoutDiacritics)
+  ]
+    .map((candidate) => candidate?.trim?.())
+    .filter(Boolean);
+
+  return Array.from(new Set(candidates));
+};
+
+const findChaletBySlugIdentifier = async (value) => {
+  if (!value) {
+    return null;
+  }
+
+  if (mongoose.Types.ObjectId.isValid(value)) {
+    const byId = await Chalet.findById(value);
+    if (byId) {
+      return byId;
+    }
+  }
+
+  const slugCandidates = buildSlugCandidates(value);
+
+  if (!slugCandidates.length) {
+    return null;
+  }
+
+  let chalet = await Chalet.findOne({ slug: { $in: slugCandidates } });
+
+  if (!chalet && slugCandidates.length) {
+    const regexConditions = slugCandidates.map((candidate) => ({
+      slug: { $regex: new RegExp(`^${escapeRegex(candidate)}$`, 'i') }
+    }));
+
+    if (regexConditions.length) {
+      chalet = await Chalet.findOne({ $or: regexConditions });
+    }
+  }
+
+  return chalet;
+};
 
 // Get single chalet by slug
 export async function GET(request, { params }) {
   try {
     await dbConnect();
 
-    const { slug } = params;
-    const chalet = await Chalet.findOne({ slug });
+    const { slug } = params || {};
+    const chalet = await findChaletBySlugIdentifier(slug);
 
     if (!chalet) {
       return NextResponse.json(
@@ -28,7 +133,6 @@ export async function GET(request, { params }) {
       success: true,
       data: chalet
     });
-
   } catch (error) {
     console.error('Error fetching chalet:', error);
     return NextResponse.json(
@@ -47,11 +151,23 @@ export async function PUT(request, { params }) {
     try {
       await dbConnect();
 
-      const { slug } = params;
+      const { slug } = params || {};
+      const existingChalet = await findChaletBySlugIdentifier(slug);
+
+      if (!existingChalet) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Chalet not found'
+          },
+          { status: 404 }
+        );
+      }
+
       const body = await req.json();
 
-      const chalet = await Chalet.findOneAndUpdate(
-        { slug },
+      const chalet = await Chalet.findByIdAndUpdate(
+        existingChalet._id,
         body,
         { new: true, runValidators: true }
       );
@@ -71,12 +187,11 @@ export async function PUT(request, { params }) {
         message: 'Chalet updated successfully',
         data: chalet
       });
-
     } catch (error) {
       console.error('Error updating chalet:', error);
-      
+
       if (error.name === 'ValidationError') {
-        const errors = Object.values(error.errors).map(err => err.message);
+        const errors = Object.values(error.errors).map((err) => err.message);
         return NextResponse.json(
           {
             success: false,
@@ -140,7 +255,19 @@ export async function PATCH(request, { params }) {
 
     await dbConnect();
 
-    const { slug } = params;
+    const { slug } = params || {};
+    const existingChalet = await findChaletBySlugIdentifier(slug);
+
+    if (!existingChalet) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Chalet not found'
+        },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
 
     const updates = {};
@@ -178,8 +305,8 @@ export async function PATCH(request, { params }) {
       }
     }
 
-    const chalet = await Chalet.findOneAndUpdate(
-      { slug },
+    const chalet = await Chalet.findByIdAndUpdate(
+      existingChalet._id,
       updatePayload,
       { new: true, runValidators: true }
     );
@@ -217,8 +344,20 @@ export async function DELETE(request, { params }) {
     try {
       await dbConnect();
 
-      const { slug } = params;
-      const chalet = await Chalet.findOneAndDelete({ slug });
+      const { slug } = params || {};
+      const existingChalet = await findChaletBySlugIdentifier(slug);
+
+      if (!existingChalet) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Chalet not found'
+          },
+          { status: 404 }
+        );
+      }
+
+      const chalet = await Chalet.findByIdAndDelete(existingChalet._id);
 
       if (!chalet) {
         return NextResponse.json(
@@ -234,7 +373,6 @@ export async function DELETE(request, { params }) {
         success: true,
         message: 'Chalet deleted successfully'
       });
-
     } catch (error) {
       console.error('Error deleting chalet:', error);
       return NextResponse.json(
