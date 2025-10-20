@@ -13,6 +13,30 @@ const SOURCE_LABELS = {
   'signup-application': 'Candidature'
 };
 
+const getAmenityLabel = (amenity) => {
+  if (!amenity) {
+    return '';
+  }
+
+  if (typeof amenity === 'string') {
+    return amenity;
+  }
+
+  if (typeof amenity?.name === 'string') {
+    return amenity.name;
+  }
+
+  if (typeof amenity?.label === 'string') {
+    return amenity.label;
+  }
+
+  if (typeof amenity?.description === 'string') {
+    return amenity.description;
+  }
+
+  return '';
+};
+
 export default function AdminChaletsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -423,7 +447,12 @@ export default function AdminChaletsPage() {
       ? new Date(selectedChalet.updatedAt).toLocaleString('fr-FR')
       : 'Date inconnue';
 
-    const amenities = Array.isArray(selectedChalet?.amenities) ? selectedChalet.amenities : [];
+    const amenities = Array.isArray(selectedChalet?.amenities)
+      ? selectedChalet.amenities
+          .map(getAmenityLabel)
+          .map((value) => value?.trim?.())
+          .filter(Boolean)
+      : [];
 
     return { guestLabel, areaLabel, priceLabel, isActive, lastUpdatedAt, amenities };
   }, [selectedChalet]);
