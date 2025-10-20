@@ -2,7 +2,23 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import dbConnect from '../../../lib/mongodb';
 import Content from '../../../models/Content';
-import { createFakeContent, describeConnection } from '../../../lib/seed/fakeContent';
+function describeConnection(connection) {
+  if (!connection) {
+    return {
+      state: 'disconnected',
+      host: null,
+      port: null,
+      name: null
+    };
+  }
+
+  return {
+    state: connection.readyState,
+    host: connection.host ?? null,
+    port: connection.port ?? null,
+    name: connection.name ?? null
+  };
+}
 
 function mapDatabaseStatus(connection, pingResult, contentCount) {
   const connectionInfo = describeConnection(connection);
@@ -54,33 +70,9 @@ export async function GET() {
   }
 }
 
-export async function POST(request) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({
-      success: false,
-      message: 'Fake content generation is disabled in production.'
-    }, { status: 403 });
-  }
-
-  try {
-    const payload = await request.json();
-    const page = payload?.page || 'home';
-    const count = payload?.count;
-    const sections = payload?.sections;
-
-    await dbConnect();
-    const createdContent = await createFakeContent({ page, count, sections });
-
-    return NextResponse.json({
-      success: true,
-      message: `Generated ${createdContent.length} fake content block${createdContent.length !== 1 ? 's' : ''}.`,
-      data: createdContent
-    }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({
-      success: false,
-      message: 'Failed to generate fake content',
-      error: error.message
-    }, { status: 400 });
-  }
+export async function POST() {
+  return NextResponse.json({
+    success: false,
+    message: 'Fake content generation endpoint has been removed.'
+  }, { status: 410 });
 }
