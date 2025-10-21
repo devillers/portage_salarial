@@ -1,3 +1,5 @@
+// app/contact/page.js
+
 import ContactPageClient from './ContactPageClient';
 import { buildMetadata } from '../../lib/seo';
 
