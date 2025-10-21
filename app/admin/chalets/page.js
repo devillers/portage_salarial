@@ -47,6 +47,8 @@ export default function AdminChaletsPage() {
   const [updatingChaletId, setUpdatingChaletId] = useState(null);
   const [selectedChalet, setSelectedChalet] = useState(null);
   const [validatingSignupId, setValidatingSignupId] = useState(null);
+  const [chaletToDelete, setChaletToDelete] = useState(null);
+  const [deletingChaletId, setDeletingChaletId] = useState(null);
 
   const apiToken = session?.user?.apiToken;
   const userRole = session?.user?.role;
@@ -148,6 +150,52 @@ export default function AdminChaletsPage() {
   const handleViewChaletDetails = (chalet) => setSelectedChalet(chalet);
   const closeChaletDetails = () => setSelectedChalet(null);
 
+  const handleRequestDeleteChalet = (chalet) => {
+    if (!chalet) return;
+    setChaletToDelete(chalet);
+  };
+
+  const closeDeleteModal = () => {
+    if (deletingChaletId) return;
+    setChaletToDelete(null);
+  };
+
+  const handleConfirmDeleteChalet = async () => {
+    if (!chaletToDelete?.slug || !apiToken) return;
+
+    setDeletingChaletId(chaletToDelete._id);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/chalets/${chaletToDelete.slug}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${apiToken}`
+        }
+      });
+
+      let data = null;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        data = null;
+      }
+
+      if (!response.ok || (data && data.success === false)) {
+        throw new Error(data?.message || 'Impossible de supprimer le chalet.');
+      }
+
+      setChalets((prev) => prev.filter((item) => item._id !== chaletToDelete._id));
+      setSelectedChalet((current) => (current?._id === chaletToDelete._id ? null : current));
+      setChaletToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete chalet', err);
+      setError(err?.message || 'Impossible de supprimer le chalet.');
+    } finally {
+      setDeletingChaletId(null);
+    }
+  };
+
   const handleValidateSignupChalet = async (chalet) => {
     if (!isSuperAdmin || !apiToken || !chalet?.ownerApplicationId) return;
 
@@ -222,7 +270,8 @@ export default function AdminChaletsPage() {
   }, [session?.user]);
 
   // ---- TABLE RENDERERS ----------------------------------------------------
-  const renderChaletRow = (chalet) => {
+  const renderChaletRow = (chalet, options = {}) => {
+    const { allowDeletion = false } = options;
     const isSignup = chalet?.source === 'signup-application';
     const isActive = chalet?.availability?.isActive ?? false;
     const coverImage = getAdminThumbnailImage(chalet);
@@ -253,6 +302,8 @@ export default function AdminChaletsPage() {
 
     const isUpdating = updatingChaletId === chalet?._id;
     const isValidatingSignup = validatingSignupId === chalet?._id;
+    const isDeleting = deletingChaletId === chalet?._id;
+    const showDeleteButton = allowDeletion && !isSignup && !isActive && isSuperAdmin;
 
     return (
       <tr key={chalet._id} className="hover:bg-neutral-50">
@@ -388,13 +439,27 @@ export default function AdminChaletsPage() {
             ) : (
               <span className="text-xs text-neutral-400">Modification restreinte</span>
             )}
+
+            {showDeleteButton && (
+              <button
+                type="button"
+                onClick={() => handleRequestDeleteChalet(chalet)}
+                disabled={isDeleting}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 ${
+                  isDeleting ? 'cursor-wait opacity-60' : 'hover:border-red-300 hover:text-red-700'
+                }`}
+              >
+                <ClientIcon name="Trash2" className="h-4 w-4" />
+                <span className="sr-only">Supprimer le chalet</span>
+              </button>
+            )}
           </div>
         </td>
       </tr>
     );
   };
 
-  const renderChaletsTable = (items) => {
+  const renderChaletsTable = (items, options = {}) => {
     if (!Array.isArray(items) || items.length === 0) return null;
 
     return (
@@ -414,7 +479,7 @@ export default function AdminChaletsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-200 bg-white text-sm text-neutral-700">
-            {items.map((chalet) => renderChaletRow(chalet))}
+            {items.map((chalet) => renderChaletRow(chalet, options))}
           </tbody>
         </table>
       </div>
@@ -566,7 +631,7 @@ export default function AdminChaletsPage() {
                   <span className="text-sm text-neutral-500">{inactiveChalets.length} en brouillon</span>
                 </div>
                 {inactiveChalets.length ? (
-                  renderChaletsTable(inactiveChalets)
+                  renderChaletsTable(inactiveChalets, { allowDeletion: true })
                 ) : (
                   <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center text-neutral-500">
                     Aucun chalet masqué. Tous vos chalets sont publiés.
@@ -777,6 +842,60 @@ export default function AdminChaletsPage() {
               ) : (
                 <span className="text-xs font-semibold text-primary-700">Candidature en cours d&apos;examen</span>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {chaletToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 px-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeDeleteModal}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+                <ClientIcon name="AlertTriangle" className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900">Supprimer ce chalet&nbsp;?</h3>
+                <p className="mt-1 text-sm text-neutral-600">
+                  {`"${chaletToDelete?.title || 'Chalet sans titre'}" sera définitivement supprimé du portfolio.`}
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-4 rounded-lg bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+              Cette action est irréversible. Toutes les données associées à ce chalet seront perdues.
+            </p>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                disabled={Boolean(deletingChaletId)}
+                className={`inline-flex items-center justify-center rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                  deletingChaletId ? 'cursor-not-allowed opacity-60' : 'hover:border-neutral-300 hover:text-neutral-900'
+                }`}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteChalet}
+                disabled={Boolean(deletingChaletId)}
+                className={`inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 ${
+                  deletingChaletId ? 'cursor-wait opacity-60' : 'hover:bg-red-700'
+                }`}
+              >
+                <ClientIcon name="Trash2" className="h-4 w-4" />
+                {deletingChaletId ? 'Suppression…' : 'Supprimer'}
+              </button>
             </div>
           </div>
         </div>
