@@ -49,6 +49,7 @@ export default function AdminChaletsPage() {
   const [validatingSignupId, setValidatingSignupId] = useState(null);
   const [chaletToDelete, setChaletToDelete] = useState(null);
   const [deletingChaletId, setDeletingChaletId] = useState(null);
+  const [archivingSignupId, setArchivingSignupId] = useState(null);
 
   const apiToken = session?.user?.apiToken;
   const userRole = session?.user?.role;
@@ -232,6 +233,37 @@ export default function AdminChaletsPage() {
     }
   };
 
+  const handleArchiveSignupChalet = async (chalet) => {
+    if (!isSuperAdmin || !apiToken || !chalet?.ownerApplicationId) return;
+
+    setArchivingSignupId(chalet._id);
+    setError('');
+
+    try {
+      const response = await fetch('/api/chalets/archive-signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`
+        },
+        body: JSON.stringify({ applicationId: chalet.ownerApplicationId })
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || 'Impossible de supprimer la candidature.');
+      }
+
+      setChalets((prev) => prev.filter((item) => item._id !== chalet._id));
+      setSelectedChalet((current) => (current?._id === chalet._id ? null : current));
+    } catch (err) {
+      console.error('Failed to archive signup chalet', err);
+      setError(err?.message || 'Impossible de supprimer la candidature.');
+    } finally {
+      setArchivingSignupId(null);
+    }
+  };
+
   // Close details on ESC
   useEffect(() => {
     if (!selectedChalet) return;
@@ -303,7 +335,9 @@ export default function AdminChaletsPage() {
     const isUpdating = updatingChaletId === chalet?._id;
     const isValidatingSignup = validatingSignupId === chalet?._id;
     const isDeleting = deletingChaletId === chalet?._id;
+    const isArchivingSignup = archivingSignupId === chalet?._id;
     const showDeleteButton = allowDeletion && !isSignup && !isActive && isSuperAdmin;
+    const canArchiveSignup = isSuperAdmin && isSignup && chalet?.ownerApplicationId;
 
     return (
       <tr key={chalet._id} className="hover:bg-neutral-50">
@@ -438,6 +472,20 @@ export default function AdminChaletsPage() {
               </button>
             ) : (
               <span className="text-xs text-neutral-400">Modification restreinte</span>
+            )}
+
+            {isSignup && canArchiveSignup && (
+              <button
+                type="button"
+                onClick={() => handleArchiveSignupChalet(chalet)}
+                disabled={isArchivingSignup}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 ${
+                  isArchivingSignup ? 'cursor-wait opacity-60' : 'hover:border-red-300 hover:text-red-700'
+                }`}
+              >
+                <ClientIcon name="Trash2" className="h-4 w-4" />
+                <span className="sr-only">Retirer cette candidature</span>
+              </button>
             )}
 
             {showDeleteButton && (
