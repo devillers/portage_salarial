@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut, useSession } from '../../../components/providers/SessionProvider';
 import ClientIcon from '../../../components/ClientIcon';
+import PageWrapper from '../../../components/layout/PageWrapper';
 
 const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 
@@ -303,14 +304,14 @@ export default function AdminDashboard() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <PageWrapper mainClassName="flex flex-1 items-center justify-center bg-neutral-50">
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-300 border-t-primary-700" />
-      </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <PageWrapper mainClassName="bg-neutral-50 pt-0 md:pt-6 pb-24">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -344,7 +345,7 @@ export default function AdminDashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex-1">
@@ -623,7 +624,7 @@ export default function AdminDashboard() {
             </div>
           </section>
         )}
-      </main>
-    </div>
+      </section>
+    </PageWrapper>
   );
 }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from '../../components/providers/SessionProvider';
 import ClientIcon from '../../components/ClientIcon';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 const INITIAL_FORM_STATE = {
   email: '',
@@ -84,7 +85,7 @@ export default function TenantLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+    <PageWrapper mainClassName="flex flex-1 items-center justify-center bg-neutral-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full grid gap-10 lg:grid-cols-2">
         <div className="bg-white rounded-3xl shadow-xl p-10 space-y-8">
           <div className="flex items-center gap-3">
@@ -197,6 +198,19 @@ export default function TenantLoginPage() {
                 Accédez à l&apos;espace administrateur
               </Link>
             </p>
+            <p>
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(INITIAL_FORM_STATE);
+                  setError('');
+                  setInfoMessage('');
+                }}
+                className="mt-2 text-primary-600 hover:text-primary-700"
+              >
+                Réinitialiser le formulaire
+              </button>
+            </p>
           </div>
 
           <div className="text-center text-xs text-neutral-400">
@@ -207,6 +221,6 @@ export default function TenantLoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

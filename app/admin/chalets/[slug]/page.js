@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { signOut, useSession } from '../../../../components/providers/SessionProvider';
 import ClientIcon from '../../../../components/ClientIcon';
+import PageWrapper from '../../../../components/layout/PageWrapper';
 
 const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 
@@ -25,6 +26,7 @@ export default function AdminChaletDetailPage() {
   const apiToken = session?.user?.apiToken;
   const userRole = session?.user?.role;
   const isSuperAdmin = userRole === 'super-admin';
+  const pageMainClassName = 'bg-neutral-50 pt-0 md:pt-6 pb-24';
 
   // Redirect unauthenticated users to the login page
   useEffect(() => {
@@ -277,83 +279,90 @@ export default function AdminChaletDetailPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="h-4 w-40 animate-pulse rounded bg-neutral-200" />
-        <div className="mt-6 h-7 w-80 animate-pulse rounded bg-neutral-200" />
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <div className="h-56 animate-pulse rounded-xl bg-neutral-200" />
-          <div className="space-y-4">
-            <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
-            <div className="h-4 w-3/4 animate-pulse rounded bg-neutral-200" />
-            <div className="h-4 w-1/2 animate-pulse rounded bg-neutral-200" />
+      <PageWrapper mainClassName={pageMainClassName}>
+        <div className="mx-auto max-w-6xl px-4 py-10">
+          <div className="h-4 w-40 animate-pulse rounded bg-neutral-200" />
+          <div className="mt-6 h-7 w-80 animate-pulse rounded bg-neutral-200" />
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <div className="h-56 animate-pulse rounded-xl bg-neutral-200" />
+            <div className="space-y-4">
+              <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
+              <div className="h-4 w-3/4 animate-pulse rounded bg-neutral-200" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-neutral-200" />
+            </div>
           </div>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-12">
-        <Link
-          href="/admin/chalets"
-          className="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700"
-        >
-          <ClientIcon name="ArrowLeft" className="mr-2 h-4 w-4" />
-          Retour à la liste
-        </Link>
+      <PageWrapper mainClassName={pageMainClassName}>
+        <div className="mx-auto max-w-3xl px-4 py-12">
+          <Link
+            href="/admin/chalets"
+            className="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700"
+          >
+            <ClientIcon name="ArrowLeft" className="mr-2 h-4 w-4" />
+            Retour à la liste
+          </Link>
 
-        <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-          <h1 className="text-lg font-semibold">Impossible d&rsquo;afficher ce chalet</h1>
-          <p className="mt-2 text-sm">
-            {error}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleRetry}
-              className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-            >
-              <ClientIcon name="RefreshCw" className="mr-2 h-4 w-4" />
-              Réessayer
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push('/admin/chalets')}
-              className="inline-flex items-center rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-300 hover:text-neutral-900"
-            >
-              <ClientIcon name="List" className="mr-2 h-4 w-4" />
-              Retour à la liste
-            </button>
+          <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+            <h1 className="text-lg font-semibold">Impossible d&rsquo;afficher ce chalet</h1>
+            <p className="mt-2 text-sm">
+              {error}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleRetry}
+                className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+              >
+                <ClientIcon name="RefreshCw" className="mr-2 h-4 w-4" />
+                Réessayer
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push('/admin/chalets')}
+                className="inline-flex items-center rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-300 hover:text-neutral-900"
+              >
+                <ClientIcon name="List" className="mr-2 h-4 w-4" />
+                Retour à la liste
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
   if (!chalet) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-12">
-        <Link
-          href="/admin/chalets"
-          className="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700"
-        >
-          <ClientIcon name="ArrowLeft" className="mr-2 h-4 w-4" />
-          Retour à la liste
-        </Link>
+      <PageWrapper mainClassName={pageMainClassName}>
+        <div className="mx-auto max-w-3xl px-4 py-12">
+          <Link
+            href="/admin/chalets"
+            className="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700"
+          >
+            <ClientIcon name="ArrowLeft" className="mr-2 h-4 w-4" />
+            Retour à la liste
+          </Link>
 
-        <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-6 text-neutral-700">
-          <h1 className="text-lg font-semibold">Chalet introuvable</h1>
-          <p className="mt-2 text-sm">
-            Le chalet demandé n&rsquo;existe pas ou a été supprimé.
-          </p>
+          <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-6 text-neutral-700">
+            <h1 className="text-lg font-semibold">Chalet introuvable</h1>
+            <p className="mt-2 text-sm">
+              Le chalet demandé n&rsquo;existe pas ou a été supprimé.
+            </p>
+          </div>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <PageWrapper mainClassName={pageMainClassName}>
+      <div className="mx-auto max-w-6xl px-4 py-10">
       <Link
         href="/admin/chalets"
         className="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700"
@@ -610,5 +619,6 @@ export default function AdminChaletDetailPage() {
         </div>
       </div>
     </div>
+    </PageWrapper>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from '../../components/providers/SessionProvider';
 import ClientIcon from '../../components/ClientIcon';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 const INITIAL_FORM = {
   email: '',
@@ -81,7 +82,7 @@ export default function AuthPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col lg:flex-row">
+    <PageWrapper mainClassName="flex min-h-screen flex-col bg-neutral-50 px-0 py-0 lg:flex-row">
       {/* Panneau gauche : héro */}
       <div className="relative w-full lg:w-1/2 flex items-center justify-center px-6 py-16 overflow-hidden">
         <div className="absolute inset-0">
@@ -261,6 +262,6 @@ export default function AuthPageClient() {
           </p>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }
