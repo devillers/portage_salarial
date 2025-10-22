@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, signOut, useSession } from '../../components/providers/SessionProvider';
 import ClientIcon from '../../components/ClientIcon';
+import PageWrapper from '../../components/layout/PageWrapper';
 
 const INITIAL_CREDENTIALS = {
   email: '',
@@ -86,7 +87,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <PageWrapper mainClassName="flex flex-1 items-center justify-center bg-neutral-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex items-center justify-center mb-6">
@@ -190,6 +191,6 @@ export default function AdminLoginPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

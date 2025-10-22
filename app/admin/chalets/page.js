@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from '../../../components/providers/SessionProvider';
 import ClientIcon from '../../../components/ClientIcon';
+import PageWrapper from '../../../components/layout/PageWrapper';
 
 const ALLOWED_ROLES = ['admin', 'super-admin', 'owner'];
 
@@ -54,6 +55,7 @@ export default function AdminChaletsPage() {
   const apiToken = session?.user?.apiToken;
   const userRole = session?.user?.role;
   const isSuperAdmin = userRole === 'super-admin';
+  const pageMainClassName = 'bg-neutral-50 pt-0 md:pt-6 pb-24';
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -573,17 +575,17 @@ export default function AdminChaletsPage() {
   // ---- RENDER -------------------------------------------------------------
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <PageWrapper mainClassName="flex flex-1 items-center justify-center bg-neutral-50">
         <div className="flex flex-col items-center space-y-3 text-neutral-500">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-300 border-t-primary-700" />
           <span>Chargement des chalets...</span>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <PageWrapper mainClassName={pageMainClassName}>
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -624,7 +626,7 @@ export default function AdminChaletsPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900">{displayChaletCount} chalet(s)</h2>
@@ -743,7 +745,7 @@ export default function AdminChaletsPage() {
             </div>
           </div>
         )}
-      </main>
+      </section>
 
       {selectedChalet && (
         <div
@@ -948,7 +950,7 @@ export default function AdminChaletsPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }
 
