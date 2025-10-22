@@ -190,9 +190,9 @@ export default function ServicesPage() {
   ];
 
   return (
-    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50  md:pt-6 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg ">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg"

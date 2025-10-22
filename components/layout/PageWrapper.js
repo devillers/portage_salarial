@@ -1,6 +1,6 @@
 import Header from './Header';
 import Footer from './Footer';
-import { cn } from '../../lib/utils';
+import { cn } from '../../lib/utils.ts';
 
 export default function PageWrapper({ children, className, mainClassName }) {
   return (

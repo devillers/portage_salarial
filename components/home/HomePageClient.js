@@ -20,11 +20,11 @@ export default function HomePageClient() {
   return (
     <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-0 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden rounded-none text-white sm:rounded-3xl sm:mx-6 sm:mt-12">
+      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden rounded-none text-white ">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg"
+            src="/photos/homepage.webp"
             alt={hero.backgroundAlt || 'Chalet de montagne de luxe entouré de neige'}
             fill
             className="object-cover"
@@ -35,7 +35,7 @@ export default function HomePageClient() {
 
         {/* Hero Content */}
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
-          <h1 className="mb-6 text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
+          <h1 className="mb-6 text-4xl font-light leading-tight md:text-6xl lg:text-7xl">
             {hero.title}
             <span className="block text-primary-200">{hero.highlight}</span>
           </h1>
