@@ -9,7 +9,7 @@ import { buildMetadata } from '../../lib/seo';
 export const metadata = buildMetadata({
   title: 'Séminaires & Événements | Chalet Manager',
   description:
-    'Organisation complète de séminaires incentive, événements corporate et séjours yoga avec Les Joly Dames. MICE event planning professionnel dans les Alpes.',
+    "Direction événementielle sur-mesure pour séminaires, incentives et retraites bien-être. Production haut de gamme, logistique 360° et expériences immersives dans les Alpes.",
   path: '/seminaires-evenements',
   keywords: [
     'organisation seminaire',
@@ -20,446 +20,468 @@ export const metadata = buildMetadata({
 });
 
 export default function SeminairesEvenementsPage() {
-  const miceSteps = [
+  const stats = [
     {
-      icon: 'Target',
-      title: 'Définition des Objectifs',
-      description: 'Analyse des besoins, définition des objectifs business et identification des résultats attendus'
+      value: '120+',
+      label: 'événements orchestrés',
     },
     {
-      icon: 'Euro',
-      title: 'Budget & Planification',
-      description: 'Établissement du budget global, répartition des coûts et optimisation des ressources'
+      value: '35',
+      label: 'destinations alpines partenaires',
     },
     {
-      icon: 'MapPin',
-      title: 'Choix du Lieu',
-      description: 'Sélection de sites adaptés aux objectifs, capacité et ambiance recherchée'
+      value: '97%',
+      label: 'taux de satisfaction clients',
     },
     {
-      icon: 'Settings',
-      title: 'Mise en Place Technique',
-      description: 'Installation audiovisuelle, équipements IT et infrastructure technique'
+      value: '48h',
+      label: 'pour recevoir un concept créatif',
     },
-    {
-      icon: 'Smartphone',
-      title: 'Intégration Numérique',
-      description: 'Outils digitaux, applications événementielles et solutions hybrides'
-    },
-    {
-      icon: 'Palette',
-      title: 'Design d\'Expérience',
-      description: 'Création d\'ambiances, scénographie et parcours participant personnalisé'
-    },
-    {
-      icon: 'Truck',
-      title: 'Logistique',
-      description: 'Coordination transport, hébergement, restauration et services annexes'
-    },
-    {
-      icon: 'BarChart3',
-      title: 'Suivi Post-Événement',
-      description: 'Analyse des résultats, feedback participants et reporting complet'
-    }
   ];
 
-  const trends2025 = [
+  const eventPrograms = [
     {
-      icon: 'Wifi',
-      title: 'Digital & Hybride',
-      description: 'Événements connectés combinant présentiel et virtuel pour une portée maximale'
+      title: 'Séminaires Corporate Signature',
+      description:
+        'Alignement stratégique, contenus inspirants et production technique irréprochable pour vos rencontres clés.',
+      image: 'https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg',
+      imageAlt: "Conférence d'entreprise dans un chalet moderne avec vue sur les montagnes",
+      highlights: [
+        'Design de programme & storytelling sur-mesure',
+        'Studios modulables, scénographie et audiovisuel premium',
+        'Expériences networking et soirées signature',
+      ],
     },
+    {
+      title: 'Incentives & Team Building',
+      description:
+        'Moments fédérateurs pour engager vos équipes et célébrer vos succès dans des cadres naturels d’exception.',
+      image: 'https://images.pexels.com/photos/2603681/pexels-photo-2603681.jpeg',
+      imageAlt: "Équipe en activité de team building dans la neige",
+      highlights: [
+        'Activités outdoor accompagnées par des guides locaux',
+        'Ateliers de cohésion imaginés avec vos RH',
+        'Logistique transport & sécurité intégrée',
+      ],
+    },
+    {
+      title: 'Retraites & Séjours Yoga',
+      description:
+        'Parenthèses bien-être co-créées avec Les Joly Dames : équilibre entre ressourcement et découvertes.',
+      image: 'https://images.pexels.com/photos/1051838/pexels-photo-1051838.jpeg',
+      imageAlt: 'Séance de yoga au lever du soleil face aux montagnes',
+      highlights: [
+        'Petits groupes de 8 à 12 participantes',
+        'Gastronomie végétale et slow living',
+        'Guides, professeures certifiées et accompagnement holistique',
+      ],
+    },
+  ];
+
+  const servicePillars = [
+    {
+      icon: 'CalendarCheck',
+      title: 'Pilotage 360°',
+      description: 'Gestion complète du rétroplanning, coordination fournisseurs et contrôle budget.',
+    },
+    {
+      icon: 'Presentation',
+      title: 'Design Expérientiel',
+      description: 'Scénographie immersive, contenus inspirants et mise en scène de vos messages clés.',
+    },
+    {
+      icon: 'Sparkles',
+      title: 'Moments Signature',
+      description: 'Dîners privés, activités exclusives et attentions personnalisées pour chaque participant.',
+    },
+    {
+      icon: 'ShieldCheck',
+      title: 'Sécurité & Sérénité',
+      description: 'Supervision terrain, protocoles de sécurité et plans de contingence documentés.',
+    },
+  ];
+
+  const processSteps = [
+    {
+      number: '01',
+      title: 'Cadrage stratégique',
+      description: 'Analyse de vos enjeux, des profils participants et définition des KPI événementiels.',
+    },
+    {
+      number: '02',
+      title: 'Concept & design',
+      description: 'Création du fil rouge, sélection des lieux et architecture du programme sur-mesure.',
+    },
+    {
+      number: '03',
+      title: 'Production & logistique',
+      description: 'Coordination opérationnelle, transports, hébergements, technique et hospitalité.',
+    },
+    {
+      number: '04',
+      title: 'Live experience',
+      description: 'Direction de projet sur site, gestion des imprévus et accompagnement des équipes.',
+    },
+    {
+      number: '05',
+      title: 'Mesure & suivi',
+      description: 'Reporting, collecte de feedbacks et recommandations pour vos prochaines éditions.',
+    },
+  ];
+
+  const jolyHighlights = [
     {
       icon: 'Mountain',
-      title: 'Incentives Expérientielles',
-      description: 'Voyages aventure, expériences culturelles immersives et retraites bien-être'
+      title: 'Destinations exceptionnelles',
+      description: 'Alpes françaises, Haut Atlas marocain et Alpes juliennes slovènes.',
     },
     {
       icon: 'Users',
-      title: 'Personnalisation à Grande Échelle',
-      description: 'Expériences sur-mesure adaptées aux profils et préférences individuelles'
+      title: 'Cercle intimiste',
+      description: 'Groupes réduits pour favoriser la cohésion et l’écoute individuelle.',
     },
+    {
+      icon: 'HeartPulse',
+      title: 'Bien-être holistique',
+      description: 'Yoga, randonnées guidées, cuisine végétale et rituels ressourçants.',
+    },
+    {
+      icon: 'Sun',
+      title: 'Rythme équilibré',
+      description: 'Alternance de workshops, temps d’intégration et instants contemplatifs.',
+    },
+  ];
+
+  const commitments = [
     {
       icon: 'Leaf',
-      title: 'Durabilité',
-      description: 'Lieux éco-responsables, événements sans papier, restauration zéro déchet'
+      title: 'Éco-conception',
+      description: 'Sélection de partenaires engagés, circuits courts et compensation carbone systématique.',
     },
     {
-      icon: 'Globe',
-      title: 'Lieux Atypiques',
-      description: 'Sites exceptionnels et insolites pour des expériences mémorables'
-    }
-  ];
-
-  const services = [
-    'Choix et réservation de sites adaptés',
-    'Salles de réunion équipées et logements confortables',
-    'Planification d\'activités de cohésion d\'équipe',
-    'Gestion complète des fournisseurs',
-    'Intégration d\'outils technologiques avancés',
-    'Inscriptions en ligne et badges digitaux',
-    'Suivi budgétaire en temps réel',
-    'Reporting détaillé post-événement'
-  ];
-
-  const yogaFeatures = [
-    {
-      icon: 'MapPin',
-      title: 'Destinations Exceptionnelles',
-      description: 'Alpes françaises, Haut Atlas marocain, Alpes juliennes slovènes'
+      icon: 'ScanLine',
+      title: 'Hybridation digitale',
+      description: 'Plateformes de diffusion live, applications participants et analytics en temps réel.',
     },
     {
-      icon: 'Calendar',
-      title: 'Format Optimal',
-      description: 'Séjours de 4 nuits et 3 jours pour une immersion complète'
+      icon: 'Handshake',
+      title: 'Réseau premium',
+      description: 'Chefs, artistes, speakers et guides triés sur le volet pour des expériences exclusives.',
     },
     {
-      icon: 'Users',
-      title: 'Groupes Intimistes',
-      description: '8 participantes (France/Slovénie), 10 au Maroc pour une ambiance conviviale'
+      icon: 'Star',
+      title: 'Hospitalité signature',
+      description: 'Conciergerie dédiée, cadeaux sur mesure et attention portée à chaque détail.',
     },
-    {
-      icon: 'Heart',
-      title: 'Expérience Holistique',
-      description: 'Yoga, randonnées guidées, cuisine locale végétarienne'
-    }
   ];
 
   return (
     <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative flex min-h-[55vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden rounded-none text-white">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg"
-            alt="Organisation de séminaires et événements corporate"
+            alt="Organisation de séminaires premium dans un chalet alpin"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/35"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/25"></div>
         </div>
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
-          <h1 className="mb-4 text-4xl font-bold md:text-5xl">Séminaires & Événements</h1>
-          <p className="mx-auto max-w-2xl text-lg text-white/90 md:text-xl">
-            Organisation complète de séminaires incentive, événements corporate et séjours yoga dans des cadres exceptionnels.
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.4em] text-primary-200">
+            Direction événementielle sur-mesure
           </p>
+          <h1 className="mb-6 text-4xl font-light leading-tight md:text-6xl lg:text-7xl">
+            Séminaires & événements qui laissent une empreinte durable
+          </h1>
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-white/90 md:text-xl">
+            De la stratégie au dernier détail terrain, nous orchestrons des expériences professionnelles et bien-être
+            dans des écrins alpins d’exception.
+          </p>
+
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              href="/contact?type=seminaire-corporate"
+              className="flex items-center justify-center rounded-full bg-primary-700 px-8 py-4 font-semibold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:bg-primary-800 hover:shadow-2xl"
+            >
+              Concept sur-mesure
+              <ClientIcon name="ArrowRight" className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              href="/contact?type=sejour-yoga"
+              className="rounded-full border border-white/30 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:bg-white/20"
+            >
+              Retraite bien-être
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* MICE Introduction */}
+      {/* Introduction & Stats */}
       <section className="bg-white py-20 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
         <div className="mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-6">
-              MICE Event Planning Professionnel
-            </h2>
-            <div className="max-w-4xl mx-auto">
-              <p className="text-lg text-neutral-600 mb-6 leading-relaxed">
-                <strong>MICE (Meetings, Incentives, Conferences, Exhibitions)</strong> vise à créer des expériences qui favorisent les connexions, soutiennent les objectifs business et se déroulent avec une logistique irréprochable.
+          <div className="grid grid-cols-1 gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div className="space-y-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-neutral-900">
+                Une direction événementielle intégrée pour vos moments stratégiques
+              </h2>
+              <p className="text-lg text-neutral-600 leading-relaxed">
+                Nous accompagnons les directions générales, marketing et RH dans la conception de rendez-vous marquants :
+                séminaires de transformation, kick-off commerciaux, incentives, lancements de produit ou retraites de
+                leadership.
               </p>
               <p className="text-lg text-neutral-600 leading-relaxed">
-                Notre expertise couvre l'ensemble du processus, de la conception à l'exécution, pour des événements qui marquent les esprits et génèrent des résultats concrets.
+                Notre équipe garantit une expérience premium pour vos participants : storytelling, scénographie,
+                coordination technique et hospitalité signature, tout en pilotant vos objectifs business.
               </p>
-            </div>
-          </div>
-
-          {/* MICE Process Steps */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            {miceSteps.map((step, index) => {
-              return (
-                <div 
-                  key={index}
-                  className="text-center p-6 bg-neutral-50 rounded-2xl border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ClientIcon name={step.icon} className="h-8 w-8 text-primary-700" />
-                  </div>
-                  <h3 className="text-lg font-bold text-neutral-900 mb-3">
-                    {step.title}
-                  </h3>
-                  <p className="text-neutral-600 text-sm leading-relaxed">
-                    {step.description}
-                  </p>
+              <div className="flex flex-wrap gap-4 text-sm text-primary-700">
+                <div className="flex items-center rounded-full bg-primary-50 px-4 py-2">
+                  <ClientIcon name="CheckCircle" className="mr-2 h-4 w-4" />
+                  Gouvernance projet claire
                 </div>
-              );
-            })}
+                <div className="flex items-center rounded-full bg-primary-50 px-4 py-2">
+                  <ClientIcon name="CheckCircle" className="mr-2 h-4 w-4" />
+                  Créativité & performance
+                </div>
+                <div className="flex items-center rounded-full bg-primary-50 px-4 py-2">
+                  <ClientIcon name="CheckCircle" className="mr-2 h-4 w-4" />
+                  Expérience participant mémorable
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              {stats.map((stat, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl border border-neutral-200 bg-neutral-50 px-6 py-8 text-center shadow-sm"
+                >
+                  <p className="text-3xl font-bold text-primary-700">{stat.value}</p>
+                  <p className="mt-2 text-sm text-neutral-600">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 2025 Trends */}
-      <section className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Programs */}
+      <section className="py-20 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
-              Tendances 2025
+              Programmes signature conçus pour vos objectifs
             </h2>
             <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
-              Les nouvelles attentes du marché MICE et les innovations qui transforment l'événementiel
+              Des formats experts imaginés pour fédérer vos équipes, inspirer vos communautés ou offrir un temps de
+              reconnexion profond.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {trends2025.map((trend, index) => {
-              return (
-                <div 
-                  key={index}
-                  className="bg-white p-8 rounded-2xl border border-neutral-200 hover:border-primary-200 hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-6">
-                    <ClientIcon name={trend.icon} className="h-6 w-6 text-primary-700" />
-                  </div>
-                  <h3 className="text-xl font-bold text-neutral-900 mb-4">
-                    {trend.title}
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
+            {eventPrograms.map((program, index) => (
+              <div
+                key={index}
+                className="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+              >
+                <div className="relative h-56">
+                  <Image
+                    src={program.image}
+                    alt={program.imageAlt}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <h3 className="absolute bottom-6 left-6 text-2xl font-semibold text-white drop-shadow-lg">
+                    {program.title}
                   </h3>
-                  <p className="text-neutral-600 leading-relaxed">
-                    {trend.description}
-                  </p>
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Sustainability Focus */}
-          <div className="mt-16 bg-primary-50 p-8 rounded-2xl">
-            <div className="flex items-center mb-6">
-              <ClientIcon name="Leaf" className="h-8 w-8 text-primary-700 mr-4" />
-              <h3 className="text-2xl font-bold text-primary-900">
-                Engagement Durabilité
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <ClientIcon name="MapPin" className="h-6 w-6 text-primary-800" />
+                <div className="space-y-6 p-6">
+                  <p className="text-neutral-600 leading-relaxed">{program.description}</p>
+                  <ul className="space-y-3">
+                    {program.highlights.map((highlight, highlightIndex) => (
+                      <li key={highlightIndex} className="flex items-start text-sm text-neutral-700">
+                        <ClientIcon name="CheckCircle" className="mr-3 mt-1 h-5 w-5 text-primary-600" />
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <h4 className="font-semibold text-primary-900 mb-2">Lieux Éco-responsables</h4>
-                <p className="text-primary-700 text-sm">Sites certifiés environnementaux</p>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <ClientIcon name="Smartphone" className="h-6 w-6 text-primary-800" />
-                </div>
-                <h4 className="font-semibold text-primary-900 mb-2">Événements Sans Papier</h4>
-                <p className="text-primary-700 text-sm">Solutions 100% digitales</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <ClientIcon name="Heart" className="h-6 w-6 text-primary-800" />
-                </div>
-                <h4 className="font-semibold text-primary-900 mb-2">Restauration Zéro Déchet</h4>
-                <p className="text-primary-700 text-sm">Circuits courts et locaux</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <ClientIcon name="Globe" className="h-6 w-6 text-primary-800" />
-                </div>
-                <h4 className="font-semibold text-primary-900 mb-2">Compensation Carbone</h4>
-                <p className="text-primary-700 text-sm">Neutralité carbone garantie</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Our Services */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-6">
-                Coordination Complète
-              </h2>
-              <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
-                Nous prenons en charge l'intégralité de votre événement, de la conception à l'exécution, 
-                pour vous permettre de vous concentrer sur vos objectifs business.
+      {/* Service Pillars */}
+      <section className="relative overflow-hidden py-20">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900 via-primary-700 to-primary-500"></div>
+        <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-10 text-white">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Un pilotage 360° sans compromis</h2>
+            <p className="text-xl text-white/80 max-w-3xl mx-auto">
+              Nous combinons rigueur opérationnelle et créativité pour délivrer des expériences à très forte valeur
+              ajoutée.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {servicePillars.map((pillar, index) => (
+              <div
+                key={index}
+                className="rounded-2xl bg-white/10 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/20"
+              >
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+                  <ClientIcon name={pillar.icon} className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-3">{pillar.title}</h3>
+                <p className="text-sm leading-relaxed text-white/80">{pillar.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process */}
+      <section className="bg-white py-20 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
+              Méthodologie éprouvée pour des événements performants
+            </h2>
+            <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
+              Une gouvernance claire et un accompagnement de bout en bout pour transformer vos ambitions en expérience.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            {processSteps.map((step, index) => (
+              <div
+                key={index}
+                className="relative flex flex-col rounded-2xl border border-neutral-200 bg-neutral-50 p-6 text-center shadow-sm"
+              >
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 text-primary-800">
+                  <span className="text-lg font-semibold">{step.number}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">{step.title}</h3>
+                <p className="text-sm text-neutral-600 leading-relaxed">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Joly Dames Partnership */}
+      <section className="py-20 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
+            <div className="relative h-96 overflow-hidden rounded-3xl shadow-xl">
+              <Image
+                src="https://images.pexels.com/photos/3759657/pexels-photo-3759657.jpeg"
+                alt="Retraite yoga organisée par Les Joly Dames"
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary-600">
+                Partenariat Les Joly Dames
               </p>
-              
-              <div className="space-y-4">
-                {services.map((service, index) => (
-                  <div key={index} className="flex items-start">
-                    <ClientIcon name="CheckCircle" className="h-6 w-6 text-primary-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-neutral-700">{service}</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-neutral-900">
+                Retraites yoga & leadership féminin clés en main
+              </h2>
+              <p className="text-lg text-neutral-600 leading-relaxed">
+                Nous co-produisons des séjours exclusifs mêlant marche consciente, yoga et découvertes culinaires. Des
+                destinations inspirantes, une logistique fluide et un accompagnement bienveillant pour révéler vos
+                talents féminins.
+              </p>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {jolyHighlights.map((highlight, index) => (
+                  <div key={index} className="rounded-2xl bg-primary-50 p-5">
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary-200 text-primary-800">
+                      <ClientIcon name={highlight.icon} className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-primary-900 mb-2">{highlight.title}</h3>
+                    <p className="text-sm text-primary-700 leading-relaxed">{highlight.description}</p>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="relative">
-              <div className="relative h-96 rounded-2xl overflow-hidden shadow-xl">
-                <Image
-                  src="https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg"
-                  alt="Coordination d'événements corporate"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Les Joly Dames Section */}
-      <section className="py-20 bg-gradient-to-br from-primary-50 to-primary-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Commitments */}
+      <section className="bg-neutral-100 py-20 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-900 mb-4">
-              Séminaires Yoga avec Les Joly Dames
-            </h2>
-            <p className="text-xl text-primary-700 max-w-3xl mx-auto">
-              Week-ends de marche et yoga pour femmes dans des destinations exceptionnelles
+            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">Nos engagements pour des événements responsables</h2>
+            <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
+              Des choix conscients et une technologie intelligente pour des expériences mémorables et durables.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
-            <div className="relative">
-              <div className="relative h-96 rounded-2xl overflow-hidden shadow-xl">
-                <Image
-                  src="https://images.pexels.com/photos/1051838/pexels-photo-1051838.jpeg"
-                  alt="Séjour yoga dans les montagnes"
-                  fill
-                  className="object-cover"
-                />
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {commitments.map((commitment, index) => (
+              <div key={index} className="rounded-2xl bg-white p-6 shadow-lg">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-primary-800">
+                  <ClientIcon name={commitment.icon} className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-semibold text-neutral-900 mb-3">{commitment.title}</h3>
+                <p className="text-sm text-neutral-600 leading-relaxed">{commitment.description}</p>
               </div>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-primary-900 mb-6">
-                Une Expérience Unique de Ressourcement
-              </h3>
-              <p className="text-lg text-primary-800 mb-6 leading-relaxed">
-                Les Joly Dames organisent des week-ends de marche et yoga pour femmes, en petits groupes, 
-                dans les <strong>Alpes françaises</strong>, le <strong>Haut Atlas marocain</strong> et les <strong>Alpes juliennes slovènes</strong>.
-              </p>
-              
-              <div className="bg-white/50 p-6 rounded-xl mb-6">
-                <h4 className="font-semibold text-primary-900 mb-4">L'Expérience Complète :</h4>
-                <ul className="space-y-2 text-primary-800">
-                  <li className="flex items-start">
-                    <ClientIcon name="Star" className="h-5 w-5 text-primary-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Séjours de <strong>4 nuits et 3 jours</strong> avec hébergement confortable</span>
-                  </li>
-                  <li className="flex items-start">
-                    <ClientIcon name="Star" className="h-5 w-5 text-primary-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Repas principalement <strong>végétariens</strong> à base d'ingrédients locaux</span>
-                  </li>
-                  <li className="flex items-start">
-                    <ClientIcon name="Star" className="h-5 w-5 text-primary-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span><strong>Randonnées guidées</strong> par des guides locaux expérimentés</span>
-                  </li>
-                  <li className="flex items-start">
-                    <ClientIcon name="Star" className="h-5 w-5 text-primary-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span><strong>Séances de yoga</strong> avec des professeures qualifiées</span>
-                  </li>
-                </ul>
-              </div>
-
-              <p className="text-primary-700 leading-relaxed">
-                L'accent est mis sur la <strong>détente</strong>, la <strong>reconnexion</strong> et l'<strong>exploration de cultures locales</strong> 
-                dans une ambiance conviviale et ressourçante.
-              </p>
-            </div>
-          </div>
-
-          {/* Yoga Features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {yogaFeatures.map((feature, index) => {
-              return (
-                <div 
-                  key={index}
-                  className="text-center p-6 bg-white/70 rounded-2xl border border-primary-200 hover:bg-white hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="w-16 h-16 bg-primary-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ClientIcon name={feature.icon} className="h-8 w-8 text-primary-800" />
-                  </div>
-                  <h3 className="text-lg font-bold text-primary-900 mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-primary-700 text-sm leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Partnership Info */}
-          <div className="bg-white p-8 rounded-2xl border border-primary-200 shadow-lg">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-primary-900 mb-4">
-                Partenariat Privilégié
-              </h3>
-              <p className="text-lg text-primary-800 mb-6 max-w-3xl mx-auto leading-relaxed">
-                Nous collaborons avec Les Joly Dames pour proposer des <strong>séminaires yoga "clé en main"</strong> 
-                incluant logistique complète, activités sur-mesure et hébergements de charme dans des cadres naturels exceptionnels.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-primary-700">
-                <div className="flex items-center">
-                  <ClientIcon name="CheckCircle" className="h-4 w-4 mr-2" />
-                  <span>8 participantes (France/Slovénie)</span>
-                </div>
-                <div className="flex items-center">
-                  <ClientIcon name="CheckCircle" className="h-4 w-4 mr-2" />
-                  <span>10 participantes (Maroc)</span>
-                </div>
-                <div className="flex items-center">
-                  <ClientIcon name="CheckCircle" className="h-4 w-4 mr-2" />
-                  <span>Ambiance conviviale garantie</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-700 to-primary-900 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Prêt à Organiser Votre Prochain Événement ?
-          </h2>
-          
+      <section className="bg-gradient-to-r from-primary-700 to-primary-900 py-20 text-white">
+        <div className="mx-auto max-w-4xl text-center px-6 sm:px-10">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Prêt à imaginer votre prochain événement ?</h2>
           <p className="text-xl text-primary-100 mb-8">
-            Demandez un devis personnalisé pour votre séminaire corporate ou séjour yoga sur mesure
+            Recevez un concept créatif détaillé en 48h : objectifs, expérience participant et feuille de route opérationnelle.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact?type=seminaire-corporate"
-              className="px-8 py-4 bg-white text-primary-800 rounded-full font-semibold hover:bg-neutral-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
+              className="flex items-center justify-center rounded-full bg-white px-8 py-4 font-semibold text-primary-800 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-neutral-100"
             >
               <ClientIcon name="Calendar" className="mr-2 h-5 w-5" />
-              Devis Séminaire Corporate
+              Brief séminaire corporate
             </Link>
-            
             <Link
               href="/contact?type=sejour-yoga"
-              className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-primary-800 transition-all duration-300 flex items-center justify-center"
+              className="flex items-center justify-center rounded-full border-2 border-white px-8 py-4 font-semibold text-white transition-all duration-300 hover:bg-white hover:text-primary-800"
             >
               <ClientIcon name="Heart" className="mr-2 h-5 w-5" />
-              Devis Séjour Yoga
+              Co-créer une retraite yoga
             </Link>
           </div>
 
-          <div className="flex items-center justify-center space-x-6 text-primary-200 mt-8">
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-primary-200">
             <div className="flex items-center">
-              <ClientIcon name="CheckCircle" className="h-5 w-5 mr-2" />
-              Devis Gratuit
+              <ClientIcon name="CheckCircle" className="mr-2 h-5 w-5" />
+              Proposition personnalisée
             </div>
             <div className="flex items-center">
-              <ClientIcon name="CheckCircle" className="h-5 w-5 mr-2" />
-              Réponse Rapide
+              <ClientIcon name="CheckCircle" className="mr-2 h-5 w-5" />
+              Réponse rapide
             </div>
             <div className="flex items-center">
-              <ClientIcon name="CheckCircle" className="h-5 w-5 mr-2" />
-              Sur Mesure
+              <ClientIcon name="CheckCircle" className="mr-2 h-5 w-5" />
+              Accompagnement dédié
             </div>
           </div>
         </div>
       </section>
-
     </PageWrapper>
   );
 }
