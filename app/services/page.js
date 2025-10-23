@@ -189,10 +189,29 @@ export default function ServicesPage() {
     }
   ];
 
+  const stats = [
+    {
+      value: '45%',
+      label: 'Average revenue increase',
+    },
+    {
+      value: '98%',
+      label: 'Guest satisfaction rate',
+    },
+    {
+      value: '24/7',
+      label: 'Dedicated on-site & remote support',
+    },
+    {
+      value: '50+',
+      label: 'Luxury chalets under management',
+    },
+  ];
+
   return (
-    <PageWrapper mainClassName="space-y-24 bg-neutral-50  md:pt-6 pb-24 md:pb-32">
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-0 pb-24 md:pb-32">
       {/* Hero Section */}
-      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg ">
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden rounded-none text-white">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg"
@@ -201,21 +220,42 @@ export default function ServicesPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/35"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30"></div>
         </div>
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
-          <h1 className="mb-4 text-3xl font-bold md:text-5xl">
-            Comprehensive Chalet Management Services
-          </h1>
-          <p className="mx-auto max-w-2xl text-lg text-white/90 md:text-xl">
-            From rental optimization to guest services, we handle every aspect of your chalet operation.
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.4em] text-primary-200">
+            Chalet Manager
           </p>
+          <h1 className="mb-6 text-4xl font-light leading-tight md:text-6xl lg:text-7xl">
+            Comprehensive Chalet Management
+            <span className="block text-primary-200">Tailored For Exceptional Stays</span>
+          </h1>
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-white/90 md:text-xl">
+            From rental optimization to white-glove concierge services, our dedicated experts curate every moment of your guests’ experience while protecting your investment.
+          </p>
+
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              href="/contact"
+              className="flex items-center justify-center rounded-full bg-primary-700 px-8 py-4 font-semibold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:bg-primary-800 hover:shadow-2xl"
+            >
+              Start a Project
+              <ClientIcon name="ArrowRight" className="ml-2 h-5 w-5" />
+            </Link>
+
+            <Link
+              href="/portfolio"
+              className="rounded-full border border-white/30 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:bg-white/20"
+            >
+              View Our Portfolio
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Services Overview */}
-      <section className="bg-white py-20 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
+      <section className="bg-white py-20 shadow-sm sm:rounded-3xl sm:px-6 lg:px-10">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
@@ -234,13 +274,11 @@ export default function ServicesPage() {
                 <div 
                   key={service.id}
                   id={service.id}
-                  className={`flex flex-col lg:flex-row items-center gap-12 ${
-                    isEven ? '' : 'lg:flex-row-reverse'
-                  }`}
+                  className={`flex flex-col items-center gap-12 lg:flex-row ${isEven ? '' : 'lg:flex-row-reverse'}`}
                 >
                   {/* Image */}
                   <div className="flex-1">
-                    <div className="relative h-96 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="relative h-96 overflow-hidden rounded-3xl shadow-xl">
                       <Image
                         src={service.image}
                         alt={service.imageAlt || service.title}
@@ -253,7 +291,7 @@ export default function ServicesPage() {
                   {/* Content */}
                   <div className="flex-1">
                     <div className="flex items-center mb-6">
-                      <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mr-4">
+                      <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-100">
                         <ClientIcon name={service.icon} className="h-6 w-6 text-primary-700" />
                       </div>
                       <h3 className="text-2xl md:text-3xl font-bold text-neutral-900">
@@ -283,7 +321,7 @@ export default function ServicesPage() {
                     </div>
 
                     {/* Benefits */}
-                    <div className="bg-primary-50 p-6 rounded-xl">
+                    <div className="rounded-2xl bg-primary-50 p-6">
                       <h4 className="text-lg font-semibold text-primary-900 mb-3">
                         Key Benefits:
                       </h4>
@@ -305,8 +343,34 @@ export default function ServicesPage() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-primary-800 py-20 text-white shadow-xl sm:mx-6 sm:rounded-3xl sm:px-10">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Proven Impact For Chalet Owners
+            </h2>
+            <p className="text-xl text-primary-100 max-w-3xl mx-auto">
+              We combine market intelligence with boutique hospitality to deliver consistent, measurable results.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-primary-200">
+                  {stat.value}
+                </div>
+                <p className="text-primary-100">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-neutral-50 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
               Why Choose Chalet Manager?
@@ -319,11 +383,11 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {whyChooseUs.map((item, index) => {
               return (
-                <div 
+                <div
                   key={index}
-                  className="text-center p-6 bg-white rounded-2xl border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300"
+                  className="rounded-3xl border border-neutral-200 bg-white p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-xl"
                 >
-                  <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 mx-auto">
                     <ClientIcon name={item.icon} className="h-8 w-8 text-primary-700" />
                   </div>
                   <h3 className="text-lg font-bold text-neutral-900 mb-2">
@@ -340,8 +404,8 @@ export default function ServicesPage() {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white py-20 shadow-sm sm:rounded-3xl sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
               Our Process
@@ -351,15 +415,15 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             {processSteps.map((step, index) => (
               <div key={index} className="text-center">
                 <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-primary-700 text-white rounded-full flex items-center justify-center mx-auto font-bold text-lg">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-700 text-lg font-bold text-white mx-auto">
                     {step.number}
                   </div>
                   {index < processSteps.length - 1 && (
-                    <div className="hidden lg:block absolute top-8 left-16 w-full h-0.5 bg-primary-200"></div>
+                    <div className="absolute left-16 top-8 hidden h-0.5 w-full bg-primary-200 lg:block"></div>
                   )}
                 </div>
                 <h3 className="text-lg font-bold text-neutral-900 mb-3">
@@ -375,30 +439,26 @@ export default function ServicesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-primary-700 to-primary-900 py-20 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
-        <div className="mx-auto max-w-4xl px-6 text-center sm:px-10">
+      <section className="bg-primary-900 py-20 text-white sm:mx-6 sm:rounded-3xl sm:px-10">
+        <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Transform Your Chalet Management?
+            Ready to Elevate Your Chalet Experience?
           </h2>
-          
-          <p className="text-xl text-primary-100 mb-8">
-            Let our experienced team take care of everything while you enjoy the returns
+          <p className="text-xl text-primary-100 mb-10">
+            Partner with our specialists to design bespoke services that delight guests and maximise your returns all year long.
           </p>
-
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/contact"
-              className="px-8 py-4 bg-white text-primary-800 rounded-full font-semibold hover:bg-neutral-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
+              className="rounded-full bg-white px-8 py-4 font-semibold text-primary-900 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:bg-primary-100"
             >
-              Get Free Consultation
-              <ClientIcon name="ArrowRight" className="ml-2 h-5 w-5" />
+              Book a Consultation
             </Link>
-            
             <Link
-              href="/portfolio"
-              className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-primary-800 transition-all duration-300"
+              href="/services#rental"
+              className="rounded-full border border-white/40 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/60 hover:bg-white/20"
             >
-              View Portfolio
+              Explore Service Details
             </Link>
           </div>
         </div>

@@ -93,6 +93,44 @@ export default function PortfolioClient({ initialChalets = [] }) {
     return [...set];
   }, [chalets]);
 
+  const highlights = [
+    {
+      icon: 'Mountain',
+      title: 'Handpicked Destinations',
+      description: 'Ski-in/ski-out chalets across the Alps selected for their breathtaking panoramas and privacy.',
+    },
+    {
+      icon: 'Gem',
+      title: 'Hotel-Level Services',
+      description: 'Concierge, private chefs, spa rituals and curated experiences for each stay.',
+    },
+    {
+      icon: 'ShieldCheck',
+      title: 'Trusted Operations',
+      description: 'On-site teams, preventative maintenance and transparent reporting for owners.',
+    },
+  ];
+
+  const curatedCount = chalets?.length ?? 0;
+  const stats = [
+    {
+      value: curatedCount > 0 ? `${curatedCount}+` : '12+',
+      label: 'Luxury chalets curated',
+    },
+    {
+      value: '10+',
+      label: 'Iconic alpine resorts',
+    },
+    {
+      value: '5★',
+      label: 'Guest satisfaction average',
+    },
+    {
+      value: '24/7',
+      label: 'Concierge & technical support',
+    },
+  ];
+
   if (loading) {
     return (
       <PageWrapper mainClassName="flex flex-1 items-center justify-center bg-neutral-50">
@@ -104,10 +142,10 @@ export default function PortfolioClient({ initialChalets = [] }) {
   }
 
   return (
-    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
+    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-0 pb-24 md:pb-32">
 
       {/* Hero Section */}
-      <section className="relative flex min-h-[55vh] items-center justify-center overflow-hidden bg-neutral-900 text-white shadow-lg sm:mx-6 sm:rounded-3xl">
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden rounded-none text-white">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg"
@@ -116,19 +154,75 @@ export default function PortfolioClient({ initialChalets = [] }) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center sm:px-10">
-          <h1 className="mb-4 text-4xl font-bold md:text-5xl">Notre Portfolio</h1>
-          <p className="mx-auto max-w-2xl text-lg text-white/90 md:text-xl">
-            Découvrez nos chalets gérés dans les plus belles stations des Alpes
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.4em] text-primary-200">
+            Chalet Manager
           </p>
+          <h1 className="mb-6 text-4xl font-light leading-tight md:text-6xl lg:text-7xl">
+            Portfolio de chalets signature
+            <span className="block text-primary-200">Des expériences sur-mesure dans les Alpes</span>
+          </h1>
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-white/90 md:text-xl">
+            Explorez une sélection de résidences privées gérées avec excellence : architecture alpine, services cinq étoiles et storytelling local.
+          </p>
+
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              href="/contact"
+              className="flex items-center justify-center rounded-full bg-primary-700 px-8 py-4 font-semibold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:bg-primary-800 hover:shadow-2xl"
+            >
+              Demander une visite privée
+              <ClientIcon name="ArrowRight" className="ml-2 h-5 w-5" />
+            </Link>
+
+            <Link
+              href="/services"
+              className="rounded-full border border-white/30 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:bg-white/20"
+            >
+              Nos services de gestion
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Highlights Section */}
+      <section className="bg-white py-16 shadow-sm sm:rounded-3xl sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
+              Une signature inspirée par la montagne
+            </h2>
+            <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
+              Chaque propriété reflète notre exigence : confort haut de gamme, identité forte et hospitalité sincère.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {highlights.map((item, index) => (
+              <div
+                key={index}
+                className="rounded-3xl border border-neutral-200 bg-neutral-50/70 p-8 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-xl"
+              >
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 mx-auto">
+                  <ClientIcon name={item.icon} className="h-8 w-8 text-primary-700" />
+                </div>
+                <h3 className="text-xl font-semibold text-neutral-900 mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-neutral-600 leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Filters Section */}
-      <section className="bg-white py-10 shadow-sm sm:mx-6 sm:rounded-3xl sm:px-8 lg:px-12">
+      <section className="bg-white py-12 shadow-sm sm:rounded-3xl sm:px-6 lg:px-10">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
@@ -183,8 +277,34 @@ export default function PortfolioClient({ initialChalets = [] }) {
       </section>
 
       {/* Portfolio Grid */}
-      <section className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-primary-800 py-20 text-white shadow-xl sm:mx-6 sm:rounded-3xl sm:px-10">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Des résultats mesurables pour nos propriétaires
+            </h2>
+            <p className="text-xl text-primary-100 max-w-3xl mx-auto">
+              Fidélité des hôtes, revenus optimisés et entretien impeccable : notre équipe veille à chaque détail.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-primary-200">
+                  {stat.value}
+                </div>
+                <p className="text-primary-100">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-20 shadow-sm sm:rounded-3xl sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-7xl">
           {filteredChalets.length === 0 ? (
             <div className="text-center py-16">
               <ClientIcon name="Home" className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
@@ -209,6 +329,31 @@ export default function PortfolioClient({ initialChalets = [] }) {
               </div>
             </>
           )}
+        </div>
+      </section>
+
+      <section className="bg-primary-900 py-20 text-white sm:mx-6 sm:rounded-3xl sm:px-10">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Imaginons ensemble votre prochaine histoire alpine
+          </h2>
+          <p className="text-xl text-primary-100 mb-10">
+            Nous créons des séjours émouvants et rentables : parlez-nous de votre chalet ou de votre projet de séjour.
+          </p>
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              href="/contact"
+              className="rounded-full bg-white px-8 py-4 font-semibold text-primary-900 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:bg-primary-100"
+            >
+              Discuter avec un expert
+            </Link>
+            <Link
+              href="/services"
+              className="rounded-full border border-white/40 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/60 hover:bg-white/20"
+            >
+              Découvrir nos services
+            </Link>
+          </div>
         </div>
       </section>
 
