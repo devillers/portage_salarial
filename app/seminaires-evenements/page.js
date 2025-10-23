@@ -176,7 +176,10 @@ export default function SeminairesEvenementsPage() {
   ];
 
   return (
-    <PageWrapper mainClassName="space-y-24 bg-neutral-50 pt-0 md:pt-6 pb-24 md:pb-32">
+    <PageWrapper
+      disableMainPadding
+      mainClassName="space-y-24 bg-neutral-50 pt-0 pb-24 md:pb-32"
+    >
       {/* Hero Section */}
       <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden rounded-none text-white">
         <div className="absolute inset-0 z-0">

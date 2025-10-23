@@ -2,11 +2,20 @@ import Header from './Header';
 import Footer from './Footer';
 import { cn } from '../../lib/utils.ts';
 
-export default function PageWrapper({ children, className, mainClassName }) {
+export default function PageWrapper({
+  children,
+  className,
+  mainClassName,
+  disableMainPadding = false,
+}) {
   return (
     <div className={cn('flex min-h-screen flex-col bg-neutral-50 text-neutral-900', className)}>
       <Header />
-      <main className={cn('flex-1 py-16 md:py-20', mainClassName)}>{children}</main>
+      <main
+        className={cn('flex-1', disableMainPadding ? null : 'py-16 md:py-20', mainClassName)}
+      >
+        {children}
+      </main>
       <Footer />
     </div>
   );
